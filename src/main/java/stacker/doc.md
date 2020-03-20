@@ -32,7 +32,7 @@ Where
 #### When action from the client should be passed to the current FSM
 
     {
-        command: "action",
+        command: "ACTION",
         service: string,
         state: string,
         stateData: string?,
@@ -42,7 +42,7 @@ Where
 #### When new FSM will be opened
 
     {
-        command: "open",
+        command: "OPEN",
         service: string,
         state: null,
         stateData: null,
@@ -52,7 +52,7 @@ Where
 #### When current FSM is closed and its result is passed to caller
 
     {
-        command: "return",
+        command: "RETURN",
         service: string,
         state: string,
         stateData: string,
@@ -64,7 +64,7 @@ Where
 #### When response should be sent to the client
 
     {
-        command: "result",
+        command: "RESULT",
         state: string,
         stateData: string,
         body: string
@@ -74,7 +74,7 @@ Where
 #### When other FSM should be opened
 
     {
-        command: "open",
+        command: "OPEN",
 
         service: string,
         state: string,
@@ -88,14 +88,14 @@ Where
 #### When the current FSM will be closed and control should be returned to the previous FSM
 
     {
-        command: "return",
+        command: "RETURN",
         body: string?
     }
 
 #### When some Error occured
 
     {
-        command: "error",
+        command: "ERROR",
         body: string?
     }
 
@@ -113,6 +113,7 @@ Where
 ### Response
 
     {
+        command: "RESULT" || "ERROR"
         service: string,
         state: string,
         data: object

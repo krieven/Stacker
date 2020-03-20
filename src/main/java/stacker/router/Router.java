@@ -9,7 +9,6 @@ import java.util.Map;
 
 import stacker.Command;
 import stacker.ICallback;
-import stacker.router.ICommandTransport;
 import stacker.RouterCommand;
 import stacker.SessionStack;
 import stacker.SessionStackEntry;
@@ -52,10 +51,9 @@ public class Router {
         assertNotNull("Default service shold be one of defined services", services.get(defaultService));
     }
 
-    public static interface IRouterCallback {
-        public void success(String sid, String body);
-
-        public void reject(Exception exception);
+    public interface IRouterCallback {
+        void success(String sid, String body);
+        void reject(Exception exception);
     }
 
     private class OnSessionFound implements ICallback<SessionStack> {
@@ -63,7 +61,7 @@ public class Router {
         private String sid;
         private String body;
 
-        public OnSessionFound(String sid, String body) {
+        OnSessionFound(String sid, String body) {
             this.sid = sid;
             this.body = body;
         }
@@ -86,7 +84,7 @@ public class Router {
             command.setStateData(entry.getStateData());
             command.setBody(body);
 
-            transport.send(getAddress(command.getService()), command, new OnResponseRecived(sid, sessionStack));
+            transport.send(getAddress(command.getService()), command, new OnResponseReceived(sid, sessionStack));
         }
 
         @Override
@@ -98,11 +96,11 @@ public class Router {
 
     }
 
-    private class OnResponseRecived implements ICallback<Command> {
+    private class OnResponseReceived implements ICallback<Command> {
         private String sid;
         private SessionStack sessionStack;
 
-        public OnResponseRecived(String sid, SessionStack sessionStack) {
+        OnResponseReceived(String sid, SessionStack sessionStack) {
             this.sid = sid;
             this.sessionStack = sessionStack;
         }
@@ -150,8 +148,6 @@ public class Router {
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
 
-                IRouterCallback routerCallback = sessionLock.remove(sid);
-
                 SessionStackEntry entry = sessionStack.getCurrent();
 
                 entry.setState(command.getState());
@@ -159,6 +155,7 @@ public class Router {
                 entry.setBody(command.getBody());
                 
                 sessionStorage.save(sid, sessionStack);
+                IRouterCallback routerCallback = sessionLock.remove(sid);
                 routerCallback.success(sid, command.getBody());
             }
 
@@ -193,7 +190,7 @@ public class Router {
                 newCommand.setBody(command.getBody());
 
                 transport.send(getAddress(newCommand.getService()), newCommand, 
-                    new OnResponseRecived(sid, sessionStack)
+                    new OnResponseReceived(sid, sessionStack)
                 );
             }
 
@@ -224,8 +221,20 @@ public class Router {
 
                 sessionStorage.save(sid, sessionStack);
                 transport.send(getAddress(newCommand.getService()), newCommand,
-                    new OnResponseRecived(sid, sessionStack)
+                    new OnResponseReceived(sid, sessionStack)
                 );
+            }
+
+            @Override
+            public void reject(Exception error) {
+                //
+            }
+        });
+
+        responseHandlers.put(RouterCommand.ERROR, new ICallback<RouterResponseResult>() {
+            @Override
+            public void success(RouterResponseResult routerResponseResult) {
+
             }
 
             @Override

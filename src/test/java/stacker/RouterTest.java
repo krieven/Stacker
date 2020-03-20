@@ -3,6 +3,8 @@ package stacker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import stacker.Command;
@@ -77,5 +79,31 @@ public class RouterTest
 
         });
 
+    }
+
+    @Test
+    public void testSerialize(){
+        ObjectMapper parser = new ObjectMapper();
+        try {
+            String res = parser.writeValueAsString(new ICallback<Command>() {
+
+                public String value ="Hello value";
+                public String name = "Hello name";
+
+                @Override
+                public void success(Command command) {
+
+                }
+
+                @Override
+                public void reject(Exception error) {
+
+                }
+            });
+            System.out.println(res);
+            assertEquals("{\"value\":\"Hello value\",\"name\":\"Hello name\"}", res);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 }
