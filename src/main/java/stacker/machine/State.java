@@ -11,8 +11,8 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class State<BodyT, RsT, SessionT, ResourcesT> {
-    private Map<String, IHandler<BodyT, RsT, SessionT, ResourcesT>> actionHandlers = new HashMap<>();
+public class State<BodyT, RsT, StateDataT, ResourcesT> {
+    private Map<String, IHandler<BodyT, RsT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
 
     private Class<BodyT> bodyClass;
     private static final ObjectMapper PARSER = new ObjectMapper();
@@ -21,7 +21,7 @@ public class State<BodyT, RsT, SessionT, ResourcesT> {
         this.bodyClass = bodyClass;
     }
 
-    public void handle(String bodyString, MachineContext<RsT, SessionT, ResourcesT> context) {
+    public void handle(String bodyString, MachineContext<RsT, StateDataT, ResourcesT> context) {
         String action;
         BodyT body;
 
@@ -36,7 +36,7 @@ public class State<BodyT, RsT, SessionT, ResourcesT> {
 
             return;
         }
-        IHandler<BodyT, RsT, SessionT, ResourcesT> handler = actionHandlers.get(action);
+        IHandler<BodyT, RsT, StateDataT, ResourcesT> handler = actionHandlers.get(action);
         if (handler == null) {
             // TODO return ERROR
 
@@ -51,7 +51,7 @@ public class State<BodyT, RsT, SessionT, ResourcesT> {
         }
     }
 
-    public void addHandler(String name, IHandler<BodyT, RsT, SessionT, ResourcesT> handler) {
+    public void addHandler(String name, IHandler<BodyT, RsT, StateDataT, ResourcesT> handler) {
         assertNotNull("The name should not be null", name);
         name = name.trim();
         assertNotEquals("The name should not be empty String", "", name);

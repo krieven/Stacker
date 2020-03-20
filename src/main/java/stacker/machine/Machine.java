@@ -10,8 +10,7 @@ import stacker.Command;
 import stacker.ICallback;
 import stacker.RouterCommand;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class Machine<RqT, RsT, StateDataT, ResourcesT> {
     private static ObjectMapper PARSER = new ObjectMapper();
@@ -47,30 +46,7 @@ public class Machine<RqT, RsT, StateDataT, ResourcesT> {
         }
     }
 
-    public void setOnOpen(IHandler<RqT, RsT, StateDataT, ResourcesT> onOpen){
-        assertNull("onOpen handler already defined", this.onOpen);
-        assertNotNull("OnOpen handler should not be null", onOpen);
-        this.onOpen = onOpen;
-    }
-
-    public void handle(Command command, ICallback<Command> callback){
-        @SuppressWarnings("unchecked")
-        MachineContext<RsT, StateDataT, ResourcesT> context =
-                new MachineContext(this,
-                        parseSession(command.getStateData()),
-                        resources);
-
-        IncomingHandler<RsT, StateDataT, ResourcesT> handler =
-                incomingHandlers.get(command.getCommand());
-
-        try{
-            handler.handle(command, context, callback);
-        } catch (Exception e) {
-            callback.reject(e);
-        }
-    }
-
-    private StateDataT parseSession(String stateData) {
+    private StateDataT parseStateData(String stateData) {
         try {
             return PARSER.readValue(stateData, sessionClass);
         } catch (IOException e) {
@@ -83,35 +59,70 @@ public class Machine<RqT, RsT, StateDataT, ResourcesT> {
         return null;
     }
 
+    public void setOnOpen(IHandler<RqT, RsT, StateDataT, ResourcesT> onOpen){
+        assertNull("onOpen handler already defined", this.onOpen);
+        assertNotNull("OnOpen handler should not be null", onOpen);
+        this.onOpen = onOpen;
+    }
+
+    public void addState(String name, State<Object, RsT, StateDataT, ResourcesT> state){
+        assertNotNull("the NAME should not be null", name);
+        name = name.trim().toUpperCase();
+        assertNotEquals("the NAME should not be empty string", name, "");
+        assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
+        assertNotNull("State should not be null", state);
+
+        states.put(name,state);
+    }
+
+    private State<Object, RsT, StateDataT, ResourcesT> getState(String name) throws Exception{
+        return states.get(name.trim().toUpperCase());
+    }
+
+    public void handle(Command command, ICallback<Command> callback){
+        @SuppressWarnings("unchecked")
+        MachineContext<RsT, StateDataT, ResourcesT> context =
+                new MachineContext(this,
+                        parseStateData(command.getStateData()),
+                        resources, callback);
+
+        IncomingHandler<RsT, StateDataT, ResourcesT> handler =
+                incomingHandlers.get(command.getCommand());
+
+        try{
+            handler.handle(command, context);
+        } catch (Exception e) {
+            callback.reject(e);
+        }
+    }
+
     private interface IncomingHandler<RsT, StateDataT, ResourcesT>{
-        void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context, ICallback<Command> callback) throws Exception;
+        void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context) throws Exception;
     }
     
     private Map<RouterCommand, IncomingHandler<RsT, StateDataT, ResourcesT>> incomingHandlers
             = new HashMap<>();
     {
-        incomingHandlers.put(RouterCommand.OPEN,
-                new IncomingHandler<RsT, StateDataT, ResourcesT>(){
+        incomingHandlers.put(RouterCommand.OPEN, new IncomingHandler<RsT, StateDataT, ResourcesT>(){
             @Override
-            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context, ICallback<Command> callback) throws Exception {
-
+            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context) throws Exception {
                 RqT rq = parseRq(request.getBody());
-
                 onOpen.handle(rq, context);
-
             }
         });
 
         incomingHandlers.put(RouterCommand.ACTION, new IncomingHandler<RsT, StateDataT, ResourcesT>(){
             @Override
-            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context, ICallback<Command> callback) throws Exception {
-
+            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context) throws Exception {
+                String stateName = request.getState();
+                State<Object, RsT, StateDataT, ResourcesT> state = getState(stateName);
+                state.handle(request.getBody(), context);
             }
         });
 
         incomingHandlers.put(RouterCommand.RETURN, new IncomingHandler<RsT, StateDataT, ResourcesT>(){
             @Override
-            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context, ICallback<Command> callback) throws Exception {
+            public void handle(Command request, MachineContext<RsT, StateDataT, ResourcesT> context) throws Exception {
 
             }
         });
