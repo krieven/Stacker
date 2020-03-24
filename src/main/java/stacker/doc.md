@@ -76,10 +76,10 @@ Where
     {
         command: "OPEN",
 
-        service: string,
-        state: string,
-        stateData: string,
-        body: string?,
+        service: string,//service that should be opened
+        state: string, //state of opener service
+        stateData: string, //updated stateData of opener service
+        body: string?, //argument data
 
         onReturn: string,
     }
@@ -92,7 +92,7 @@ Where
         body: string?
     }
 
-#### When some Error occured
+#### When some Error occurred
 
     {
         command: "ERROR",

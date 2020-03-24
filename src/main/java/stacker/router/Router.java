@@ -9,7 +9,7 @@ import java.util.Map;
 
 import stacker.Command;
 import stacker.ICallback;
-import stacker.RouterCommand;
+import stacker.Command.Type;
 import stacker.SessionStack;
 import stacker.SessionStackEntry;
 
@@ -18,7 +18,7 @@ public class Router {
     private ISessionStorage sessionStorage;
     private Map<String, String> services = new HashMap<>();
     private String defaultService;
-    private Map<RouterCommand, ICallback<RouterResponseResult>> responseHandlers = new HashMap<>();
+    private Map<Command.Type, ICallback<RouterResponseResult>> responseHandlers = new HashMap<>();
     private Map<String, IRouterCallback> sessionLock = new HashMap<>();
 
     public Router(ICommandTransport transport, ISessionStorage sessionStorage) {
@@ -68,13 +68,13 @@ public class Router {
 
         @Override
         public void success(SessionStack sessionStack) {
-            RouterCommand type = RouterCommand.ACTION;
+            Command.Type type = Command.Type.ACTION;
             if (sessionStack == null) {
                 sessionStack = new SessionStack();
                 SessionStackEntry entry = new SessionStackEntry();
                 entry.setService(defaultService);
                 sessionStack.push(entry);
-                type = RouterCommand.OPEN;
+                type = Command.Type.OPEN;
             }
             SessionStackEntry entry = sessionStack.getCurrent();
             Command command = new Command();
@@ -140,7 +140,7 @@ public class Router {
     }
     //here responseHandlers are
     {
-        responseHandlers.put(RouterCommand.RESULT, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.RESULT, new ICallback<RouterResponseResult>() {
 
             @Override
             public void success(RouterResponseResult responseResult) {
@@ -165,7 +165,7 @@ public class Router {
             }
         });
 
-        responseHandlers.put(RouterCommand.OPEN, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.OPEN, new ICallback<RouterResponseResult>() {
 
             @Override
             public void success(RouterResponseResult responseResult) {
@@ -185,7 +185,7 @@ public class Router {
                 sessionStorage.save(sid, sessionStack);
 
                 Command newCommand = new Command();
-                newCommand.setCommand(RouterCommand.OPEN);
+                newCommand.setCommand(Command.Type.OPEN);
                 newCommand.setService(command.getService());
                 newCommand.setBody(command.getBody());
 
@@ -200,7 +200,7 @@ public class Router {
             }
         });
 
-        responseHandlers.put(RouterCommand.RETURN, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.RETURN, new ICallback<RouterResponseResult>() {
 
             @Override
             public void success(RouterResponseResult responseResult) {
@@ -212,7 +212,7 @@ public class Router {
                 SessionStackEntry currentEntry = sessionStack.getCurrent();
 
                 Command newCommand = new Command();
-                newCommand.setCommand(RouterCommand.RETURN);
+                newCommand.setCommand(Command.Type.RETURN);
                 newCommand.setService(currentEntry.getService());
                 newCommand.setState(currentEntry.getState());
                 newCommand.setStateData(currentEntry.getStateData());
@@ -231,7 +231,7 @@ public class Router {
             }
         });
 
-        responseHandlers.put(RouterCommand.ERROR, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.ERROR, new ICallback<RouterResponseResult>() {
             @Override
             public void success(RouterResponseResult routerResponseResult) {
 

@@ -1,18 +1,26 @@
 package stacker;
 
 public class Command{
-    private RouterCommand command;
+    private Type command;
     private String service;
     private String state;
     private String stateData;
     private String body;
     private String onReturn;
 
-    public RouterCommand getCommand() {
+    public enum Type {
+        ACTION,
+        OPEN,
+        RETURN,
+        RESULT,
+        ERROR
+    }
+
+    public Type getCommand() {
         return command;
     }
 
-    public void setCommand(RouterCommand type) {
+    public void setCommand(Type type) {
         this.command = type;
     }
 

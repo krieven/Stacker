@@ -10,7 +10,7 @@ import org.junit.Test;
 import stacker.Command;
 import stacker.ICallback;
 import stacker.router.ICommandTransport;
-import stacker.RouterCommand;
+import stacker.Command.Type;
 import stacker.SessionStack;
 import stacker.router.ISessionStorage;
 import stacker.router.Router;
@@ -29,14 +29,14 @@ public class RouterTest
         
             @Override
             public void send(String address, Command command, ICallback<Command> callback) {
-                assertEquals(RouterCommand.OPEN, command.getCommand());
+                assertEquals(Command.Type.OPEN, command.getCommand());
                 assertEquals("main", command.getService());
                 assertEquals("body", command.getBody());
                 assertEquals("address", address);
 
 
                 Command responseCommand = new Command();
-                responseCommand.setCommand(RouterCommand.RESULT);
+                responseCommand.setCommand(Command.Type.RESULT);
                 responseCommand.setState("state0");
                 responseCommand.setStateData("data");
                 responseCommand.setBody("body1");
@@ -100,6 +100,8 @@ public class RouterTest
 
                 }
             });
+            String res1 = parser.writeValueAsString(new Command());
+            System.out.println(res1);
             System.out.println(res);
             assertEquals("{\"value\":\"Hello value\",\"name\":\"Hello name\"}", res);
         } catch (JsonProcessingException e) {
