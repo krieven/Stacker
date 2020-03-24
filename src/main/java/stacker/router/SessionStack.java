@@ -1,8 +1,6 @@
-package stacker;
+package stacker.router;
 
 import java.util.ArrayList;
-
-import stacker.SessionStackEntry;
 
 public class SessionStack extends ArrayList<SessionStackEntry> {
 

@@ -1,4 +1,4 @@
-package stacker;
+package stacker.router;
 
 public class SessionStackEntry{
     private String service;

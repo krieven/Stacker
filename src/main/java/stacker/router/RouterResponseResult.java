@@ -1,7 +1,6 @@
 package stacker.router;
 
 import stacker.Command;
-import stacker.SessionStack;
 
 public class RouterResponseResult{
     String sid;

@@ -9,9 +9,6 @@ import java.util.Map;
 
 import stacker.Command;
 import stacker.ICallback;
-import stacker.Command.Type;
-import stacker.SessionStack;
-import stacker.SessionStackEntry;
 
 public class Router {
     private ICommandTransport transport;

@@ -7,11 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import stacker.Command;
-import stacker.ICallback;
 import stacker.router.ICommandTransport;
-import stacker.Command.Type;
-import stacker.SessionStack;
+import stacker.router.SessionStack;
 import stacker.router.ISessionStorage;
 import stacker.router.Router;
 import stacker.router.Router.IRouterCallback;
