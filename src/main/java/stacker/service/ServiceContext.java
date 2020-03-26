@@ -13,6 +13,14 @@ public class ServiceContext<StateDataT, ResourcesT> {
         return resources;
     }
 
+    public String getService() {
+        return service;
+    }
+
+    public String getState() {
+        return state;
+    }
+
     private String service;
     private String state;
     private StateDataT stateData;

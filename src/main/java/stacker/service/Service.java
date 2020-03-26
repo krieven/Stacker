@@ -127,7 +127,7 @@ public class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
     }
 
     public void sendTransition(String name, ServiceContext<StateDataT, ResourcesT> context) {
-        this.getState(name).open();
+        this.getState(name).open(context);
     }
 
 }

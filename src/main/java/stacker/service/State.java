@@ -9,12 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.*;
 
-public class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
+public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
     private static final ObjectMapper PARSER = new ObjectMapper();
 
     private Map<String, IHandler<ArgumentT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
     private Map<String, ReturnHandler> returnHandlers = new HashMap<>();
-    private IHandler<ArgumentT, StateDataT, ResourcesT> onOpen;
+    private IInitHandler<StateDataT, ResourcesT> onOpen;
 
     private Service<?, ReturnT, StateDataT, ResourcesT> service;
     private Class<ArgumentT> argumentClass;
@@ -27,8 +27,8 @@ public class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         this.service = service;
     }
 
-    public void setOnOpen(IHandler<ArgumentT, StateDataT, ResourcesT> onOpen) {
-        this.onOpen = onOpen;
+    public void setInitHandler(IInitHandler<StateDataT, ResourcesT> init) {
+        this.onOpen = init;
     }
 
     void handleAction(String bodyString, ServiceContext<StateDataT, ResourcesT> context) {
@@ -71,9 +71,9 @@ public class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         actionHandlers.put(name, handler);
     }
 
-    void open(ArgumentT argument, ServiceContext<StateDataT, ResourcesT> context) {
+    void open(ServiceContext<StateDataT, ResourcesT> context) {
         try {
-            this.onOpen.handle(argument, context);
+            this.onOpen.handle(context);
         } catch (Exception e) {
             //TODO send Error
 

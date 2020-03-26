@@ -1,7 +1,9 @@
 package stacker;
 
 import org.junit.Test;
+import stacker.service.IInitHandler;
 import stacker.service.Service;
+import stacker.service.ServiceContext;
 import stacker.service.State;
 
 public class ServiceTest {
@@ -16,6 +18,10 @@ public class ServiceTest {
 
         State<OpenArg, ReturnT, ReturnT, StateData, Resources> state = service.addState("start",
                 new State<>(OpenArg.class));
+
+        state.setInitHandler(context -> {
+            state.sendTransition("main", context);
+        });
     }
 
     private static class OpenArg {

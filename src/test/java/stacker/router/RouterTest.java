@@ -1,4 +1,4 @@
-package stacker;
+package stacker.router;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import stacker.Command;
+import stacker.ICallback;
 import stacker.router.ICommandTransport;
 import stacker.router.SessionStack;
 import stacker.router.ISessionStorage;
