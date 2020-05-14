@@ -9,26 +9,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.*;
 
-public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
+public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
     private static final ObjectMapper PARSER = new ObjectMapper();
 
     private Map<String, IHandler<ArgumentT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
     private Map<String, ReturnHandler> returnHandlers = new HashMap<>();
-    private IInitHandler<StateDataT, ResourcesT> onOpen;
+    private IContextHandler<StateDataT, ResourcesT> initHandler;
 
-    private Service<?, ReturnT, StateDataT, ResourcesT> service;
     private Class<ArgumentT> argumentClass;
 
     public State(Class<ArgumentT> argumentClass) {
         this.argumentClass = argumentClass;
     }
 
-    void setService(Service<?, ReturnT, StateDataT, ResourcesT> service) {
-        this.service = service;
+    void handleInit(ServiceContext<StateDataT, ResourcesT> context) {
+        try {
+            this.initHandler.handle(context);
+        } catch (Exception e) {
+            context.sendError(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    public void setInitHandler(IInitHandler<StateDataT, ResourcesT> init) {
-        this.onOpen = init;
+    public final void setInitHandler(IContextHandler<StateDataT, ResourcesT> init) {
+        this.initHandler = init;
     }
 
     void handleAction(String bodyString, ServiceContext<StateDataT, ResourcesT> context) {
@@ -42,26 +46,22 @@ public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
             argument = PARSER.treeToValue(tree.get("data"), argumentClass);
 
         } catch (IOException e) {
-            // TODO return ERROR
-
+            context.sendError("BAD_MESSAGE_FORMAT");
             return;
         }
         IHandler<ArgumentT, StateDataT, ResourcesT> handler = actionHandlers.get(action);
         if (handler == null) {
-            // TODO return ERROR
-
+            context.sendError("ACTION_NOT_FOUND");
             return;
         }
         try {
             handler.handle(argument, context);
         } catch (Exception e) {
-            // TODO return ERROR
-
-            return;
+            context.sendError(e.getMessage());
         }
     }
 
-    public void addActionHandler(String name, IHandler<ArgumentT, StateDataT, ResourcesT> handler) {
+    public final void addActionHandler(String name, IHandler<ArgumentT, StateDataT, ResourcesT> handler) {
         assertNotNull("The name should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The name should not be empty String", "", name);
@@ -71,22 +71,12 @@ public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         actionHandlers.put(name, handler);
     }
 
-    void open(ServiceContext<StateDataT, ResourcesT> context) {
-        try {
-            this.onOpen.handle(context);
-        } catch (Exception e) {
-            //TODO send Error
-
-            e.printStackTrace();
-        }
-    }
-
     private class ReturnHandler<T> {
         Class<T> returnClass;
         IHandler<T, StateDataT, ResourcesT> handler;
     }
 
-    public <T> void handleReturn(String name, String body, ServiceContext<StateDataT, ResourcesT> context) {
+    final <T> void handleReturn(String name, String body, ServiceContext<StateDataT, ResourcesT> context) {
         name = name.trim().toUpperCase();
         @SuppressWarnings("unchecked")
         ReturnHandler<T> returnHandler = returnHandlers.get(name);
@@ -94,8 +84,7 @@ public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         try {
             returnValue = PARSER.readValue(body, returnHandler.returnClass);
         } catch (IOException e) {
-            //TODO send ERROR
-
+            context.sendError("BAD_MESSAGE_RETURNED");
             e.printStackTrace();
             return;
         }
@@ -104,13 +93,12 @@ public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         try {
             handler.handle(returnValue, context);
         } catch (Exception e) {
-            //TODO send ERROR
-
+            context.sendError("RETURN_PROCESSING_ERROR");
             e.printStackTrace();
         }
     }
 
-    public <T> void addReturnHandler(String name, Class<T> outerReturnClass, IHandler<T, StateDataT, ResourcesT> handler) {
+    public final <T> void addReturnHandler(String name, Class<T> outerReturnClass, IHandler<T, StateDataT, ResourcesT> handler) {
         assertNotNull("NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("NAME should not be empty String", "", name);
@@ -124,23 +112,9 @@ public final class State<ArgumentT, ResultT, ReturnT, StateDataT, ResourcesT> {
         returnHandlers.put(name, returnHandler);
     }
 
-    public void sendTransition(String name, ServiceContext<StateDataT, ResourcesT> context) {
 
+    public final void sendResult(ResultT resultT, ServiceContext<StateDataT, ResourcesT> context) {
+        context.sendResult(resultT);
     }
 
-    public void sendResult(ResultT resultT, ServiceContext<StateDataT, ResourcesT> context) {
-
-    }
-
-    public void sendReturn(ReturnT returnT, ServiceContext<StateDataT, ResourcesT> context) {
-
-    }
-
-    public void sendOpen() {
-
-    }
-
-    public void sendError() {
-
-    }
 }

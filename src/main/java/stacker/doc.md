@@ -81,7 +81,7 @@ Where
         stateData: string, //updated stateData of opener service
         body: string?, //argument data
 
-        onReturn: string,
+        onReturn: string
     }
 
 
@@ -96,11 +96,13 @@ Where
 
     {
         command: "ERROR",
+        state: string,
+        stateData: string,
         body: string?
     }
 
 ## Client -> FSM contracts
-Client -> FSM contracts are also based on COMMAND pattern, it is passed thru Router in the "body" field as is and will be parsed by STATE. The "body" field inner structure is explained below.  
+Client -> FSM contracts are also based on COMMAND pattern, it is passed thru Router in the "body" field as is and will be parsed by STATE. The "body" field inner structure is explained below.
 ### Request
 
     {

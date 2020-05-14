@@ -27,19 +27,23 @@ public class Router {
 
     public void addService(String name, String address) {
         assertNotNull("Name should be not null", name);
+        name = name.trim().toUpperCase();
+        assertNotEquals("Name should not be empty string", name, "");
         assertNotNull("Address should be not null", address);
         assertNull("Service '" + name + "' already registered", services.get(name));
-        services.put(name.trim(), address);
+        services.put(name, address);
     }
 
     public void setDefaultService(String name) {
         assertNull("defaultService already defined", defaultService);
+        assertNotNull("defaultService should not be null", name);
+        name = name.trim().toUpperCase();
         assertNotNull("Service '" + name + "' not found", services.get(name));
         defaultService = name;
     }
 
     private String getAddress(String name) {
-        return services.get(name);
+        return services.get(name.trim().toUpperCase());
     }
 
     public void validate() {
@@ -104,9 +108,6 @@ public class Router {
 
         @Override
         public void success(Command result) {
-            assertNotNull(sid);
-            assertNotNull(sessionLock);
-            assertNotNull(result);
             synchronized (sid.intern()) {
                 IRouterCallback routerCallback = sessionLock.get(sid);
                 if(routerCallback == null){

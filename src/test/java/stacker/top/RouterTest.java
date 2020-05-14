@@ -1,4 +1,4 @@
-package stacker.router;
+package stacker.top;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +29,7 @@ public class RouterTest
             @Override
             public void send(String address, Command command, ICallback<Command> callback) {
                 assertEquals(Command.Type.OPEN, command.getCommand());
-                assertEquals("main", command.getService());
+                assertEquals("MAIN", command.getService());
                 assertEquals("body", command.getBody());
                 assertEquals("address", address);
 
