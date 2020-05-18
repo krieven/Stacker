@@ -77,7 +77,7 @@ public class Router {
                 sessionStack.push(entry);
                 type = Command.Type.OPEN;
             }
-            SessionStackEntry entry = sessionStack.getCurrent();
+            SessionStackEntry entry = sessionStack.peek();
             Command command = new Command();
             command.setCommand(type);
             command.setService(entry.getService());
@@ -146,7 +146,7 @@ public class Router {
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
 
-                SessionStackEntry entry = sessionStack.getCurrent();
+                SessionStackEntry entry = sessionStack.peek();
 
                 entry.setState(command.getState());
                 entry.setStateData(command.getStateData());
@@ -171,7 +171,7 @@ public class Router {
                 SessionStack sessionStack = responseResult.getSessionStack();                   
                 Command command = responseResult.getResponse();
 
-                SessionStackEntry currentEntry = sessionStack.getCurrent();
+                SessionStackEntry currentEntry = sessionStack.peek();
                 currentEntry.setState(command.getState());
                 currentEntry.setStateData(command.getStateData());
 
@@ -207,7 +207,7 @@ public class Router {
                 Command command = responseResult.getResponse();
 
                 SessionStackEntry popEntry = sessionStack.pop();
-                SessionStackEntry currentEntry = sessionStack.getCurrent();
+                SessionStackEntry currentEntry = sessionStack.peek();
 
                 Command newCommand = new Command();
                 newCommand.setCommand(Command.Type.RETURN);
