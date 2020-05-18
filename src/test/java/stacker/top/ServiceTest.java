@@ -36,7 +36,7 @@ public class ServiceTest {
                     public ReturnT makeReturn(ServiceContext<StateData, Resources> context) {
                         context.getStateData();
                         context.getResources();
-                        return null;
+                        return new ReturnT();
                     }
                 };
 
