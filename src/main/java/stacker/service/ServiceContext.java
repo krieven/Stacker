@@ -2,10 +2,14 @@ package stacker.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import stacker.Command;
 import stacker.ICallback;
 
 public class ServiceContext<StateDataT, ResourcesT> {
+    private static Logger log = LogManager.getLogger(ServiceContext.class);
+
     private static ObjectMapper PARSER = new ObjectMapper();
 
     public StateDataT getStateData() {
@@ -65,8 +69,7 @@ public class ServiceContext<StateDataT, ResourcesT> {
         try {
             command.setStateData(PARSER.writeValueAsString(stateData));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("State serialization error", e);
         }
 
         ClientCommand body = new ClientCommand();
@@ -79,8 +82,7 @@ public class ServiceContext<StateDataT, ResourcesT> {
         try {
             command.setBody(PARSER.writeValueAsString(body));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("Body serialization error", e);
         }
         callback.success(command);
     }
@@ -92,8 +94,7 @@ public class ServiceContext<StateDataT, ResourcesT> {
         try {
             command.setBody(PARSER.writeValueAsString(returnT));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("Return message serialization error", e);
         }
         callback.success(command);
     }
@@ -107,14 +108,12 @@ public class ServiceContext<StateDataT, ResourcesT> {
         try {
             command.setStateData(PARSER.writeValueAsString(stateData));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("StateData serialization error", e);
         }
         try {
             command.setBody(PARSER.writeValueAsString(arg));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("Argument serialization error", e);
         }
         callback.success(command);
     }
@@ -132,8 +131,7 @@ public class ServiceContext<StateDataT, ResourcesT> {
         try {
             command.setBody(PARSER.writeValueAsString(body));
         } catch (JsonProcessingException e) {
-            //TODO do something
-            e.printStackTrace();
+            log.error("Error message serialization error", e);
         }
         callback.success(command);
     }

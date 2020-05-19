@@ -6,10 +6,14 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static org.junit.Assert.*;
 
 public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
+    private static Logger log = LogManager.getLogger(State.class);
+
     private static final ObjectMapper PARSER = new ObjectMapper();
 
     private Map<String, IHandler<ArgumentT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
@@ -27,7 +31,7 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             this.initHandler.handle(context);
         } catch (Exception e) {
             context.sendError(e.getMessage());
-            e.printStackTrace();
+            log.error("Error handling Init", e);
         }
     }
 
@@ -85,7 +89,7 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             returnValue = PARSER.readValue(body, returnHandler.returnClass);
         } catch (IOException e) {
             context.sendError("BAD_MESSAGE_RETURNED");
-            e.printStackTrace();
+            log.error("Error parsing return message", e);
             return;
         }
 
@@ -94,7 +98,7 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             handler.handle(returnValue, context);
         } catch (Exception e) {
             context.sendError("RETURN_PROCESSING_ERROR");
-            e.printStackTrace();
+            log.error("Error processing return", e);
         }
     }
 

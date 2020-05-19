@@ -6,12 +6,15 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import stacker.Command;
 import stacker.ICallback;
 
 import static org.junit.Assert.*;
 
 public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
+    private static Logger log = LogManager.getLogger(Service.class);
     private static ObjectMapper PARSER = new ObjectMapper();
 
     private Class<OpenArgT> openArgTClass;
@@ -105,7 +108,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         try {
             return PARSER.readValue(rqString, openArgTClass);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error parsing request", e);
             return null;
         }
     }
@@ -114,11 +117,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         try {
             return PARSER.readValue(stateData, stateDataTClass);
         } catch (IOException e) {
-            try {
-                return stateDataTClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e1) {
-                e1.printStackTrace();
-            }
+            log.error("Error parsing stateData", e);
         }
         return null;
     }
