@@ -6,13 +6,13 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
 public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
-    private static Logger log = LogManager.getLogger(State.class);
+    private static Logger log = LoggerFactory.getLogger(State.class);
 
     private static final ObjectMapper PARSER = new ObjectMapper();
 

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import stacker.Command;
 import stacker.ICallback;
 
@@ -20,7 +20,7 @@ public class Router {
     private Map<Command.Type, ICallback<RouterResponseResult>> responseHandlers = new HashMap<>();
     private Map<String, IRouterCallback> sessionLock = new HashMap<>();
 
-    private static Logger log = LogManager.getLogger(Router.class);
+    private static Logger log = LoggerFactory.getLogger(Router.class);
 
     public Router(ICommandTransport transport, ISessionStorage sessionStorage) {
         assertNotNull(transport);

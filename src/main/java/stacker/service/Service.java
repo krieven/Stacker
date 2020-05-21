@@ -6,15 +6,16 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import stacker.Command;
 import stacker.ICallback;
 
 import static org.junit.Assert.*;
 
 public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
-    private static Logger log = LogManager.getLogger(Service.class);
+    private static Logger log = LoggerFactory.getLogger(Service.class);
     private static ObjectMapper PARSER = new ObjectMapper();
 
     private Class<OpenArgT> openArgTClass;
