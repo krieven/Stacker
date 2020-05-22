@@ -1,8 +1,8 @@
 package stacker.top;
 
 import org.junit.Test;
-import stacker.service.main.Service;
-import stacker.service.main.RequestContext;
+import stacker.service.Service;
+import stacker.service.RequestContext;
 
 public class ServiceTest {
     @Test

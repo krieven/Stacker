@@ -1,4 +1,4 @@
-package stacker.service.main;
+package stacker.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +48,7 @@ public class RequestContext<StateDataT, ResourcesT> {
         return callback;
     }
 
-    void sendResult(Object result) {
+    public void sendResult(Object result) {
         Command command = new Command();
         command.setCommand(Command.Type.RESULT);
         command.setState(stateName);

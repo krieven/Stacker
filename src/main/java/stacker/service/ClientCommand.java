@@ -1,4 +1,4 @@
-package stacker.service.main;
+package stacker.service;
 
 import stacker.Command;
 

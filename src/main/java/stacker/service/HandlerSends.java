@@ -1,4 +1,4 @@
-package stacker.service.main;
+package stacker.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;

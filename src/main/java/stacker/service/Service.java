@@ -1,4 +1,4 @@
-package stacker.service.main;
+package stacker.service;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -110,7 +110,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
     }
 
     void sendTransition(String name, RequestContext<StateDataT, ResourcesT> context) {
-        RequestContext<StateDataT, ResourcesT> transContext = new RequestContext<StateDataT, ResourcesT>(
+        RequestContext<StateDataT, ResourcesT> transContext = new RequestContext<>(
                 this,
                 context.getServiceName(),
                 name,

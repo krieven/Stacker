@@ -7,6 +7,7 @@ public class TestRouter {
 
     public void createRouter() {
         router = new Router(new CommandLocalTransport(), new SimpleSessionStorage());
+
         router.addService("main", "mainService");
         router.setDefaultService("main");
 

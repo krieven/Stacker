@@ -1,5 +1,8 @@
 package stacker.service.main;
 
+import stacker.service.RequestContext;
+import stacker.service.Service;
+
 public class ServiceMain extends Service<ServiceRq, ServiceRs, StateData, Resources> {
 
     public ServiceMain(Class<ServiceRq> serviceOpenArgClass, Class<StateData> stateDataClass, Resources resources) {
