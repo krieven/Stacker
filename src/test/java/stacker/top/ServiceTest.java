@@ -2,8 +2,7 @@ package stacker.top;
 
 import org.junit.Test;
 import stacker.service.Service;
-import stacker.service.ServiceContext;
-import stacker.service.State;
+import stacker.service.RequestContext;
 
 public class ServiceTest {
     @Test
@@ -12,14 +11,12 @@ public class ServiceTest {
                 new Service<OpenArg, ReturnT, StateData, Resources>(OpenArg.class, StateData.class, new Resources()) {
 
                     @Override
-                    public void init() {
-                        State<OpenArg, ReturnT, StateData, Resources> state = new State<>(OpenArg.class);
+                    public void configure() {
+                        setOnOpenHandler((argument, context) -> {
 
-                        state.setInitHandler(context -> {
-                            context.sendTransition("main");
                         });
 
-                        addState("start", state);
+
                     }
 
                     @Override
@@ -28,12 +25,7 @@ public class ServiceTest {
                     }
 
                     @Override
-                    public void onOpen(OpenArg argument, ServiceContext<StateData, Resources> context) {
-                        context.sendTransition("start");
-                    }
-
-                    @Override
-                    public ReturnT makeReturn(ServiceContext<StateData, Resources> context) {
+                    public ReturnT makeReturn(RequestContext<StateData, Resources> context) {
                         context.getStateData();
                         context.getResources();
                         return new ReturnT();

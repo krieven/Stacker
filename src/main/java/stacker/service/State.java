@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
-public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
+public abstract class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
     private static Logger log = LoggerFactory.getLogger(State.class);
 
     private static final ObjectMapper PARSER = new ObjectMapper();
 
     private Map<String, IHandler<ArgumentT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
     private Map<String, ReturnHandler> returnHandlers = new HashMap<>();
-    private IContextHandler<StateDataT, ResourcesT> initHandler;
+    private IContextHandler<StateDataT, ResourcesT> onOpenHandler;
 
     private Class<ArgumentT> argumentClass;
 
@@ -26,20 +26,20 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
         this.argumentClass = argumentClass;
     }
 
-    void handleInit(ServiceContext<StateDataT, ResourcesT> context) {
+    void handleOpen(RequestContext<StateDataT, ResourcesT> context) {
         try {
-            this.initHandler.handle(context);
+            this.onOpenHandler.handle(context);
         } catch (Exception e) {
             context.sendError(e.getMessage());
             log.error("Error handling Init", e);
         }
     }
 
-    public final void setInitHandler(IContextHandler<StateDataT, ResourcesT> init) {
-        this.initHandler = init;
+    public final void setOnOpenHandler(IContextHandler<StateDataT, ResourcesT> onOpenHandler) {
+        this.onOpenHandler = onOpenHandler;
     }
 
-    void handleAction(String bodyString, ServiceContext<StateDataT, ResourcesT> context) {
+    void handleAction(String bodyString, RequestContext<StateDataT, ResourcesT> context) {
         String action;
         ArgumentT argument;
 
@@ -80,7 +80,7 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
         IHandler<T, StateDataT, ResourcesT> handler;
     }
 
-    final <T> void handleReturn(String name, String body, ServiceContext<StateDataT, ResourcesT> context) {
+    final <T> void handleReturn(String name, String body, RequestContext<StateDataT, ResourcesT> context) {
         name = name.trim().toUpperCase();
         @SuppressWarnings("unchecked")
         ReturnHandler<T> returnHandler = returnHandlers.get(name);
@@ -116,8 +116,7 @@ public class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
         returnHandlers.put(name, returnHandler);
     }
 
-
-    public final void sendResult(ResultT resultT, ServiceContext<StateDataT, ResourcesT> context) {
+    public final void sendResult(ResultT resultT, RequestContext<StateDataT, ResourcesT> context) {
         context.sendResult(resultT);
     }
 
