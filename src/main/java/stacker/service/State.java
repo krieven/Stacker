@@ -1,4 +1,4 @@
-package stacker.service.main;
+package stacker.service;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -6,10 +6,14 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
 public abstract class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
+    private static Logger log = LoggerFactory.getLogger(State.class);
+
     private static final ObjectMapper PARSER = new ObjectMapper();
 
     private Map<String, IHandler<ArgumentT, StateDataT, ResourcesT>> actionHandlers = new HashMap<>();
@@ -27,7 +31,7 @@ public abstract class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             this.onOpenHandler.handle(context);
         } catch (Exception e) {
             context.sendError(e.getMessage());
-            e.printStackTrace();
+            log.error("Error handling Init", e);
         }
     }
 
@@ -85,7 +89,7 @@ public abstract class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             returnValue = PARSER.readValue(body, returnHandler.returnClass);
         } catch (IOException e) {
             context.sendError("BAD_MESSAGE_RETURNED");
-            e.printStackTrace();
+            log.error("Error parsing return message", e);
             return;
         }
 
@@ -94,7 +98,7 @@ public abstract class State<ArgumentT, ResultT, StateDataT, ResourcesT> {
             handler.handle(returnValue, context);
         } catch (Exception e) {
             context.sendError("RETURN_PROCESSING_ERROR");
-            e.printStackTrace();
+            log.error("Error processing return", e);
         }
     }
 
