@@ -1,11 +1,13 @@
-package stacker.service.states.start;
+package stacker.service.main.states.start;
 
-import stacker.service.*;
+import stacker.service.main.Resources;
+import stacker.service.main.State;
+import stacker.service.main.StateData;
 
 public class StateStart extends State<StateRq, StateRs, StateData, Resources> {
 
     {
-        setInitHandler(context -> {
+        setOnOpenHandler(context -> {
 
             sendResult(null, context);
         });

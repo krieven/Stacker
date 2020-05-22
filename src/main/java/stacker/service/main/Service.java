@@ -1,4 +1,4 @@
-package stacker.service;
+package stacker.service.main;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,20 +22,19 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         this.stateDataTClass = stateDataTClass;
         this.openArgTClass = openArgTClass;
         this.resources = resources;
-        this.init();
+        this.configure();
         this.validate();
     }
 
-    public abstract void init();
+    public abstract void configure();
 
     public abstract StateDataT createStateData();
 
-    public abstract void onOpen(OpenArgT argument, ServiceContext<StateDataT, ResourcesT> context);
-
-    public abstract ReturnT makeReturn(ServiceContext<StateDataT, ResourcesT> context);
+    public abstract ReturnT makeReturn(RequestContext<StateDataT, ResourcesT> context);
 
 
     private Map<String, State<?, ?, StateDataT, ResourcesT>> states = new HashMap<>();
+    private IHandler<OpenArgT, StateDataT, ResourcesT> onOpenHandler;
 
     public final <A, R> void addState(String name, State<A, R, StateDataT, ResourcesT> state) {
         assertNotNull("The NAME should not be null", name);
@@ -47,17 +46,32 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         states.put(name, state);
     }
 
+    public final void setOnOpenHandler(IHandler<OpenArgT, StateDataT, ResourcesT> onOpenHandler) {
+        assertNotNull("onOpenHandler should not be null", onOpenHandler);
+        this.onOpenHandler = onOpenHandler;
+    }
+
     private State<?, ?, StateDataT, ResourcesT> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
 
-    public final void handle(Command command, ICallback<Command> callback) {
+    private void handleOpen(OpenArgT arg, RequestContext<StateDataT, ResourcesT> context) {
+        onOpenHandler.handle(arg, context);
+    }
+
+    /**
+     * This method will be called by server to handle request
+     *
+     * @param command  - the Command that server receive
+     * @param callback - the server callback
+     */
+    public final void handleCommand(Command command, ICallback<Command> callback) {
 
         StateDataT stateData = parseStateData(command.getStateData());
         stateData = stateData == null ? createStateData() : stateData;
 
-        ServiceContext<StateDataT, ResourcesT> context =
-                new ServiceContext<>(
+        RequestContext<StateDataT, ResourcesT> context =
+                new RequestContext<>(
                         this,
                         command.getService(),
                         command.getState(),
@@ -65,7 +79,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
                         resources,
                         callback);
 
-        IncomingHandler<StateDataT, ResourcesT> handler =
+        IHandler<Command, StateDataT, ResourcesT> handler =
                 incomingHandlers.get(command.getCommand());
 
         try{
@@ -75,22 +89,24 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         }
     }
 
-    private Map<Command.Type, IncomingHandler<StateDataT, ResourcesT>> incomingHandlers
+    private Map<Command.Type, IHandler<Command, StateDataT, ResourcesT>> incomingHandlers
             = new HashMap<>();
 
     {
         incomingHandlers.put(Command.Type.OPEN, (command, context) ->
-                onOpen(parseRq(command.getBody()), context));
+                handleOpen(parseRq(command.getBody()), context));
 
-        incomingHandlers.put(Command.Type.ACTION, (command, context) -> getState(command.getState())
+        incomingHandlers.put(Command.Type.ACTION, (command, context) ->
+                getState(command.getState())
                 .handleAction(command.getBody(), context));
 
-        incomingHandlers.put(Command.Type.RETURN, (command, context) -> getState(command.getState())
+        incomingHandlers.put(Command.Type.RETURN, (command, context) ->
+                getState(command.getState())
                 .handleReturn(command.getOnReturn(), command.getBody(), context));
     }
 
-    void sendTransition(String name, ServiceContext<StateDataT, ResourcesT> context) {
-        ServiceContext<StateDataT, ResourcesT> transContext = new ServiceContext<StateDataT, ResourcesT>(
+    void sendTransition(String name, RequestContext<StateDataT, ResourcesT> context) {
+        RequestContext<StateDataT, ResourcesT> transContext = new RequestContext<StateDataT, ResourcesT>(
                 this,
                 context.getServiceName(),
                 name,
@@ -98,7 +114,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
                 context.getResources(),
                 context.getCallback()
         );
-        getState(name).handleInit(transContext);
+        getState(name).handleOpen(transContext);
     }
 
     private OpenArgT parseRq(String rqString) {
@@ -124,10 +140,6 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
     }
 
     private void validate() {
-    }
-
-    private interface IncomingHandler<StateDataT, ResourcesT> {
-        void handle(Command command, ServiceContext<StateDataT, ResourcesT> context);
     }
 
 }
