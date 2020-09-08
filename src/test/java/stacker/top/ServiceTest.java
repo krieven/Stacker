@@ -13,9 +13,9 @@ public class ServiceTest {
                     @Override
                     public void configure() {
                         setOnOpenHandler((argument, context) -> {
-
+                            context.getStateData();
                         });
-
+//                        addState("enter_name", null);
 
                     }
 

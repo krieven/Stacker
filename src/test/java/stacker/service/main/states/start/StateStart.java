@@ -1,7 +1,7 @@
 package stacker.service.main.states.start;
 
 import stacker.service.main.Resources;
-import stacker.service.main.State;
+import stacker.service.State;
 import stacker.service.main.StateData;
 
 public class StateStart extends State<StateRq, StateRs, StateData, Resources> {
