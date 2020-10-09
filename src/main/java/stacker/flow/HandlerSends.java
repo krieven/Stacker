@@ -1,4 +1,4 @@
-package stacker.service;
+package stacker.flow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,9 +14,9 @@ public class HandlerSends {
         return this;
     }
 
-    public HandlerSends withExternalOpen(String serviceName, Class argumentClass, String onReturn) {
-        externalOpens.put(serviceName, argumentClass);
-        onReturns.put(serviceName, onReturn);
+    public HandlerSends withExternalOpen(String flowName, Class argumentClass, String onReturn) {
+        externalOpens.put(flowName, argumentClass);
+        onReturns.put(flowName, onReturn);
         return this;
     }
 

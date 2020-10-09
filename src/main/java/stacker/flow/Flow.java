@@ -1,4 +1,4 @@
-package stacker.service;
+package stacker.flow;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,17 +14,19 @@ import stacker.ICallback;
 
 import static org.junit.Assert.*;
 
-public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
-    private static Logger log = LoggerFactory.getLogger(Service.class);
+public abstract class Flow<OpenArgT, ReturnT, FlowDataT, ResourcesT> {
+    private static Logger log = LoggerFactory.getLogger(Flow.class);
     private static ObjectMapper PARSER = new ObjectMapper();
 
     private Class<OpenArgT> openArgTClass;
-    private Class<StateDataT> stateDataTClass;
+    private Class<ReturnT> returnTClass;
+    private Class<FlowDataT> flowDataTClass;
     private ResourcesT resources;
 
-    public Service(Class<OpenArgT> openArgTClass, Class<StateDataT> stateDataTClass, ResourcesT resources) {
-        this.stateDataTClass = stateDataTClass;
+    public Flow(Class<OpenArgT> openArgTClass, Class<ReturnT> returnTClass, Class<FlowDataT> flowDataTClass, ResourcesT resources) {
+        this.flowDataTClass = flowDataTClass;
         this.openArgTClass = openArgTClass;
+        this.returnTClass = returnTClass;
         this.resources = resources;
         this.configure();
         this.validate();
@@ -32,34 +34,38 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
 
     public abstract void configure();
 
-    public abstract StateDataT createStateData();
+    public abstract FlowDataT createFlowData();
 
-    public abstract ReturnT makeReturn(RequestContext<StateDataT, ResourcesT> context);
+    public abstract ReturnT makeReturn(RequestContext<FlowDataT, ResourcesT> context);
 
 
-    private Map<String, State<?, ?, StateDataT, ResourcesT>> states = new HashMap<>();
-    private IHandler<OpenArgT, StateDataT, ResourcesT> onOpenHandler;
+    private Map<String, State<?, ?, FlowDataT, ResourcesT>> states = new HashMap<>();
+    private IHandler<OpenArgT, FlowDataT, ResourcesT> onOpenHandler;
 
-    public final <A, R> void addState(String name, State<A, R, StateDataT, ResourcesT> state) {
+    public final FlowContract getContract() {
+        return new FlowContract(openArgTClass, returnTClass);
+    }
+
+    public final <A, R> void addState(String name, State<A, R, FlowDataT, ResourcesT> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
-        assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
-        assertNotNull("State should not be null", state);
+        assertFalse("ActionState with name '" + name + "' already registered", states.containsKey(name));
+        assertNotNull("ActionState should not be null", state);
 
         states.put(name, state);
     }
 
-    public final void setOnOpenHandler(IHandler<OpenArgT, StateDataT, ResourcesT> onOpenHandler) {
+    public final void setOnOpenHandler(IHandler<OpenArgT, FlowDataT, ResourcesT> onOpenHandler) {
         assertNotNull("onOpenHandler should not be null", onOpenHandler);
         this.onOpenHandler = onOpenHandler;
     }
 
-    private State<?, ?, StateDataT, ResourcesT> getState(String name) {
+    private State<?, ?, FlowDataT, ResourcesT> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
 
-    private void handleOpen(OpenArgT arg, RequestContext<StateDataT, ResourcesT> context) {
+    private void handleOpen(OpenArgT arg, RequestContext<FlowDataT, ResourcesT> context) {
         onOpenHandler.handle(arg, context);
     }
 
@@ -71,19 +77,19 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
      */
     public final void handleCommand(Command command, ICallback<Command> callback) {
 
-        StateDataT stateData = parseStateData(command.getStateData());
-        stateData = stateData == null ? createStateData() : stateData;
+        FlowDataT flowData = parseFlowData(command.getFlowData());
+        flowData = flowData == null ? createFlowData() : flowData;
 
-        RequestContext<StateDataT, ResourcesT> context =
+        RequestContext<FlowDataT, ResourcesT> context =
                 new RequestContext<>(
                         this,
-                        command.getService(),
+                        command.getFlow(),
                         command.getState(),
-                        stateData,
+                        flowData,
                         resources,
                         callback);
 
-        IHandler<Command, StateDataT, ResourcesT> handler =
+        IHandler<Command, FlowDataT, ResourcesT> handler =
                 incomingHandlers.get(command.getCommand());
 
         try{
@@ -93,7 +99,7 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         }
     }
 
-    private Map<Command.Type, IHandler<Command, StateDataT, ResourcesT>> incomingHandlers
+    private Map<Command.Type, IHandler<Command, FlowDataT, ResourcesT>> incomingHandlers
             = new HashMap<>();
 
     {
@@ -109,16 +115,16 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
                 .handleReturn(command.getOnReturn(), command.getBody(), context));
     }
 
-    void sendTransition(String name, RequestContext<StateDataT, ResourcesT> context) {
-        RequestContext<StateDataT, ResourcesT> transContext = new RequestContext<>(
+    void sendTransition(String name, RequestContext<FlowDataT, ResourcesT> context) {
+        RequestContext<FlowDataT, ResourcesT> transContext = new RequestContext<>(
                 this,
-                context.getServiceName(),
+                context.getFlowName(),
                 name,
-                context.getStateData(),
+                context.getFlowData(),
                 context.getResources(),
                 context.getCallback()
         );
-        getState(name).handleOpen(transContext);
+        getState(name).onOpen(transContext);
     }
 
     private OpenArgT parseRq(String rqString) {
@@ -130,11 +136,11 @@ public abstract class Service<OpenArgT, ReturnT, StateDataT, ResourcesT> {
         }
     }
 
-    private StateDataT parseStateData(String stateData) {
+    private FlowDataT parseFlowData(String flowData) {
         try {
-            return PARSER.readValue(stateData, stateDataTClass);
+            return PARSER.readValue(flowData, flowDataTClass);
         } catch (IOException e) {
-            log.error("Error parsing stateData", e);
+            log.error("Error parsing flowData", e);
         }
         return null;
     }

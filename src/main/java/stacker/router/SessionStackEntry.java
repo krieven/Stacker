@@ -1,9 +1,9 @@
 package stacker.router;
 
 public class SessionStackEntry{
-    private String service;
+    private String flow;
     private String state;
-    private String stateData;
+    private String flowData;
     private String body;
     private String onReturn;
 
@@ -23,12 +23,12 @@ public class SessionStackEntry{
         this.body = body;
     }
 
-    public String getStateData() {
-        return stateData;
+    public String getFlowData() {
+        return flowData;
     }
 
-    public void setStateData(String data) {
-        this.stateData = data;
+    public void setFlowData(String data) {
+        this.flowData = data;
     }
 
     public String getOnReturn() {
@@ -39,11 +39,11 @@ public class SessionStackEntry{
         this.onReturn = onReturn;
     }
 
-    public String getService() {
-        return service;
+    public String getFlow() {
+        return flow;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setFlow(String flow) {
+        this.flow = flow;
     }
 }

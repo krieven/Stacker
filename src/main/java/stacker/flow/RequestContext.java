@@ -1,4 +1,4 @@
-package stacker.service;
+package stacker.flow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,40 +8,40 @@ import org.slf4j.LoggerFactory;
 import stacker.Command;
 import stacker.ICallback;
 
-public class RequestContext<StateDataT, ResourcesT> {
+public class RequestContext<flowDataT, ResourcesT> {
     private static Logger log = LoggerFactory.getLogger(RequestContext.class);
     private static ObjectMapper PARSER = new ObjectMapper();
 
-    private String serviceName;
+    private String flowName;
     private String stateName;
-    private StateDataT stateData;
+    private flowDataT flowData;
     private ResourcesT resources;
 
-    private Service<?, ?, StateDataT, ResourcesT> service;
+    private Flow<?, ?, flowDataT, ResourcesT> flow;
     private ICallback<Command> callback;
 
-    RequestContext(Service<?, ?, StateDataT, ResourcesT> service,
-                   String serviceName, String stateName,
-                   StateDataT stateData, ResourcesT resources, ICallback<Command> callback
+    RequestContext(Flow<?, ?, flowDataT, ResourcesT> flow,
+                   String flowName, String stateName,
+                   flowDataT flowData, ResourcesT resources, ICallback<Command> callback
     ) {
-        this.serviceName = serviceName;
+        this.flowName = flowName;
         this.stateName = stateName;
-        this.service = service;
-        this.stateData = stateData;
+        this.flow = flow;
+        this.flowData = flowData;
         this.resources = resources;
         this.callback = callback;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getFlowName() {
+        return flowName;
     }
 
     public String getStateName() {
         return stateName;
     }
 
-    public StateDataT getStateData() {
-        return stateData;
+    public flowDataT getFlowData() {
+        return flowData;
     }
 
     public ResourcesT getResources() {
@@ -57,20 +57,13 @@ public class RequestContext<StateDataT, ResourcesT> {
         command.setCommand(Command.Type.RESULT);
         command.setState(stateName);
         try {
-            command.setStateData(PARSER.writeValueAsString(stateData));
+            command.setFlowData(PARSER.writeValueAsString(flowData));
         } catch (JsonProcessingException e) {
-            log.error("Error serializing stateData", e);
+            log.error("Error serializing flowData", e);
         }
 
-        ClientCommand body = new ClientCommand();
-
-        body.command = Command.Type.RESULT;
-        body.state = stateName;
-        body.service = serviceName;
-        body.data = result;
-
         try {
-            command.setBody(PARSER.writeValueAsString(body));
+            command.setBody(PARSER.writeValueAsString(result));
         } catch (JsonProcessingException e) {
             log.error("Error serializing body", e);
         }
@@ -78,11 +71,11 @@ public class RequestContext<StateDataT, ResourcesT> {
     }
 
     public final void sendTransition(String name) {
-        service.sendTransition(name, this);
+        flow.sendTransition(name, this);
     }
 
     public void sendReturn() {
-        Object returnT = service.makeReturn(this);
+        Object returnT = flow.makeReturn(this);
         Command command = new Command();
         command.setCommand(Command.Type.RETURN);
         try {
@@ -93,16 +86,16 @@ public class RequestContext<StateDataT, ResourcesT> {
         callback.success(command);
     }
 
-    public void sendOpen(String service, Object arg, String onReturn) {
+    public void outerCall(String flow, Object arg, State.OuterCallContract outerCall) {
         Command command = new Command();
         command.setCommand(Command.Type.OPEN);
-        command.setService(service);
+        command.setFlow(flow);
         command.setState(getStateName());
-        command.setOnReturn(onReturn);
+        command.setOnReturn(outerCall.getName());
         try {
-            command.setStateData(PARSER.writeValueAsString(stateData));
+            command.setFlowData(PARSER.writeValueAsString(flowData));
         } catch (JsonProcessingException e) {
-            log.error("Error serializing stateData", e);
+            log.error("Error serializing flowData", e);
         }
         try {
             command.setBody(PARSER.writeValueAsString(arg));
@@ -118,7 +111,7 @@ public class RequestContext<StateDataT, ResourcesT> {
         ClientCommand body = new ClientCommand();
 
         body.command = Command.Type.ERROR;
-        body.service = serviceName;
+        body.flow = flowName;
         body.state = stateName;
         body.data = err;
 

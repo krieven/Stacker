@@ -2,9 +2,9 @@ package stacker;
 
 public class Command{
     private Type command;
-    private String service;
+    private String flow;
     private String state;
-    private String stateData;
+    private String flowData;
     private String body;
     private String onReturn;
 
@@ -13,6 +13,7 @@ public class Command{
         OPEN,
         RETURN,
         RESULT,
+        TRANSITION,
         ERROR
     }
 
@@ -32,20 +33,20 @@ public class Command{
         this.onReturn = onReturn;
     }
 
-    public String getStateData() {
-        return stateData;
+    public String getFlowData() {
+        return flowData;
     }
 
-    public void setStateData(String data) {
-        this.stateData = data;
+    public void setFlowData(String data) {
+        this.flowData = data;
     }
 
-    public String getService() {
-        return service;
+    public String getFlow() {
+        return flow;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setFlow(String flow) {
+        this.flow = flow;
     }
 
     public String getState() {

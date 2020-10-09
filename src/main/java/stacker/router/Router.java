@@ -15,8 +15,8 @@ import stacker.ICallback;
 public class Router {
     private ICommandTransport transport;
     private ISessionStorage sessionStorage;
-    private Map<String, String> services = new HashMap<>();
-    private String defaultService;
+    private Map<String, String> flows = new HashMap<>();
+    private String defaultFlow;
     private Map<Command.Type, ICallback<RouterResponseResult>> responseHandlers = new HashMap<>();
     private Map<String, IRouterCallback> sessionLock = new HashMap<>();
 
@@ -29,31 +29,31 @@ public class Router {
         this.sessionStorage = sessionStorage;
     }
 
-    public void addService(String name, String address) {
+    public void addFlow(String name, String address) {
         assertNotNull("Name should be not null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("Name should not be empty string", name, "");
         assertNotNull("Address should be not null", address);
-        assertNull("Service '" + name + "' already registered", services.get(name));
-        services.put(name, address);
+        assertNull("Flow '" + name + "' already registered", flows.get(name));
+        flows.put(name, address);
     }
 
-    public void setDefaultService(String name) {
-        assertNull("defaultService already defined", defaultService);
-        assertNotNull("defaultService should not be null", name);
+    public void setDefaultFlow(String name) {
+        assertNull("defaultFlow already defined", defaultFlow);
+        assertNotNull("defaultFlow should not be null", name);
         name = name.trim().toUpperCase();
-        assertNotNull("Service '" + name + "' not found", services.get(name));
-        defaultService = name;
+        assertNotNull("Flow '" + name + "' not found", flows.get(name));
+        defaultFlow = name;
     }
 
     private String getAddress(String name) {
-        return services.get(name.trim().toUpperCase());
+        return flows.get(name.trim().toUpperCase());
     }
 
     public void validate() {
-        assertNotEquals("At least one service should be defined", services.keySet().size(), 0);
-        assertNotNull("Default service should be defined", defaultService);
-        assertNotNull("Default service shold be one of defined services", services.get(defaultService));
+        assertNotEquals("At least one flow should be defined", flows.keySet().size(), 0);
+        assertNotNull("Default flow should be defined", defaultFlow);
+        assertNotNull("Default flow shold be one of defined flows", flows.get(defaultFlow));
     }
 
     public interface IRouterCallback {
@@ -77,19 +77,19 @@ public class Router {
             if (sessionStack == null) {
                 sessionStack = new SessionStack();
                 SessionStackEntry entry = new SessionStackEntry();
-                entry.setService(defaultService);
+                entry.setFlow(defaultFlow);
                 sessionStack.push(entry);
                 type = Command.Type.OPEN;
             }
             SessionStackEntry entry = sessionStack.peek();
             Command command = new Command();
             command.setCommand(type);
-            command.setService(entry.getService());
+            command.setFlow(entry.getFlow());
             command.setState(entry.getState());
-            command.setStateData(entry.getStateData());
+            command.setFlowData(entry.getFlowData());
             command.setBody(body);
 
-            transport.send(getAddress(command.getService()), command, new OnResponseReceived(sid, sessionStack));
+            transport.sendRequest(getAddress(command.getFlow()), command, new OnResponseReceived(sid, sessionStack));
         }
 
         @Override
@@ -153,7 +153,7 @@ public class Router {
                 SessionStackEntry entry = sessionStack.peek();
 
                 entry.setState(command.getState());
-                entry.setStateData(command.getStateData());
+                entry.setFlowData(command.getFlowData());
                 entry.setBody(command.getBody());
                 
                 sessionStorage.save(sid, sessionStack);
@@ -177,10 +177,10 @@ public class Router {
 
                 SessionStackEntry currentEntry = sessionStack.peek();
                 currentEntry.setState(command.getState());
-                currentEntry.setStateData(command.getStateData());
+                currentEntry.setFlowData(command.getFlowData());
 
                 SessionStackEntry newEntry = new SessionStackEntry();
-                newEntry.setService(command.getService());
+                newEntry.setFlow(command.getFlow());
                 newEntry.setOnReturn(command.getOnReturn());
 
                 sessionStack.push(newEntry);
@@ -188,10 +188,10 @@ public class Router {
 
                 Command newCommand = new Command();
                 newCommand.setCommand(Command.Type.OPEN);
-                newCommand.setService(command.getService());
+                newCommand.setFlow(command.getFlow());
                 newCommand.setBody(command.getBody());
 
-                transport.send(getAddress(newCommand.getService()), newCommand, 
+                transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
                     new OnResponseReceived(sid, sessionStack)
                 );
             }
@@ -215,14 +215,14 @@ public class Router {
 
                 Command newCommand = new Command();
                 newCommand.setCommand(Command.Type.RETURN);
-                newCommand.setService(currentEntry.getService());
+                newCommand.setFlow(currentEntry.getFlow());
                 newCommand.setState(currentEntry.getState());
-                newCommand.setStateData(currentEntry.getStateData());
+                newCommand.setFlowData(currentEntry.getFlowData());
                 newCommand.setOnReturn(popEntry.getOnReturn());
                 newCommand.setBody(command.getBody());
 
                 sessionStorage.save(sid, sessionStack);
-                transport.send(getAddress(newCommand.getService()), newCommand,
+                transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
                     new OnResponseReceived(sid, sessionStack)
                 );
             }

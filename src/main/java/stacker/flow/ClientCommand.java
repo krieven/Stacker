@@ -1,10 +1,10 @@
-package stacker.service;
+package stacker.flow;
 
 import stacker.Command;
 
 class ClientCommand {
     Command.Type command;
-    String service;
+    String flow;
     String state;
     Object data;
 }
