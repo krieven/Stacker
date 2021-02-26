@@ -43,8 +43,6 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
 
     public abstract FlowDataT createFlowData();
 
-    public abstract DaemonDataT createDaemonData();
-
     public abstract ReturnT makeReturn(RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
 
     public abstract void onOpen(ArgumentT arg, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);

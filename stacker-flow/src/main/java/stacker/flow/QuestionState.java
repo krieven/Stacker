@@ -2,7 +2,6 @@ package stacker.flow;
 
 import org.jetbrains.annotations.NotNull;
 import stacker.common.Command;
-import stacker.common.ParsingException;
 import stacker.common.SerializingException;
 
 public abstract class QuestionState<QuestionT, AnswerT, FlowDataT, DaemonDataT, ResourcesT> extends AState<FlowDataT, DaemonDataT, ResourcesT> {
@@ -19,7 +18,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataT, DaemonDataT, 
         try {
             AnswerT value = context.getFlow().getContract().getParser().parse(answer, answerTClass);
             handleAnswer(value, context);
-        } catch (ParsingException e) {
+        } catch (Exception e) {
             context.getCallback().reject(e);
         }
     }
@@ -53,4 +52,11 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataT, DaemonDataT, 
 
     abstract void handleAnswer(AnswerT input, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
 
+    public Class<QuestionT> getQuestionTClass() {
+        return questionTClass;
+    }
+
+    public Class<AnswerT> getAnswerTClass() {
+        return answerTClass;
+    }
 }

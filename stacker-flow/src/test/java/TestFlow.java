@@ -12,7 +12,6 @@ public class TestFlow {
     private class StringMap extends HashMap<String, String> {
     }
 
-    @Test
     public Flow<String, String, StringMap, String, Map<String, String>> createFlow() {
         return new Flow<String, String, StringMap, String, Map<String, String>>(
                 new FlowContract<>(String.class, String.class, new JsonParser()),
@@ -21,6 +20,7 @@ public class TestFlow {
                 new JsonParser(),
                 new StringMap()
         ) {
+
             @Override
             public void configure() {
 
@@ -29,11 +29,6 @@ public class TestFlow {
             @Override
             public StringMap createFlowData() {
                 return new StringMap();
-            }
-
-            @Override
-            public String createDaemonData() {
-                return "";
             }
 
             @Override
