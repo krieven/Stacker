@@ -15,7 +15,7 @@ public abstract class OuterCallState<QuestionT, AnswerT, FlowDataT, DaemonDataT,
         this.outerCallContract = outerCallContract;
     }
 
-    void handle(String answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
+    void handle(byte[] answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
         try {
             AnswerT value = getOuterCallContract().getParser().parse(answer, getOuterCallContract().getReturnClass());
             handleAnswer(value, context);

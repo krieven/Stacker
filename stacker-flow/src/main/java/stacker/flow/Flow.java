@@ -133,23 +133,23 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
         getState(name).onEnter(transContext);
     }
 
-    private ArgumentT parseRq(String rqString) throws ParsingException {
+    private ArgumentT parseRq(byte[] rqString) throws ParsingException {
         return flowContract.getParser().parse(rqString, flowContract.getArgumentClass());
     }
 
-    private FlowDataT parseFlowData(String flowData) throws ParsingException {
+    private FlowDataT parseFlowData(byte[] flowData) throws ParsingException {
         return flowDataParser.parse(flowData, flowDataClass);
     }
 
-    private DaemonDataT parseDaemonData(String flowData) throws ParsingException {
+    private DaemonDataT parseDaemonData(byte[] flowData) throws ParsingException {
         return flowDataParser.parse(flowData, daemonDataClass);
     }
 
-    String serializeFlowData(Object o) throws SerializingException {
+    byte[] serializeFlowData(Object o) throws SerializingException {
         return flowDataParser.serialize(o);
     }
 
-    private void validate() {
+    public void validate() {
     }
 
 }

@@ -9,10 +9,10 @@ public class Command implements Serializable {
     private String flow;
     private String state;
 
-    private String contentBody;
+    private byte[] contentBody;
 
-    private String flowData;
-    private String daemonData;
+    private byte[] flowData;
+    private byte[] daemonData;
 
     public enum Type {
         QUESTION,
@@ -48,27 +48,28 @@ public class Command implements Serializable {
         this.state = state;
     }
 
-    public String getContentBody() {
+    public byte[] getContentBody() {
         return contentBody;
     }
 
-    public void setContentBody(String contentBody) {
+    public void setContentBody(byte[] contentBody) {
         this.contentBody = contentBody;
     }
 
-    public String getFlowData() {
+    public byte[] getFlowData() {
         return flowData;
     }
 
-    public void setFlowData(String flowData) {
+    public void setFlowData(byte[] flowData) {
         this.flowData = flowData;
     }
 
-    public String getDaemonData() {
+    public byte[] getDaemonData() {
         return daemonData;
     }
 
-    public void setDaemonData(String daemonData) {
+    public void setDaemonData(byte[] daemonData) {
         this.daemonData = daemonData;
     }
+
 }

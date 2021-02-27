@@ -9,7 +9,7 @@ public class JsonParser implements IParser {
     private static ObjectMapper PARSER = new ObjectMapper();
 
     @Override
-    public <T> T parse(String s, Class<T> type) throws ParsingException {
+    public <T> T parse(byte[] s, Class<T> type) throws ParsingException {
         try {
             return PARSER.readValue(s, type);
         } catch (IOException e) {
@@ -18,9 +18,9 @@ public class JsonParser implements IParser {
     }
 
     @Override
-    public String serialize(Object o) throws SerializingException {
+    public byte[] serialize(Object o) throws SerializingException {
         try {
-            return PARSER.writeValueAsString(o);
+            return PARSER.writeValueAsBytes(o);
         } catch (JsonProcessingException e) {
             throw new SerializingException(e);
         }

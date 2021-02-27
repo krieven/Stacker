@@ -8,11 +8,15 @@ import stacker.common.ICallback;
 import stacker.router.Router;
 import stacker.router.SessionStack;
 
+import java.nio.charset.Charset;
+
 import static org.junit.Assert.assertEquals;
 
 
 public class RouterTest {
     private static Logger log = LoggerFactory.getLogger(RouterTest.class);
+
+    Charset charset = Charset.forName("UTF-8");
 
     @Test
     public void Test() {
@@ -29,28 +33,28 @@ public class RouterTest {
 
         Command respCommand = new Command();
         respCommand.setType(Command.Type.QUESTION);
-        respCommand.setContentBody("Response body");
+        respCommand.setContentBody("Response body".getBytes());
         respCommand.setState("entry");
         respCommand.setFlow("main");
-        respCommand.setFlowData("session Data");
+        respCommand.setFlowData("session Data".getBytes());
 
         transport.setRespCommand(respCommand);
 
 
-        router.handleRequest(sid, "Hello world", new Router.IRouterCallback() {
+        router.handleRequest(sid, "Hello world".getBytes(), new Router.IRouterCallback() {
             @Override
-            public void success(String sid, String body) {
-                assertEquals("Response body", body);
+            public void success(String sid, byte[] body) {
+                assertEquals("Response body", new String(body));
                 Command lastRequest = transport.lastRequest;
-                assertEquals("Hello world", lastRequest.getContentBody());
+                assertEquals("Hello world", new String(lastRequest.getContentBody()));
                 assertEquals("OPEN", lastRequest.getType().toString());
                 sessionStorage.find(sid, new ICallback<SessionStack>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
-                        String sessiondata = sessionStackEntries.peek().getFlowData();
-                        assertEquals("session Data", sessiondata);
+                        byte[] sessiondata = sessionStackEntries.peek().getFlowData();
+                        assertEquals("session Data", new String(sessiondata));
                     }
 
                     @Override
@@ -66,21 +70,21 @@ public class RouterTest {
             }
         });
 
-        router.handleRequest(sid, "Hello again", new Router.IRouterCallback() {
+        router.handleRequest(sid, "Hello again".getBytes(), new Router.IRouterCallback() {
 
             @Override
-            public void success(String sid, String body) {
+            public void success(String sid, byte[] body) {
                 Command lastRequest = transport.lastRequest;
-                assertEquals("Hello again", lastRequest.getContentBody());
+                assertEquals("Hello again", new String(lastRequest.getContentBody()));
                 assertEquals("ANSWER", lastRequest.getType().toString());
-                assertEquals("session Data", lastRequest.getFlowData());
+                assertEquals("session Data", new String(lastRequest.getFlowData()));
                 sessionStorage.find(sid, new ICallback<SessionStack>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
-                        String sessiondata = sessionStackEntries.peek().getFlowData();
-                        assertEquals("session Data", sessiondata);
+                        byte[] sessiondata = sessionStackEntries.peek().getFlowData();
+                        assertEquals("session Data", new String(sessiondata));
                     }
 
                     @Override

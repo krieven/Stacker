@@ -8,7 +8,7 @@ public abstract class AState<FlowDataT, DaemonDataT, ResourcesT> {
 
     abstract void onEnter(RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
 
-    abstract void handle(String answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
+    abstract void handle(byte[] answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
 
     public final void sendTransition(String stateName, @NotNull RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
         context.getFlow().sendTransition(stateName, context);

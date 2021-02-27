@@ -14,7 +14,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataT, DaemonDataT, 
         this.answerTClass = answerTClass;
     }
 
-    void handle(String answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
+    void handle(byte[] answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
         try {
             AnswerT value = context.getFlow().getContract().getParser().parse(answer, answerTClass);
             handleAnswer(value, context);
@@ -40,7 +40,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataT, DaemonDataT, 
         }
 
         try {
-            String sResult = context.getFlow().getContract()
+            byte[] sResult = context.getFlow().getContract()
                     .getParser().serialize(question);
             command.setContentBody(sResult);
         } catch (SerializingException e) {

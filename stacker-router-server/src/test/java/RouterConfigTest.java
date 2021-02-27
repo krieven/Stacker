@@ -29,7 +29,7 @@ public class RouterConfigTest {
 
         routerConfig.setFlows(flows);
 
-        String serialized = new JsonParser().serialize(routerConfig);
+        byte[] serialized = new JsonParser().serialize(routerConfig);
 
         RouterConfig config = new JsonParser().parse(serialized, RouterConfig.class);
 
