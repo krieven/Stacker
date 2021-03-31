@@ -3,7 +3,6 @@ package stacker.flow;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.*;
@@ -11,28 +10,25 @@ import stacker.common.*;
 
 import static org.junit.Assert.*;
 
-public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, ResourcesT> {
-    private static Logger log = LoggerFactory.getLogger(Flow.class);
+public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
+    private static Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
-    private FlowContract<ArgumentT, ReturnT> flowContract;
+    private TheContract<ArgumentT, ReturnT> flowContract;
     private Class<FlowDataT> flowDataClass;
-    private Class<DaemonDataT> daemonDataClass;
-    private IParser flowDataParser;
+    protected IParser flowDataParser;
 
     private ResourcesT resources;
 
-    private Map<String, AState<FlowDataT, DaemonDataT, ResourcesT>> states = new HashMap<>();
+    private Map<String, BaseState<? super FlowDataT, ? super ResourcesT, ?>> states = new HashMap<>();
 
 
-    public Flow(
-            @NotNull FlowContract<ArgumentT, ReturnT> contract,
-            @NotNull Class<FlowDataT> flowDataClass,
-            @NotNull Class<DaemonDataT> daemonDataClass,
-            @NotNull IParser flowDataParser,
+    public BaseFlow(
+            TheContract<ArgumentT, ReturnT> contract,
+            Class<FlowDataT> flowDataClass,
+            IParser flowDataParser,
             ResourcesT resources) {
         flowContract = contract;
         this.flowDataClass = flowDataClass;
-        this.daemonDataClass = daemonDataClass;
         this.flowDataParser = flowDataParser;
         this.resources = resources;
         this.configure();
@@ -41,17 +37,31 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
 
     public abstract void configure();
 
-    public abstract FlowDataT createFlowData();
+    public abstract FlowDataT createFlowData(ArgumentT arg);
 
-    public abstract ReturnT makeReturn(RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
+    public abstract ReturnT makeReturn(FlowContext<FlowDataT, ResourcesT> context);
 
-    public abstract void onOpen(ArgumentT arg, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
 
-    public final FlowContract getContract() {
+    public abstract void onStart(FlowContext<FlowDataT, ResourcesT> context);
+
+    public void start(ArgumentT argument, FlowContext<FlowDataT, ResourcesT> context) {
+        FlowDataT flowData = createFlowData(argument);
+        FlowContext<FlowDataT, ResourcesT> newContext =
+                new FlowContext<>(
+                        this,
+                        context.getFlowName(),
+                        context.getStateName(),
+                        flowData,
+                        context.getResources(),
+                        context.getCallback());
+        onStart(newContext);
+    }
+
+    public final TheContract getContract() {
         return flowContract;
     }
 
-    public final void addState(String name, AState<FlowDataT, DaemonDataT, ResourcesT> state) {
+    public final void addState(String name, BaseState<? super FlowDataT, ? super ResourcesT, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -61,9 +71,10 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
         states.put(name, state);
     }
 
-    private AState<FlowDataT, DaemonDataT, ResourcesT> getState(String name) {
+    protected BaseState<? super FlowDataT, ? super ResourcesT, ?> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
+
 
     /**
      * This method will be called by server to handle request
@@ -71,30 +82,26 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
      * @param command  - the Command that server receive
      * @param callback - the server callback
      */
-    public final void handleCommand(Command command, ICallback<Command> callback) {
+    public void handleCommand(Command command, ICallback<Command> callback) {
 
         FlowDataT flowData;
-        DaemonDataT daemonData;
         try {
             flowData = parseFlowData(command.getFlowData());
-            daemonData = parseDaemonData(command.getDaemonData());
         } catch (ParsingException e) {
             callback.reject(e);
             return;
         }
-        flowData = flowData == null ? createFlowData() : flowData;
 
-        RequestContext<FlowDataT, DaemonDataT, ResourcesT> context =
-                new RequestContext<>(
+        FlowContext<FlowDataT, ResourcesT> context =
+                new FlowContext<>(
                         this,
                         command.getFlow(),
                         command.getState(),
                         flowData,
-                        daemonData,
                         resources,
                         callback);
 
-        IHandler<Command, FlowDataT, DaemonDataT, ResourcesT> handler =
+        IHandler<Command, FlowDataT, ResourcesT> handler =
                 incomingHandlers.get(command.getType());
 
         try{
@@ -104,12 +111,12 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
         }
     }
 
-    private Map<Command.Type, IHandler<Command, FlowDataT, DaemonDataT, ResourcesT>>
+    private Map<Command.Type, IHandler<Command, FlowDataT, ResourcesT>>
             incomingHandlers = new HashMap<>();
 
     {
         incomingHandlers.put(Command.Type.OPEN, (command, context) ->
-                onOpen(parseRq(command.getContentBody()), context));
+                start(parseRq(command.getContentBody()), context));
 
         incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
                 getState(command.getState())
@@ -120,13 +127,14 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
                         .handle(command.getContentBody(), context));
     }
 
-    public void sendTransition(String name, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
-        RequestContext<FlowDataT, DaemonDataT, ResourcesT> transContext = new RequestContext<>(
+
+    protected void sendTransition(String name, FlowContext<FlowDataT, ResourcesT> context) {
+        FlowContext<FlowDataT, ResourcesT> transContext =
+                new FlowContext<>(
                 this,
                 context.getFlowName(),
                 name,
                 context.getFlowData(),
-                context.getDaemonData(),
                 context.getResources(),
                 context.getCallback()
         );
@@ -139,10 +147,6 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
 
     private FlowDataT parseFlowData(byte[] flowData) throws ParsingException {
         return flowDataParser.parse(flowData, flowDataClass);
-    }
-
-    private DaemonDataT parseDaemonData(byte[] flowData) throws ParsingException {
-        return flowDataParser.parse(flowData, daemonDataClass);
     }
 
     byte[] serializeFlowData(Object o) throws SerializingException {

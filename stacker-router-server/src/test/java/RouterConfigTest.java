@@ -1,12 +1,13 @@
-import config.FlowConfig;
-import config.RouterConfig;
+import stacker.router.server.config.FlowConfig;
+import stacker.router.server.config.NameMapping;
+import stacker.router.server.config.RouterConfig;
 import org.junit.Test;
 import stacker.common.JsonParser;
 import stacker.common.ParsingException;
 import stacker.common.SerializingException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -16,23 +17,52 @@ public class RouterConfigTest {
         RouterConfig routerConfig = new RouterConfig();
         routerConfig.setMainFlow("main");
 
-        FlowConfig flowConfig = new FlowConfig();
-        flowConfig.setAddress("http://main.flow.su");
-
-        Map<String, String> mapping = new HashMap<>();
-        mapping.put("doPayments", "payments");
-        mapping.put("doTransfers", "transfers");
-        flowConfig.setOuterCallMapping(mapping);
-
-        Map<String, FlowConfig> flows = new HashMap<>();
-        flows.put("main", flowConfig);
-
+        List<FlowConfig> flows = new ArrayList<FlowConfig>();
         routerConfig.setFlows(flows);
 
-        byte[] serialized = new JsonParser().serialize(routerConfig);
+        FlowConfig flowConfig = new FlowConfig();
+        flows.add(flowConfig);
 
-        RouterConfig config = new JsonParser().parse(serialized, RouterConfig.class);
 
+        flowConfig.setName("main");
+        flowConfig.setAddress("main-flow");
+
+        NameMapping mapping = new NameMapping();
+        mapping.setName("choose-car");
+        mapping.setTarget("car-choose");
+
+        List<NameMapping> flowMapping = new ArrayList<>();
+        flowMapping.add(mapping);
+        flowConfig.setMapping(flowMapping);
+
+
+        String serialized = new String(new JsonParser().serialize(routerConfig));
+
+        RouterConfig config = new JsonParser().parse(serialized.getBytes(), RouterConfig.class);
+
+        assertNotNull(config);
+    }
+
+    @Test
+    public void testFromJSON() throws ParsingException {
+        RouterConfig config = new JsonParser().parse(
+                ("{\n" +
+                        "  \"flows\": [\n" +
+                        "    {\n" +
+                        "      \"name\": \"main\",\n" +
+                        "      \"address\": \"main-address\",\n" +
+                        "      \"mapping\": [\n" +
+                        "        {\n" +
+                        "          \"name\": \"other-flow\",\n" +
+                        "          \"target\": \"other-flow-real-name\"\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"mainFlow\": \"main\"\n" +
+                        "}").getBytes(),
+                RouterConfig.class
+        );
         assertNotNull(config);
     }
 }

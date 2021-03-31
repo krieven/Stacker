@@ -1,30 +1,30 @@
 package stacker.flow;
 
-import org.jetbrains.annotations.NotNull;
 import stacker.common.Command;
 import stacker.common.ParsingException;
 import stacker.common.SerializingException;
 
-public abstract class OuterCallState<QuestionT, AnswerT, FlowDataT, DaemonDataT, ResourcesT> extends AState<FlowDataT, DaemonDataT, ResourcesT> {
+public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> extends BaseState<FlowDataI, ResourcesI, ExitsE> {
 
-    private FlowContract<QuestionT, AnswerT> outerCallContract;
+    private TheContract<QuestionT, AnswerT> outerCallContract;
     private String outerFlowName;
 
-    public OuterCallState(String outerFlowName, @NotNull FlowContract<QuestionT, AnswerT> outerCallContract) {
+    public OuterCallState(String outerFlowName, TheContract<QuestionT, AnswerT> outerCallContract, ExitsE[] exits) {
+        super(exits);
         this.outerFlowName = outerFlowName;
         this.outerCallContract = outerCallContract;
     }
 
-    void handle(byte[] answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
+    void handle(byte[] answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         try {
             AnswerT value = getOuterCallContract().getParser().parse(answer, getOuterCallContract().getReturnClass());
             handleAnswer(value, context);
         } catch (ParsingException e) {
-            e.printStackTrace();
+            context.getCallback().reject(e);
         }
     }
 
-    public final void sendOuterCall(QuestionT question, @NotNull RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) {
+    public final void sendOuterCall(QuestionT question, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
         command.setFlow(getOuterFlowName());
@@ -33,21 +33,19 @@ public abstract class OuterCallState<QuestionT, AnswerT, FlowDataT, DaemonDataT,
             command.setFlowData(
                     context.getFlow().serializeFlowData(context.getFlowData())
             );
-            command.setDaemonData(
-                    context.getFlow().serializeFlowData(context.getDaemonData())
-            );
             command.setContentBody(
                     outerCallContract.getParser().serialize(question)
             );
         } catch (SerializingException e) {
             context.getCallback().reject(e);
+            return;
         }
         context.getCallback().success(command);
     }
 
-    abstract void handleAnswer(AnswerT answer, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context);
+    protected abstract void handleAnswer(AnswerT answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
 
-    public FlowContract<QuestionT, AnswerT> getOuterCallContract() {
+    public TheContract<QuestionT, AnswerT> getOuterCallContract() {
         return outerCallContract;
     }
 

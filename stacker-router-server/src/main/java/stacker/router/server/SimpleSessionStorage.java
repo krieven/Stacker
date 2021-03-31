@@ -1,3 +1,5 @@
+package stacker.router.server;
+
 import stacker.common.ICallback;
 import stacker.router.ISessionStorage;
 import stacker.router.SessionStack;
@@ -18,4 +20,5 @@ public class SimpleSessionStorage implements ISessionStorage {
     public void save(String id, SessionStack session) {
         storage.put(id, session);
     }
+
 }

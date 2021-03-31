@@ -2,12 +2,12 @@ package stacker.flow;
 
 import stacker.common.IParser;
 
-public final class FlowContract<A, R> {
+public final class TheContract<A, R> {
     private Class<A> argumentClass;
     private Class<R> returnClass;
     private IParser parser;
 
-    public FlowContract(Class<A> argumentClass, Class<R> returnClass, IParser parser) {
+    public TheContract(Class<A> argumentClass, Class<R> returnClass, IParser parser) {
         this.argumentClass = argumentClass;
         this.returnClass = returnClass;
         this.parser = parser;
