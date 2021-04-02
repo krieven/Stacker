@@ -31,7 +31,9 @@ public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, 
         command.setState(context.getStateName());
         try {
             command.setFlowData(
-                    context.getFlow().serializeFlowData(context.getFlowData())
+                    context.getFlow().serializeFlowData(
+                            context.getFlowData()
+                    )
             );
             command.setContentBody(
                     outerCallContract.getParser().serialize(question)

@@ -5,11 +5,12 @@ import java.util.Map;
 
 public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> {
 
-    private Map<ExitsE, String> transitions = new HashMap<>();
+    private Map<Enum<?>, String> transitions = new HashMap<>();
 
-    private Enum<ExitsE>[] exits;
+    private Enum<?>[] exits;
 
     public BaseState(Enum<ExitsE>[] exits) {
+        super();
         this.exits = exits;
     }
 
@@ -21,11 +22,11 @@ public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<Exits
         return this;
     }
 
-    Enum<ExitsE>[] getExits() {
+    Enum<?>[] getExits() {
         return exits;
     }
 
-    private String getTransition(ExitsE key) {
+    String getTransition(Enum<?> key) {
         return transitions.get(key);
     }
 
@@ -37,7 +38,7 @@ public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<Exits
         context.sendTransition(getTransition(target));
     }
 
-    public final void sendReturn(FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
+    final void sendReturn(FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         context.sendReturn();
     }
 }

@@ -10,6 +10,7 @@ public class JsonParser implements IParser {
 
     @Override
     public <T> T parse(byte[] s, Class<T> type) throws ParsingException {
+        if (s == null) return null;
         try {
             return PARSER.readValue(s, type);
         } catch (IOException e) {
