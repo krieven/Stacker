@@ -1,5 +1,5 @@
 package stacker.flow;
 
-public interface IHandler<ArgumentT, FlowDataT, DaemonDataT, ResourcesT> {
-    void handle(ArgumentT argument, RequestContext<FlowDataT, DaemonDataT, ResourcesT> context) throws Exception;
+public interface IHandler<ArgumentT, FlowDataT, ResourcesT> {
+    void handle(ArgumentT argument, FlowContext<FlowDataT, ResourcesT> context) throws Exception;
 }

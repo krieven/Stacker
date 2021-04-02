@@ -1,0 +1,15 @@
+{
+  "flows": [
+    {
+      "name": "main",
+      "address": "main-address",
+      "mapping": [
+        {
+          "name": "other-flow",
+          "target": "other-flow-real-name"
+        }
+      ]
+    }
+  ],
+  "mainFlow": "main"
+}

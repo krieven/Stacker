@@ -72,7 +72,7 @@ public class Router {
         return flows.get(name.trim().toUpperCase());
     }
 
-    public void handleRequest(String sid, String body, IRouterCallback callback) {
+    public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
         synchronized (sid.intern()) {
             if (sessionLock.get(sid) != null) {
                 sessionLock.put(sid, callback);
@@ -87,9 +87,9 @@ public class Router {
     private class OnSessionFound implements ICallback<SessionStack> {
 
         private String sid;
-        private String body;
+        private byte[] body;
 
-        OnSessionFound(String sid, String body) {
+        OnSessionFound(String sid, byte[] body) {
             this.sid = sid;
             this.body = body;
         }
@@ -207,18 +207,23 @@ public class Router {
                 sessionStack.setDaemonData(currentEntry.getFlow(), command.getDaemonData());
 
                 SessionStackEntry newEntry = new SessionStackEntry();
-                newEntry.setFlow(command.getFlow());
+                newEntry.setFlow(
+                        getMapped(
+                                currentEntry.getFlow(),
+                                command.getFlow()
+                        )
+                );
 
                 sessionStack.push(newEntry);
                 sessionStorage.save(sid, sessionStack);
 
                 Command newCommand = new Command();
                 newCommand.setType(Command.Type.OPEN);
-                newCommand.setFlow(command.getFlow());
+                newCommand.setFlow(newEntry.getFlow());
                 newCommand.setContentBody(command.getContentBody());
-                newCommand.setDaemonData(sessionStack.getDaemonData(command.getFlow()));
+                newCommand.setDaemonData(sessionStack.getDaemonData(newEntry.getFlow()));
 
-                transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
+                transport.sendRequest(getAddress(newEntry.getFlow()), newCommand,
                     new OnResponseReceived(sid, sessionStack)
                 );
             }
@@ -276,7 +281,7 @@ public class Router {
     }
 
     public interface IRouterCallback {
-        void success(String sid, String body);
+        void success(String sid, byte[] body);
 
         void reject(Exception exception);
     }

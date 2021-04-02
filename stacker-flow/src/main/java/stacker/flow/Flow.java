@@ -99,7 +99,7 @@ public abstract class Flow<ArgumentT, ReturnT, FlowDataT, DaemonDataT, Resources
         IHandler<Command, FlowDataT, DaemonDataT, ResourcesT> handler =
                 incomingHandlers.get(command.getType());
 
-        try{
+        try {
             handler.handle(command, context);
         } catch (Exception e) {
             callback.reject(e);
