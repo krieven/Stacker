@@ -35,7 +35,6 @@ public class RouterHttpServer {
     }
 
 
-
     public void start() {
         if (sessionStorage == null || transport == null)
             throw new IllegalStateException("transport or sessionStorage not found");

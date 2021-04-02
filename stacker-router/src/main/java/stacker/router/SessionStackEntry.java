@@ -1,6 +1,6 @@
 package stacker.router;
 
-public class SessionStackEntry{
+public class SessionStackEntry {
     private String flow;
     private String state;
     private byte[] flowData;

@@ -110,7 +110,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         IHandler<Command, FlowDataT, ResourcesT> handler =
                 incomingHandlers.get(command.getType());
 
-        try{
+        try {
             handler.handle(command, context);
         } catch (Exception e) {
             callback.reject(e);
@@ -137,13 +137,13 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
     protected void sendTransition(String name, FlowContext<FlowDataT, ResourcesT> context) {
         FlowContext<FlowDataT, ResourcesT> transContext =
                 new FlowContext<>(
-                this,
-                context.getFlowName(),
-                name,
-                context.getFlowData(),
-                context.getResources(),
-                context.getCallback()
-        );
+                        this,
+                        context.getFlowName(),
+                        name,
+                        context.getFlowData(),
+                        context.getResources(),
+                        context.getCallback()
+                );
         getState(name).onEnter(transContext);
     }
 
