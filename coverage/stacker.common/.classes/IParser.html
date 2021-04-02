@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+    <title>Coverage Report :: IParser</title>
+    <style type="text/css">
+    @import "../../.css/coverage.css";
+
+    </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+    <div class="breadCrumbs">
+        [ <a href="../../index.html">all classes</a> ]
+        [ <a href="../index.html">stacker.common</a> ]
+    </div>
+
+    <h1>Coverage Summary for Class: IParser (stacker.common)</h1>
+
+    <table class="coverageStats">
+        <tr>
+            <th class="name">Class</th>
+        </tr>
+        <tr>
+            <td class="name">IParser</td>
+        </tr>
+
+    </table>
+
+    <br/>
+    <br/>
+
+
+    <div class="sourceCode"><i>1</i>&nbsp;package stacker.common;
+        <i>2</i>&nbsp;
+        <i>3</i>&nbsp;public interface IParser {
+        <i>4</i>&nbsp; &lt;T&gt; T parse(byte[] s, Class&lt;T&gt; type) throws ParsingException;
+        <i>5</i>&nbsp;
+        <i>6</i>&nbsp; byte[] serialize(Object o) throws SerializingException;
+        <i>7</i>&nbsp;
+        <i>8</i>&nbsp; String getContentType();
+        <i>9</i>&nbsp;}
+    </div>
+</div>
+
+<div class="footer">
+
+    <div style="float:right;">generated on 2021-04-01 23:19</div>
+</div>
+</body>
+</html>

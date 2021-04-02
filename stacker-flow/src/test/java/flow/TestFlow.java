@@ -1,38 +1,41 @@
 package flow;
 
-import auth.AuthorizingQuestion;
+import auth.AuthState;
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
 import stacker.flow.BaseFlow;
+import stacker.flow.ReturnState;
 import stacker.flow.TheContract;
 
-import java.util.HashMap;
-
-public class TestFlow extends BaseFlow<String, String, FlowData, HashMap> {
+public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
 
 
-    public TestFlow(HashMap resources) {
+    public TestFlow(Resources resources) {
         super(new TheContract<>(String.class, String.class, new JsonParser()),
                 FlowData.class, new JsonParser(), resources);
     }
 
     @Override
-    public void configure() {
-        addState("first", new AuthorizingQuestion());
+    protected void configure() {
+        addState("first", new AuthState()
+                .withExit(AuthState.exits.FORWARD, "exit")
+                .withExit(AuthState.exits.BACKWARD, "exit")
+        );
+        addState("exit", new ReturnState<>());
     }
 
     @Override
-    public FlowData createFlowData(String arg) {
-        return null;
+    protected FlowData createFlowData(String arg) {
+        return new FlowData();
     }
 
     @Override
-    public String makeReturn(FlowContext<FlowData, HashMap> context) {
-        return null;
+    protected String makeReturn(FlowContext<FlowData, Resources> context) {
+        return context.getFlowData().getAuthAnswer().toString();
     }
 
     @Override
-    public void onStart(FlowContext<FlowData, HashMap> context) {
+    protected void onStart(FlowContext<FlowData, Resources> context) {
         sendTransition("first", context);
     }
 }

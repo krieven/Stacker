@@ -14,7 +14,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, E
 
     void handle(byte[] answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         try {
-            AnswerT value = contract.getParser().parse(answer, contract.getReturnClass());
+            AnswerT value = getContract().getParser().parse(answer, getContract().getReturnClass());
             handleAnswer(value, context);
         } catch (Exception e) {
             context.getCallback().reject(e);
@@ -26,16 +26,18 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, E
         command.setType(Command.Type.QUESTION);
         command.setState(context.getStateName());
         try {
-            command.setFlowData(context.getFlow().serializeFlowData(
-                    context.getFlowData()
-            ));
+            command.setFlowData(
+                    context.getFlow().serializeFlowData(
+                            context.getFlowData()
+                    )
+            );
         } catch (SerializingException e) {
             context.getCallback().reject(e);
             return;
         }
 
         try {
-            byte[] sResult = contract.getParser().serialize(question);
+            byte[] sResult = getContract().getParser().serialize(question);
             command.setContentBody(sResult);
         } catch (SerializingException e) {
             context.getCallback().reject(e);
@@ -47,4 +49,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, E
 
     protected abstract void handleAnswer(AnswerT input, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
 
+    public TheContract<QuestionT, AnswerT> getContract() {
+        return contract;
+    }
 }

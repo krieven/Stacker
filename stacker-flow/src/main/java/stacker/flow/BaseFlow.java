@@ -1,6 +1,8 @@
 package stacker.flow;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -15,7 +17,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
 
     private TheContract<ArgumentT, ReturnT> flowContract;
     private Class<FlowDataT> flowDataClass;
-    protected IParser flowDataParser;
+    private IParser flowDataParser;
 
     private ResourcesT resources;
 
@@ -27,24 +29,26 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
             Class<FlowDataT> flowDataClass,
             IParser flowDataParser,
             ResourcesT resources) {
+
         flowContract = contract;
         this.flowDataClass = flowDataClass;
         this.flowDataParser = flowDataParser;
         this.resources = resources;
+
+
         this.configure();
         this.validate();
     }
 
-    public abstract void configure();
+    protected abstract void configure();
 
-    public abstract FlowDataT createFlowData(ArgumentT arg);
+    protected abstract FlowDataT createFlowData(ArgumentT arg);
 
-    public abstract ReturnT makeReturn(FlowContext<FlowDataT, ResourcesT> context);
+    protected abstract ReturnT makeReturn(FlowContext<FlowDataT, ResourcesT> context);
 
+    protected abstract void onStart(FlowContext<FlowDataT, ResourcesT> context);
 
-    public abstract void onStart(FlowContext<FlowDataT, ResourcesT> context);
-
-    public void start(ArgumentT argument, FlowContext<FlowDataT, ResourcesT> context) {
+    private void start(ArgumentT argument, FlowContext<FlowDataT, ResourcesT> context) {
         FlowDataT flowData = createFlowData(argument);
         FlowContext<FlowDataT, ResourcesT> newContext =
                 new FlowContext<>(
@@ -61,7 +65,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         return flowContract;
     }
 
-    public final void addState(String name, BaseState<? super FlowDataT, ? super ResourcesT, ?> state) {
+    protected final void addState(String name, BaseState<? super FlowDataT, ? super ResourcesT, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -71,7 +75,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         states.put(name, state);
     }
 
-    protected BaseState<? super FlowDataT, ? super ResourcesT, ?> getState(String name) {
+    private BaseState<? super FlowDataT, ? super ResourcesT, ?> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
 
@@ -84,12 +88,14 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
      */
     public void handleCommand(Command command, ICallback<Command> callback) {
 
-        FlowDataT flowData;
-        try {
-            flowData = parseFlowData(command.getFlowData());
-        } catch (ParsingException e) {
-            callback.reject(e);
-            return;
+        FlowDataT flowData = null;
+        if (command.getFlowData() != null) {
+            try {
+                flowData = parseFlowData(command.getFlowData());
+            } catch (ParsingException e) {
+                callback.reject(e);
+                return;
+            }
         }
 
         FlowContext<FlowDataT, ResourcesT> context =
@@ -153,7 +159,26 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         return flowDataParser.serialize(o);
     }
 
-    public void validate() {
+    private void validate() {
+        List<String> targets = new ArrayList<>();
+        for (String key : states.keySet()) {
+            Enum<?>[] exits = states.get(key).getExits();
+            if (exits == null) continue;
+            for (Enum<?> e : exits) {
+                String target = states.get(key).getTransition(e);
+                if (target == null) {
+                    throw new RuntimeException(
+                            "Misconfiguration:\n exit with name \"" +
+                                    e.name() + "\" from state \"" + key +
+                                    "\" have no destination target");
+                }
+                targets.add(target);
+            }
+        }
+        for (String key : states.keySet()) {
+            if (!targets.contains(key))
+                log.info("state " + key + " is probably unreachable");
+        }
     }
 
 }
