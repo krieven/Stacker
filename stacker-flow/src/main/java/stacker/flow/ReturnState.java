@@ -1,6 +1,6 @@
 package stacker.flow;
 
-public class ReturnState<FlowDataT, ResourcesT, E extends Enum<E>> extends BaseState<FlowDataT, ResourcesT, E> {
+public final class ReturnState<FlowDataT, ResourcesT, E extends Enum<E>> extends BaseState<FlowDataT, ResourcesT, E> {
 
     public ReturnState() {
         super(null);
@@ -8,7 +8,7 @@ public class ReturnState<FlowDataT, ResourcesT, E extends Enum<E>> extends BaseS
 
     @Override
     public void onEnter(FlowContext<? extends FlowDataT, ? extends ResourcesT> context) {
-        sendReturn(context);
+        context.sendReturn();
     }
 
     @Override

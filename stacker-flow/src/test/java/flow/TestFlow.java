@@ -5,14 +5,22 @@ import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
 import stacker.flow.BaseFlow;
 import stacker.flow.ReturnState;
-import stacker.flow.TheContract;
+import stacker.flow.Contract;
 
 public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
 
 
     public TestFlow(Resources resources) {
-        super(new TheContract<>(String.class, String.class, new JsonParser()),
-                FlowData.class, new JsonParser(), resources);
+        super(
+                new Contract<>(
+                        String.class,
+                        String.class,
+                        new JsonParser()
+                ),
+                FlowData.class,
+                new JsonParser(),
+                resources
+        );
     }
 
     @Override
@@ -31,11 +39,11 @@ public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
 
     @Override
     protected String makeReturn(FlowContext<FlowData, Resources> context) {
-        return context.getFlowData().getAuthAnswer().toString();
+        return context.getFlowData().getAuthAnswer().getName();
     }
 
     @Override
     protected void onStart(FlowContext<FlowData, Resources> context) {
-        sendTransition("first", context);
+        enterState("first", context);
     }
 }

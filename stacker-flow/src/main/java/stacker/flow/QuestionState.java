@@ -5,9 +5,9 @@ import stacker.common.SerializingException;
 
 public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> extends BaseState<FlowDataI, ResourcesI, ExitsE> {
 
-    private TheContract<QuestionT, AnswerT> contract;
+    private Contract<QuestionT, AnswerT> contract;
 
-    public QuestionState(TheContract<QuestionT, AnswerT> contract, ExitsE[] exits) {
+    public QuestionState(Contract<QuestionT, AnswerT> contract, ExitsE[] exits) {
         super(exits);
         this.contract = contract;
     }
@@ -24,6 +24,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, E
     public final void sendQuestion(QuestionT question, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         Command command = new Command();
         command.setType(Command.Type.QUESTION);
+        command.setFlow(context.getFlowName());
         command.setState(context.getStateName());
         try {
             command.setFlowData(
@@ -49,7 +50,7 @@ public abstract class QuestionState<QuestionT, AnswerT, FlowDataI, ResourcesI, E
 
     protected abstract void handleAnswer(AnswerT input, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
 
-    public TheContract<QuestionT, AnswerT> getContract() {
+    public Contract<QuestionT, AnswerT> getContract() {
         return contract;
     }
 }

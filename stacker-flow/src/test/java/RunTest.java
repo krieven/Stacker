@@ -1,20 +1,65 @@
+import auth.AuthAnswer;
 import flow.Resources;
 import flow.TestFlow;
+import org.junit.Test;
 import stacker.common.Command;
 import stacker.common.ICallback;
+import stacker.common.JsonParser;
+import stacker.common.SerializingException;
 import stacker.flow.BaseFlow;
 
 import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
 
 public class RunTest {
-    public static void main(String[] args) {
+    @Test
+    public void runTest() {
         BaseFlow flow = new TestFlow(new Resources());
+
+        Command question1 = new Command();
+
         flow.handleCommand(
                 new Command() {
                     {
                         setType(Type.OPEN);
                         setFlow("main");
-                        setContentBody("hello".getBytes());
+                        try {
+                            setContentBody(new JsonParser().serialize("hello"));
+                        } catch (SerializingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new ICallback<Command>() {
+                    @Override
+                    public void success(Command command) {
+                        assertNotNull(command);
+                        question1.setFlowData(command.getFlowData());
+                    }
+
+                    @Override
+                    public void reject(Exception error) {
+                        throw new RuntimeException(error);
+                    }
+                }
+        );
+
+        flow.handleCommand(
+                new Command() {
+                    {
+                        setType(Type.ANSWER);
+                        setFlow("main");
+                        setState("first");
+                        this.setFlowData(question1.getFlowData());
+                        try {
+                            this.setContentBody(new JsonParser().serialize(new AuthAnswer() {
+                                {
+                                    this.setName("John Smith");
+                                }
+                            }));
+                        } catch (SerializingException e) {
+                            e.printStackTrace();
+                        }
                     }
                 },
                 new ICallback<Command>() {
@@ -25,7 +70,7 @@ public class RunTest {
 
                     @Override
                     public void reject(Exception error) {
-                        throw new RuntimeException(error);
+                        assertNull(error);
                     }
                 }
         );

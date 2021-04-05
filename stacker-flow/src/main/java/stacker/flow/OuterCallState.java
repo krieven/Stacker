@@ -6,10 +6,10 @@ import stacker.common.SerializingException;
 
 public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> extends BaseState<FlowDataI, ResourcesI, ExitsE> {
 
-    private TheContract<QuestionT, AnswerT> outerCallContract;
+    private Contract<QuestionT, AnswerT> outerCallContract;
     private String outerFlowName;
 
-    public OuterCallState(String outerFlowName, TheContract<QuestionT, AnswerT> outerCallContract, ExitsE[] exits) {
+    public OuterCallState(String outerFlowName, Contract<QuestionT, AnswerT> outerCallContract, ExitsE[] exits) {
         super(exits);
         this.outerFlowName = outerFlowName;
         this.outerCallContract = outerCallContract;
@@ -47,7 +47,7 @@ public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, 
 
     protected abstract void handleAnswer(AnswerT answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
 
-    public TheContract<QuestionT, AnswerT> getOuterCallContract() {
+    public Contract<QuestionT, AnswerT> getOuterCallContract() {
         return outerCallContract;
     }
 

@@ -34,11 +34,8 @@ public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<Exits
 
     abstract void handle(byte[] answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
 
-    public final void exit(ExitsE target, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
+    public final void exitState(ExitsE target, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
         context.sendTransition(getTransition(target));
     }
 
-    final void sendReturn(FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
-        context.sendReturn();
-    }
 }

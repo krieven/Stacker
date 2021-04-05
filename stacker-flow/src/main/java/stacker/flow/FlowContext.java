@@ -70,7 +70,7 @@ public class FlowContext<FlowDataT, ResourcesT> {
     }
 
     void sendTransition(String name) {
-        getFlow().sendTransition(stateName, this);
+        getFlow().enterState(name, this);
     }
 
 }

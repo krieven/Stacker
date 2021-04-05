@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
     private static Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
-    private TheContract<ArgumentT, ReturnT> flowContract;
+    private Contract<ArgumentT, ReturnT> flowContract;
     private Class<FlowDataT> flowDataClass;
     private IParser flowDataParser;
 
@@ -25,7 +25,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
 
 
     public BaseFlow(
-            TheContract<ArgumentT, ReturnT> contract,
+            Contract<ArgumentT, ReturnT> contract,
             Class<FlowDataT> flowDataClass,
             IParser flowDataParser,
             ResourcesT resources) {
@@ -61,7 +61,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         onStart(newContext);
     }
 
-    public final TheContract getContract() {
+    public final Contract getContract() {
         return flowContract;
     }
 
@@ -69,8 +69,8 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
-        assertFalse("ActionState with name '" + name + "' already registered", states.containsKey(name));
-        assertNotNull("ActionState should not be null", state);
+        assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
+        assertNotNull("State should not be null", state);
 
         states.put(name, state);
     }
@@ -134,7 +134,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
     }
 
 
-    protected void sendTransition(String name, FlowContext<FlowDataT, ResourcesT> context) {
+    protected void enterState(String name, FlowContext<FlowDataT, ResourcesT> context) {
         FlowContext<FlowDataT, ResourcesT> transContext =
                 new FlowContext<>(
                         this,
@@ -162,14 +162,14 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
     private void validate() {
         List<String> targets = new ArrayList<>();
         for (String key : states.keySet()) {
-            Enum<?>[] exits = states.get(key).getExits();
+            Enum<?>[] exits = getState(key).getExits();
             if (exits == null) continue;
             for (Enum<?> e : exits) {
-                String target = states.get(key).getTransition(e);
+                String target = getState(key).getTransition(e);
                 if (target == null) {
                     throw new RuntimeException(
                             "Misconfiguration:\n exit with name \"" +
-                                    e.name() + "\" from state \"" + key +
+                                    e.name() + "\" from State \"" + key +
                                     "\" have no destination target");
                 }
                 targets.add(target);
@@ -177,7 +177,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         }
         for (String key : states.keySet()) {
             if (!targets.contains(key))
-                log.info("state " + key + " is probably unreachable");
+                log.info("State " + key + " is probably unreachable");
         }
     }
 
