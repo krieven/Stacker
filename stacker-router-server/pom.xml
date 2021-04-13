@@ -13,20 +13,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>9.4.35.v20201120</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>9.4.35.v20201120</version>
-        </dependency>
-        <dependency>
             <groupId>stacker.su</groupId>
             <artifactId>stacker-router</artifactId>
             <version>1.0-SNAPSHOT</version>
