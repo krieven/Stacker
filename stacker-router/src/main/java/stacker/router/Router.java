@@ -60,7 +60,7 @@ public class Router {
         mapping.put(name, target);
     }
 
-    public String getMapped(String caller, String name) {
+    private String getMapped(String caller, String name) {
         if (caller == null || name == null) return null;
         caller = caller.trim().toUpperCase();
         name = name.trim().toUpperCase();
@@ -69,7 +69,16 @@ public class Router {
     }
 
     private String getAddress(String name) {
-        return flows.get(name.trim().toUpperCase());
+        if (name == null) {
+            log.info("Flow cannot be found, null name detected");
+            throw new IllegalArgumentException("Flow cannot be found, null name detected");
+        }
+        name = name.trim().toUpperCase();
+        if (!flows.containsKey(name)) {
+            log.info("Flow cannot be found");
+            throw new IllegalArgumentException("Flow cannot be found, name \"" + name + "\" not configured");
+        }
+        return flows.get(name);
     }
 
     public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
@@ -112,12 +121,16 @@ public class Router {
             command.setFlowData(entry.getFlowData());
             command.setContentBody(body);
 
-            transport.sendRequest(getAddress(command.getFlow()), command, new OnResponseReceived(sid, sessionStack));
-
+            try {
+                transport.sendRequest(getAddress(command.getFlow()), command, new OnResponseReceived(sid, sessionStack));
+            } catch (Exception e) {
+                reject(e);
+            }
         }
 
         @Override
         public void reject(Exception exception) {
+            log.error(exception.getMessage(), exception);
             IRouterCallback callback = sessionLock.remove(sid);
             if (callback != null)
                 callback.reject(exception);
@@ -139,13 +152,13 @@ public class Router {
             synchronized (sid.intern()) {
                 IRouterCallback routerCallback = sessionLock.get(sid);
                 if(routerCallback == null){
-                    //write log
+                    log.error("router callback was not found for sid=" + sid);
                     return;
                 }
                 ICallback<RouterResponseResult> handler = responseHandlers.get(result.getType());
                 
                 if (handler == null) {
-                    //write log
+                    log.error("handler not found for " + result.getType());
                     sessionLock.remove(sid)
                             .reject(new Exception("responseHandler not found"));
                     return;
@@ -157,6 +170,7 @@ public class Router {
 
         @Override
         public void reject(Exception exception) {
+            log.error(exception.getMessage(), exception);
             synchronized(sid.intern()){
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null)
@@ -179,7 +193,6 @@ public class Router {
 
                 entry.setState(command.getState());
                 entry.setFlowData(command.getFlowData());
-                sessionStack.setDaemonData(entry.getFlow(), command.getDaemonData());
                 entry.setContentBody(command.getContentBody());
                 
                 sessionStorage.save(sid, sessionStack);
@@ -189,7 +202,7 @@ public class Router {
 
             @Override
             public void reject(Exception error) {
-                //
+                log.error(error.getMessage(), error);
             }
         });
 
@@ -204,7 +217,6 @@ public class Router {
                 SessionStackEntry currentEntry = sessionStack.peek();
                 currentEntry.setState(command.getState());
                 currentEntry.setFlowData(command.getFlowData());
-                sessionStack.setDaemonData(currentEntry.getFlow(), command.getDaemonData());
 
                 SessionStackEntry newEntry = new SessionStackEntry();
                 newEntry.setFlow(
@@ -221,16 +233,19 @@ public class Router {
                 newCommand.setType(Command.Type.OPEN);
                 newCommand.setFlow(newEntry.getFlow());
                 newCommand.setContentBody(command.getContentBody());
-                newCommand.setDaemonData(sessionStack.getDaemonData(newEntry.getFlow()));
 
-                transport.sendRequest(getAddress(newEntry.getFlow()), newCommand,
-                    new OnResponseReceived(sid, sessionStack)
-                );
+                try {
+                    transport.sendRequest(getAddress(newEntry.getFlow()), newCommand,
+                            new OnResponseReceived(sid, sessionStack)
+                    );
+                } catch (Exception e) {
+                    new OnResponseReceived(sid, sessionStack).reject(e);
+                }
             }
 
             @Override
             public void reject(Exception error) {
-                //
+                log.error(error.getMessage(), error);
             }
         });
 
@@ -243,7 +258,6 @@ public class Router {
                 Command command = responseResult.getResponse();
 
                 SessionStackEntry entry = sessionStack.pop();
-                sessionStack.setDaemonData(entry.getFlow(), command.getDaemonData());
 
                 SessionStackEntry currentEntry = sessionStack.peek();
 
@@ -252,30 +266,21 @@ public class Router {
                 newCommand.setFlow(currentEntry.getFlow());
                 newCommand.setState(currentEntry.getState());
                 newCommand.setFlowData(currentEntry.getFlowData());
-                newCommand.setDaemonData(sessionStack.getDaemonData(currentEntry.getFlow()));
                 newCommand.setContentBody(command.getContentBody());
 
                 sessionStorage.save(sid, sessionStack);
-                transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
-                    new OnResponseReceived(sid, sessionStack)
-                );
+                try {
+                    transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
+                            new OnResponseReceived(sid, sessionStack)
+                    );
+                } catch (Exception e) {
+                    new OnResponseReceived(sid, sessionStack).reject(e);
+                }
             }
 
             @Override
             public void reject(Exception error) {
-                //
-            }
-        });
-
-        responseHandlers.put(Command.Type.ERROR, new ICallback<RouterResponseResult>() {
-            @Override
-            public void success(RouterResponseResult routerResponseResult) {
-
-            }
-
-            @Override
-            public void reject(Exception error) {
-                //
+                log.error(error.getMessage(), error);
             }
         });
     }

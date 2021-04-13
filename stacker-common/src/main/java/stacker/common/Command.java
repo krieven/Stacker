@@ -12,7 +12,6 @@ public class Command implements Serializable {
     private byte[] contentBody;
 
     private byte[] flowData;
-    private byte[] daemonData;
 
     public enum Type {
         QUESTION,
@@ -62,14 +61,6 @@ public class Command implements Serializable {
 
     public void setFlowData(byte[] flowData) {
         this.flowData = flowData;
-    }
-
-    public byte[] getDaemonData() {
-        return daemonData;
-    }
-
-    public void setDaemonData(byte[] daemonData) {
-        this.daemonData = daemonData;
     }
 
 }
