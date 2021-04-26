@@ -7,13 +7,13 @@ import stacker.router.server.config.RouterConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-public class ServerRunner {
+public class RouterServerRunner {
     public static void main(String[] args) throws Exception {
 
         RouterServer server = new RouterServer(new HttpTransport(), new SimpleSessionStorage(), 3000);
 
         //do some with config
-        InputStream inputStream = ServerRunner.class.getClassLoader().getResourceAsStream("router-config-view.json");
+        InputStream inputStream = RouterServerRunner.class.getClassLoader().getResourceAsStream("router-config-view.json");
         byte[] buf = new byte[1024];
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
         while (inputStream.available() > 0) {
@@ -21,10 +21,10 @@ public class ServerRunner {
             byteArray.write(buf, 0, len);
         }
 
+        server.start();
+
         RouterConfig config = new JsonParser().parse(byteArray.toByteArray(), RouterConfig.class);
         server.setConfig(config);
-
-        server.start();
 
         byte[] b = new byte[1024];
         int len = System.in.read(b);

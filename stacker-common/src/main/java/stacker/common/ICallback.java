@@ -1,6 +1,6 @@
 package stacker.common;
 
-public interface ICallback<Result>{
-    void success(Result result);
+public interface ICallback<R> {
+    void success(R result);
     void reject(Exception error);
 }

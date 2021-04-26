@@ -6,20 +6,24 @@ import stacker.common.Command;
 import stacker.common.ICallback;
 import stacker.common.SerializingException;
 
-public class FlowContext<FlowDataT, ResourcesT> {
+/**
+ * @param <F> FlowDataT
+ * @param <R> ResourcesT
+ */
+public class FlowContext<F, R> {
     private static Logger log = LoggerFactory.getLogger(FlowContext.class);
 
     private String flowName;
     private String stateName;
-    private FlowDataT flowData;
-    private ResourcesT resources;
+    private F flowData;
+    private R resources;
 
-    private BaseFlow<?, ?, FlowDataT, ResourcesT> flow;
+    private BaseFlow<?, ?, F, R> flow;
     private ICallback<Command> callback;
 
-    FlowContext(BaseFlow<?, ?, FlowDataT, ResourcesT> flow,
+    FlowContext(BaseFlow<?, ?, F, R> flow,
                 String flowName, String stateName,
-                FlowDataT flowData, ResourcesT resources, ICallback<Command> callback
+                F flowData, R resources, ICallback<Command> callback
     ) {
         this.flowName = flowName;
         this.stateName = stateName;
@@ -37,11 +41,11 @@ public class FlowContext<FlowDataT, ResourcesT> {
         return stateName;
     }
 
-    public FlowDataT getFlowData() {
+    public F getFlowData() {
         return flowData;
     }
 
-    public ResourcesT getResources() {
+    public R getResources() {
         return resources;
     }
 
@@ -49,7 +53,7 @@ public class FlowContext<FlowDataT, ResourcesT> {
         return callback;
     }
 
-    BaseFlow<?, ?, FlowDataT, ResourcesT> getFlow() {
+    BaseFlow<?, ?, F, R> getFlow() {
         return flow;
     }
 

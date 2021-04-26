@@ -10,10 +10,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 @WebServlet(asyncSupported = true,
-        description = "Router serviceServlet reference implementation"
+        description = "Asynchronous servlet reference implementation"
 )
 public class AsyncServlet extends HttpServlet {
-    private static Logger log = LoggerFactory.getLogger(AsyncServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(AsyncServlet.class);
 
     protected void readBody(AsyncContext ctx, ICallback<byte[]> callback) throws IOException {
         ServletInputStream input = ctx.getRequest().getInputStream();

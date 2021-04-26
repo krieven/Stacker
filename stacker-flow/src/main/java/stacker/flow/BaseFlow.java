@@ -13,7 +13,7 @@ import stacker.common.*;
 import static org.junit.Assert.*;
 
 public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
-    private static Logger log = LoggerFactory.getLogger(BaseFlow.class);
+    private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
     private Contract<ArgumentT, ReturnT> flowContract;
     private Class<FlowDataT> flowDataClass;
@@ -21,7 +21,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
 
     private ResourcesT resources;
 
-    private Map<String, BaseState<? super FlowDataT, ? super ResourcesT, ?>> states = new HashMap<>();
+    private final Map<String, BaseState<? super FlowDataT, ? super ResourcesT, ?>> states = new HashMap<>();
 
 
     public BaseFlow(
@@ -117,12 +117,13 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         }
     }
 
-    private Map<Command.Type, IHandler<Command, FlowDataT, ResourcesT>>
+    private final Map<Command.Type, IHandler<Command, FlowDataT, ResourcesT>>
             incomingHandlers = new HashMap<>();
 
     {
-        incomingHandlers.put(Command.Type.OPEN, (command, context) ->
-                start(parseRq(command.getContentBody()), context));
+        incomingHandlers.put(Command.Type.OPEN, (command, context) -> {
+            start(parseRq(command.getContentBody()), context);
+        });
 
         incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
                 getState(command.getState())

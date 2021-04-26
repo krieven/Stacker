@@ -5,9 +5,9 @@ import java.util.Map;
 
 public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> {
 
-    private Map<Enum<?>, String> transitions = new HashMap<>();
+    private final Map<Enum<?>, String> transitions = new HashMap<>();
 
-    private Enum<?>[] exits;
+    private final Enum<?>[] exits;
 
     public BaseState(Enum<ExitsE>[] exits) {
         super();

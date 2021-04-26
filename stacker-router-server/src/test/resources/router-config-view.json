@@ -2,7 +2,7 @@
   "flows": [
     {
       "name": "main",
-      "address": "main-address",
+      "address": "http://localhost:3001/",
       "mapping": [
         {
           "name": "other-flow",

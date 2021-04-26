@@ -13,6 +13,7 @@
     <module>stacker-router</module>
     <module>stacker-flow</module>
     <module>stacker-router-server</module>
+    <module>stacker-flow-server</module>
   </modules>
 
   <name>stacker</name>

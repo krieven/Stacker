@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServlet;
 
 public class AsyncServer<S extends HttpServlet> {
-    private static Logger log = LoggerFactory.getLogger(AsyncServer.class);
+    private static final Logger log = LoggerFactory.getLogger(AsyncServer.class);
     private final int port;
-    protected S serviceServlet;
+    protected final S serviceServlet;
     private Server server;
 
     public AsyncServer(S servlet, int port) {
