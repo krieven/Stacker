@@ -1,14 +1,17 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import stacker.flow.server.FlowServer;
 import testflow.TestFlow;
 
 public class FlowServerRunner {
+    private static Logger log = LoggerFactory.getLogger(FlowServerRunner.class);
 
     public static void main(String[] args) {
         FlowServer flowServer = new FlowServer(new TestFlow(), 3001);
         try {
             flowServer.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error starting server", e);
         }
     }
 

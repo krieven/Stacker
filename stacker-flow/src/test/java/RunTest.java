@@ -1,5 +1,4 @@
 import auth.AuthAnswer;
-import flow.Resources;
 import flow.TestFlow;
 import org.junit.Test;
 import stacker.common.Command;
@@ -14,7 +13,7 @@ import static junit.framework.TestCase.assertNull;
 public class RunTest {
     @Test
     public void runTest() {
-        BaseFlow flow = new TestFlow(new Resources());
+        BaseFlow flow = new TestFlow();
 
         Command question1 = new Command();
 

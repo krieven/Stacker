@@ -19,7 +19,7 @@ public class HttpTransport implements ITransport {
     public void sendRequest(String address, Command command, ICallback<Command> callback) {
 
         try {
-            Request request = Dsl.post(address).setBody(parser.serialize(command)).build();
+            Request request = Dsl.post(address).setRequestTimeout(30000).setBody(parser.serialize(command)).build();
 
             ListenableFuture<Response> future = client.executeRequest(request);
 

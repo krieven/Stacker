@@ -51,6 +51,7 @@ public class AsyncServlet extends HttpServlet {
 
     protected void writeBody(AsyncContext ctx, byte[] body) throws IOException {
         ServletOutputStream output = ctx.getResponse().getOutputStream();
+        ctx.getResponse().setContentLength(body.length);
 
         output.setWriteListener(new WriteListener() {
             @Override

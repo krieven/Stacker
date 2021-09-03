@@ -12,29 +12,29 @@ import stacker.common.*;
 
 import static org.junit.Assert.*;
 
-public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
+/**
+ * @param <A> argument type
+ * @param <R> returns type
+ * @param <F> flow data type
+ */
+public abstract class BaseFlow<A, R, F> {
     private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
-    private Contract<ArgumentT, ReturnT> flowContract;
-    private Class<FlowDataT> flowDataClass;
+    private Contract<A, R> flowContract;
+    private Class<F> flowDataClass;
     private IParser flowDataParser;
 
-    private ResourcesT resources;
-
-    private final Map<String, BaseState<? super FlowDataT, ? super ResourcesT, ?>> states = new HashMap<>();
+    private final Map<String, BaseState<? super F, ?>> states = new HashMap<>();
 
 
     public BaseFlow(
-            Contract<ArgumentT, ReturnT> contract,
-            Class<FlowDataT> flowDataClass,
-            IParser flowDataParser,
-            ResourcesT resources) {
+            Contract<A, R> contract,
+            Class<F> flowDataClass,
+            IParser flowDataParser) {
 
         flowContract = contract;
         this.flowDataClass = flowDataClass;
         this.flowDataParser = flowDataParser;
-        this.resources = resources;
-
 
         this.configure();
         this.validate();
@@ -42,21 +42,20 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
 
     protected abstract void configure();
 
-    protected abstract FlowDataT createFlowData(ArgumentT arg);
+    protected abstract F createFlowData(A arg);
 
-    protected abstract ReturnT makeReturn(FlowContext<FlowDataT, ResourcesT> context);
+    protected abstract R makeReturn(FlowContext<F> context);
 
-    protected abstract void onStart(FlowContext<FlowDataT, ResourcesT> context);
+    protected abstract void onStart(FlowContext<F> context);
 
-    private void start(ArgumentT argument, FlowContext<FlowDataT, ResourcesT> context) {
-        FlowDataT flowData = createFlowData(argument);
-        FlowContext<FlowDataT, ResourcesT> newContext =
+    private void start(A argument, FlowContext<F> context) {
+        F flowData = createFlowData(argument);
+        FlowContext<F> newContext =
                 new FlowContext<>(
                         this,
                         context.getFlowName(),
                         context.getStateName(),
                         flowData,
-                        context.getResources(),
                         context.getCallback());
         onStart(newContext);
     }
@@ -65,7 +64,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         return flowContract;
     }
 
-    protected final void addState(String name, BaseState<? super FlowDataT, ? super ResourcesT, ?> state) {
+    protected final void addState(String name, BaseState<? super F, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -75,7 +74,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         states.put(name, state);
     }
 
-    private BaseState<? super FlowDataT, ? super ResourcesT, ?> getState(String name) {
+    private BaseState<? super F, ?> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
 
@@ -88,7 +87,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
      */
     public void handleCommand(Command command, ICallback<Command> callback) {
 
-        FlowDataT flowData = null;
+        F flowData = null;
         if (command.getFlowData() != null) {
             try {
                 flowData = parseFlowData(command.getFlowData());
@@ -98,16 +97,15 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
             }
         }
 
-        FlowContext<FlowDataT, ResourcesT> context =
+        FlowContext<F> context =
                 new FlowContext<>(
                         this,
                         command.getFlow(),
                         command.getState(),
                         flowData,
-                        resources,
                         callback);
 
-        IHandler<Command, FlowDataT, ResourcesT> handler =
+        IHandler<Command, F> handler =
                 incomingHandlers.get(command.getType());
 
         try {
@@ -117,13 +115,12 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         }
     }
 
-    private final Map<Command.Type, IHandler<Command, FlowDataT, ResourcesT>>
+    private final Map<Command.Type, IHandler<Command, F>>
             incomingHandlers = new HashMap<>();
 
     {
-        incomingHandlers.put(Command.Type.OPEN, (command, context) -> {
-            start(parseRq(command.getContentBody()), context);
-        });
+        incomingHandlers.put(Command.Type.OPEN, (command, context) ->
+                start(parseRq(command.getContentBody()), context));
 
         incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
                 getState(command.getState())
@@ -135,24 +132,23 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
     }
 
 
-    protected void enterState(String name, FlowContext<FlowDataT, ResourcesT> context) {
-        FlowContext<FlowDataT, ResourcesT> transContext =
+    protected void enterState(String name, FlowContext<F> context) {
+        FlowContext<F> transContext =
                 new FlowContext<>(
                         this,
                         context.getFlowName(),
                         name,
                         context.getFlowData(),
-                        context.getResources(),
                         context.getCallback()
                 );
         getState(name).onEnter(transContext);
     }
 
-    private ArgumentT parseRq(byte[] rqString) throws ParsingException {
-        return flowContract.getParser().parse(rqString, flowContract.getArgumentClass());
+    private A parseRq(byte[] rqString) throws ParsingException {
+        return flowContract.getParser().parse(rqString, flowContract.getQuestionType());
     }
 
-    private FlowDataT parseFlowData(byte[] flowData) throws ParsingException {
+    private F parseFlowData(byte[] flowData) throws ParsingException {
         return flowDataParser.parse(flowData, flowDataClass);
     }
 
@@ -162,6 +158,9 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
 
     private void validate() {
         List<String> targets = new ArrayList<>();
+        if (states.keySet().isEmpty()) {
+            log.error("No states are defined");
+        }
         for (String key : states.keySet()) {
             Enum<?>[] exits = getState(key).getExits();
             if (exits == null) continue;
@@ -178,7 +177,7 @@ public abstract class BaseFlow<ArgumentT, ReturnT, FlowDataT, ResourcesT> {
         }
         for (String key : states.keySet()) {
             if (!targets.contains(key))
-                log.info("State " + key + " is probably unreachable");
+                log.info("State " + key + " is unreachable");
         }
     }
 

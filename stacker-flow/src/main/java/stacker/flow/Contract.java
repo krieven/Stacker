@@ -8,22 +8,22 @@ import stacker.common.IParser;
  */
 
 public final class Contract<A, R> {
-    private final Class<A> argumentClass;
-    private final Class<R> returnClass;
+    private final Class<A> questionType;
+    private final Class<R> answerType;
     private final IParser parser;
 
-    public Contract(Class<A> argumentClass, Class<R> returnClass, IParser parser) {
-        this.argumentClass = argumentClass;
-        this.returnClass = returnClass;
+    public Contract(Class<A> questionType, Class<R> answerType, IParser parser) {
+        this.questionType = questionType;
+        this.answerType = answerType;
         this.parser = parser;
     }
 
-    public Class<A> getArgumentClass() {
-        return argumentClass;
+    public Class<A> getQuestionType() {
+        return questionType;
     }
 
-    public Class<R> getReturnClass() {
-        return returnClass;
+    public Class<R> getAnswerType() {
+        return answerType;
     }
 
     public IParser getParser() {

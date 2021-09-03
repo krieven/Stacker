@@ -15,9 +15,9 @@ public class FlowServlet extends AsyncServlet {
 
     private IParser parser = new JsonParser();
 
-    private BaseFlow<?, ?, ?, ?> flow;
+    private BaseFlow<?, ?, ?> flow;
 
-    FlowServlet(BaseFlow<?, ?, ?, ?> flow) {
+    FlowServlet(BaseFlow<?, ?, ?> flow) {
         super();
         this.flow = flow;
     }
@@ -53,13 +53,17 @@ public class FlowServlet extends AsyncServlet {
                     public void reject(Exception error) {
                         Command errorCommand = new Command();
                         errorCommand.setType(Command.Type.ERROR);
-                        errorCommand.setContentBody(error.getMessage().getBytes());
+                        errorCommand.setContentBody(("Command rejected by flow: " + " " +
+                                error.getClass().getCanonicalName() + ", " +
+                                error.getMessage()).getBytes());
                         try {
                             byte[] body = parser.serialize(errorCommand);
+                            ctx.getResponse().setContentType(flow.getContract().getParser().getContentType());
+
                             writeBody(ctx, body);
+                            log.info(new String(errorCommand.getContentBody()));
                         } catch (Exception e) {
                             log.error("Error writing error response", e);
-                        } finally {
                             ctx.complete();
                         }
                     }

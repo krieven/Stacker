@@ -5,7 +5,7 @@ import stacker.flow.FlowContext;
 import stacker.flow.QuestionState;
 import stacker.flow.Contract;
 
-public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSupport, AuthResources, AuthState.exits> {
+public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSupport, AuthState.exits> {
 
     public enum exits {
         FORWARD, BACKWARD
@@ -23,13 +23,13 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
     }
 
     @Override
-    protected void handleAnswer(AuthAnswer input, FlowContext<? extends AuthSupport, ? extends AuthResources> context) {
+    protected void handleAnswer(AuthAnswer input, FlowContext<? extends AuthSupport> context) {
         context.getFlowData().setAuthAnswer(input);
         exitState(exits.FORWARD, context);
     }
 
     @Override
-    public void onEnter(FlowContext<? extends AuthSupport, ? extends AuthResources> context) {
+    public void onEnter(FlowContext<? extends AuthSupport> context) {
         AuthQuestion authQuestion = context.getFlowData().createAuthQuestion();
         authQuestion.setWord("Hello, what is you name?");
         sendQuestion(authQuestion, context);

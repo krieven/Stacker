@@ -1,10 +1,9 @@
 package stacker.flow;
 
 /**
- * @param <Q> ArgumentT
+ * @param <A> ArgumentT
  * @param <F> FlowDataT
- * @param <R> ResourcesT (AppContext)
  */
-interface IHandler<Q, F, R> {
-    void handle(Q argument, FlowContext<F, R> context) throws Exception;
+interface IHandler<A, F> {
+    void handle(A argument, FlowContext<F> context) throws Exception;
 }

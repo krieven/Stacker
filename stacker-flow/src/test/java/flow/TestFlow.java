@@ -7,10 +7,10 @@ import stacker.flow.BaseFlow;
 import stacker.flow.ReturnState;
 import stacker.flow.Contract;
 
-public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
+public class TestFlow extends BaseFlow<String, String, FlowData> {
 
 
-    public TestFlow(Resources resources) {
+    public TestFlow() {
         super(
                 new Contract<>(
                         String.class,
@@ -18,8 +18,7 @@ public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
                         new JsonParser()
                 ),
                 FlowData.class,
-                new JsonParser(),
-                resources
+                new JsonParser()
         );
     }
 
@@ -38,12 +37,12 @@ public class TestFlow extends BaseFlow<String, String, FlowData, Resources> {
     }
 
     @Override
-    protected String makeReturn(FlowContext<FlowData, Resources> context) {
+    protected String makeReturn(FlowContext<FlowData> context) {
         return context.getFlowData().getAuthAnswer().getName();
     }
 
     @Override
-    protected void onStart(FlowContext<FlowData, Resources> context) {
+    protected void onStart(FlowContext<FlowData> context) {
         enterState("first", context);
     }
 }

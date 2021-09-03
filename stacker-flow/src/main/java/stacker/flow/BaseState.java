@@ -3,18 +3,22 @@ package stacker.flow;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> {
+/**
+ * @param <F> flow data type
+ * @param <E> exits enum
+ */
+public abstract class BaseState<F, E extends Enum<E>> {
 
     private final Map<Enum<?>, String> transitions = new HashMap<>();
 
     private final Enum<?>[] exits;
 
-    public BaseState(Enum<ExitsE>[] exits) {
+    public BaseState(Enum<E>[] exits) {
         super();
         this.exits = exits;
     }
 
-    public BaseState<FlowDataI, ResourcesI, ExitsE> withExit(ExitsE name, String target) {
+    public BaseState<F, E> withExit(E name, String target) {
         target = target.trim().toUpperCase();
         if (transitions.containsKey(name))
             throw new RuntimeException("transition " + name + " already defined");
@@ -30,11 +34,11 @@ public abstract class BaseState<FlowDataI, ResourcesI, ExitsE extends Enum<Exits
         return transitions.get(key);
     }
 
-    public abstract void onEnter(FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
+    public abstract void onEnter(FlowContext<? extends F> context);
 
-    abstract void handle(byte[] answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
+    abstract void handle(byte[] answer, FlowContext<? extends F> context);
 
-    public final void exitState(ExitsE target, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
+    public final void exitState(E target, FlowContext<? extends F> context) {
         context.sendTransition(getTransition(target));
     }
 

@@ -69,7 +69,7 @@ public class RouterServlet extends AsyncServlet {
             @Override
             public void reject(Exception error) {
                 try {
-                    writeBody(ctx, error.getMessage().getBytes());
+                    writeBody(ctx, (error.getMessage() + "").getBytes());
                 } catch (IOException e) {
                     log.error(e.getMessage(), e);
                     ctx.complete();

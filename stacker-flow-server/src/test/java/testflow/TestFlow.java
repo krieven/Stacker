@@ -5,10 +5,8 @@ import stacker.flow.BaseFlow;
 import stacker.flow.Contract;
 import stacker.flow.FlowContext;
 
-import java.util.HashMap;
-import java.util.Map;
 
-public class TestFlow extends BaseFlow<String, String, TestFlowData, Map<String, Object>> {
+public class TestFlow extends BaseFlow<String, String, TestFlowData> {
 
     public TestFlow() {
         super(
@@ -18,9 +16,7 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData, Map<String,
                         new JsonParser()
                 ),
                 TestFlowData.class,
-                new JsonParser(),
-                new HashMap<>()
-        );
+                new JsonParser());
     }
 
     @Override
@@ -34,12 +30,12 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData, Map<String,
     }
 
     @Override
-    protected String makeReturn(FlowContext<TestFlowData, Map<String, Object>> context) {
+    protected String makeReturn(FlowContext<TestFlowData> context) {
         return null;
     }
 
     @Override
-    protected void onStart(FlowContext<TestFlowData, Map<String, Object>> context) {
+    protected void onStart(FlowContext<TestFlowData> context) {
         enterState("", context);
     }
 }

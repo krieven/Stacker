@@ -254,7 +254,7 @@ public class Router {
             @Override
             public void success(RouterResponseResult responseResult) {
                 String sid = responseResult.getSid();
-                SessionStack sessionStack = responseResult.getSessionStack();                   
+                SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
 
                 SessionStackEntry entry = sessionStack.pop();
@@ -276,6 +276,21 @@ public class Router {
                 } catch (Exception e) {
                     new OnResponseReceived(sid, sessionStack).reject(e);
                 }
+            }
+
+            @Override
+            public void reject(Exception error) {
+                log.error(error.getMessage(), error);
+            }
+        });
+
+        responseHandlers.put(Command.Type.ERROR, new ICallback<RouterResponseResult>() {
+            @Override
+            public void success(RouterResponseResult result) {
+                String sid = result.getSid();
+                Command command = result.getResponse();
+                IRouterCallback routerCallback = sessionLock.remove(sid);
+                routerCallback.success(sid, command.getContentBody());
             }
 
             @Override

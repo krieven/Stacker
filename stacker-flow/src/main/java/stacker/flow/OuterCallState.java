@@ -4,27 +4,33 @@ import stacker.common.Command;
 import stacker.common.ParsingException;
 import stacker.common.SerializingException;
 
-public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, ExitsE extends Enum<ExitsE>> extends BaseState<FlowDataI, ResourcesI, ExitsE> {
+/**
+ * @param <Q> question type
+ * @param <A> answer type
+ * @param <F> flow data type
+ * @param <E> exits enum
+ */
+public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends BaseState<F, E> {
 
-    private Contract<QuestionT, AnswerT> outerCallContract;
+    private Contract<Q, A> outerCallContract;
     private String outerFlowName;
 
-    public OuterCallState(String outerFlowName, Contract<QuestionT, AnswerT> outerCallContract, ExitsE[] exits) {
+    public OuterCallState(String outerFlowName, Contract<Q, A> outerCallContract, E[] exits) {
         super(exits);
         this.outerFlowName = outerFlowName;
         this.outerCallContract = outerCallContract;
     }
 
-    void handle(byte[] answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
+    void handle(byte[] answer, FlowContext<? extends F> context) {
         try {
-            AnswerT value = getOuterCallContract().getParser().parse(answer, getOuterCallContract().getReturnClass());
+            A value = getOuterCallContract().getParser().parse(answer, getOuterCallContract().getAnswerType());
             handleAnswer(value, context);
         } catch (ParsingException e) {
             context.getCallback().reject(e);
         }
     }
 
-    public final void sendOuterCall(QuestionT question, FlowContext<? extends FlowDataI, ? extends ResourcesI> context) {
+    public final void sendOuterCall(Q question, FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
         command.setFlow(getOuterFlowName());
@@ -45,9 +51,9 @@ public abstract class OuterCallState<QuestionT, AnswerT, FlowDataI, ResourcesI, 
         context.getCallback().success(command);
     }
 
-    protected abstract void handleAnswer(AnswerT answer, FlowContext<? extends FlowDataI, ? extends ResourcesI> context);
+    protected abstract void handleAnswer(A answer, FlowContext<? extends F> context);
 
-    public Contract<QuestionT, AnswerT> getOuterCallContract() {
+    public Contract<Q, A> getOuterCallContract() {
         return outerCallContract;
     }
 
