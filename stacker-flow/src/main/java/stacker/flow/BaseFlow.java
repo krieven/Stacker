@@ -20,9 +20,9 @@ import static org.junit.Assert.*;
 public abstract class BaseFlow<A, R, F> {
     private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
-    private Contract<A, R> flowContract;
-    private Class<F> flowDataClass;
-    private IParser flowDataParser;
+    private final Contract<A, R> flowContract;
+    private final Class<F> flowDataClass;
+    private final IParser flowDataParser;
 
     private final Map<String, BaseState<? super F, ?>> states = new HashMap<>();
 
@@ -92,6 +92,7 @@ public abstract class BaseFlow<A, R, F> {
             try {
                 flowData = parseFlowData(command.getFlowData());
             } catch (ParsingException e) {
+                log.error("Error parsing request", e);
                 callback.reject(e);
                 return;
             }
@@ -111,6 +112,7 @@ public abstract class BaseFlow<A, R, F> {
         try {
             handler.handle(command, context);
         } catch (Exception e) {
+            log.error("Error handling request", e);
             callback.reject(e);
         }
     }
@@ -141,7 +143,11 @@ public abstract class BaseFlow<A, R, F> {
                         context.getFlowData(),
                         context.getCallback()
                 );
-        getState(name).onEnter(transContext);
+        BaseState<? super F, ?> state = getState(name);
+        if (state == null) {
+            throw new IllegalStateException("State \"" + name + "\" was not found");
+        }
+        state.onEnter(transContext);
     }
 
     private A parseRq(byte[] rqString) throws ParsingException {
@@ -167,7 +173,7 @@ public abstract class BaseFlow<A, R, F> {
             for (Enum<?> e : exits) {
                 String target = getState(key).getTransition(e);
                 if (target == null) {
-                    throw new RuntimeException(
+                    throw new IllegalStateException(
                             "Misconfiguration:\n exit with name \"" +
                                     e.name() + "\" from State \"" + key +
                                     "\" have no destination target");

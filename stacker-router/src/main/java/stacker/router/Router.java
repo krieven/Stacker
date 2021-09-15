@@ -257,7 +257,7 @@ public class Router {
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
 
-                SessionStackEntry entry = sessionStack.pop();
+                sessionStack.pop();
 
                 SessionStackEntry currentEntry = sessionStack.peek();
 

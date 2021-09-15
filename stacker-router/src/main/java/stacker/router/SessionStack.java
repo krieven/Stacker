@@ -8,7 +8,7 @@ public class SessionStack extends Stack<SessionStackEntry> {
 
     private static final long serialVersionUID = 1L;
 
-    private Map<String, byte[]> daemonData = new HashMap<>();
+    private final Map<String, byte[]> daemonData = new HashMap<>();
 
     public byte[] getDaemonData(String flowName) {
         flowName = flowName.trim().toUpperCase();

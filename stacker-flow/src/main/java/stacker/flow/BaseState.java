@@ -20,8 +20,9 @@ public abstract class BaseState<F, E extends Enum<E>> {
 
     public BaseState<F, E> withExit(E name, String target) {
         target = target.trim().toUpperCase();
-        if (transitions.containsKey(name))
-            throw new RuntimeException("transition " + name + " already defined");
+        if (transitions.containsKey(name)) {
+            throw new IllegalArgumentException("transition \"" + name + "\" already defined");
+        }
         transitions.put(name, target);
         return this;
     }
