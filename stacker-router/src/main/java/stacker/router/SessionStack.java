@@ -1,12 +1,15 @@
 package stacker.router;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class SessionStack extends Stack<SessionStackEntry> {
+public class SessionStack implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private Stack<SessionStackEntry> stack = new Stack<>();
 
     private final Map<String, byte[]> daemonData = new HashMap<>();
 
@@ -18,5 +21,25 @@ public class SessionStack extends Stack<SessionStackEntry> {
     public void setDaemonData(String flowName, byte[] daemonData) {
         flowName = flowName.trim().toUpperCase();
         this.daemonData.put(flowName, daemonData);
+    }
+
+    public SessionStackEntry pop() {
+        return stack.pop();
+    }
+
+    public SessionStackEntry peek() {
+        return stack.peek();
+    }
+
+    public SessionStackEntry push(SessionStackEntry entry) {
+        return stack.push(entry);
+    }
+
+    public boolean empty() {
+        return stack.empty();
+    }
+
+    public int size() {
+        return stack.size();
     }
 }

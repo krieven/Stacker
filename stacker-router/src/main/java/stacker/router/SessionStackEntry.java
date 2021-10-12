@@ -4,7 +4,6 @@ public class SessionStackEntry {
     private String flow;
     private String state;
     private byte[] flowData;
-    private byte[] contentBody;
 
     public String getState() {
         return state;
@@ -31,11 +30,5 @@ public class SessionStackEntry {
         this.flowData = flowData;
     }
 
-    public byte[] getContentBody() {
-        return contentBody;
-    }
 
-    public void setContentBody(byte[] contentBody) {
-        this.contentBody = contentBody;
-    }
 }

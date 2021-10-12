@@ -7,10 +7,6 @@ import stacker.flow.Contract;
 
 public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSupport, AuthState.exits> {
 
-    public enum exits {
-        FORWARD, BACKWARD
-    }
-
     public AuthState() {
         super(
                 new Contract<>(
@@ -33,6 +29,10 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
         AuthQuestion authQuestion = context.getFlowData().createAuthQuestion();
         authQuestion.setWord("Hello, what is you name?");
         sendQuestion(authQuestion, context);
+    }
+
+    public enum exits {
+        FORWARD, BACKWARD
     }
 
 }

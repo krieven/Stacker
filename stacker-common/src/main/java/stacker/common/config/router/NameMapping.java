@@ -1,4 +1,4 @@
-package stacker.router.server.config;
+package stacker.common.config.router;
 
 public class NameMapping {
     private String name;

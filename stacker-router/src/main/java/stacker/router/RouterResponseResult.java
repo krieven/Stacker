@@ -8,7 +8,7 @@ class RouterResponseResult {
     private SessionStack sessionStack;
     private Command response;
 
-    RouterResponseResult(String sid, SessionStack sessionStack, Command response){
+    RouterResponseResult(String sid, SessionStack sessionStack, Command response) {
         this.sid = sid;
         this.sessionStack = sessionStack;
         this.response = response;

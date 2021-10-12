@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>stacker</artifactId>
@@ -9,20 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>stacker-router-server</artifactId>
-
+    <artifactId>stacker-config-editor</artifactId>
     <dependencies>
         <dependency>
             <groupId>stacker.su</groupId>
-            <artifactId>stacker-router</artifactId>
+            <artifactId>stacker-router-server</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.asynchttpclient</groupId>
-            <artifactId>async-http-client</artifactId>
-            <version>2.2.0</version>
+            <groupId>stacker.su</groupId>
+            <artifactId>stacker-flow</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
-    <packaging>jar</packaging>
+
+
 </project>

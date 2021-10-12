@@ -1,6 +1,7 @@
 package stacker.common;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
@@ -10,17 +11,22 @@ import javax.servlet.http.HttpServlet;
 
 public class AsyncServer<S extends HttpServlet> {
     private static final Logger log = LoggerFactory.getLogger(AsyncServer.class);
-    private final int port;
     protected final S serviceServlet;
+    private final int port;
     private Server server;
+    private ServletContextHandler contextHandler;
 
     public AsyncServer(S servlet, int port) {
         this.serviceServlet = servlet;
         this.port = port;
     }
 
+    public ServletContextHandler getContextHandler() {
+        return contextHandler;
+    }
+
     public void start() throws Exception {
-        ServletContextHandler contextHandler = new ServletContextHandler();
+        contextHandler = new ServletContextHandler();
         contextHandler.setContextPath("/");
 
         ServletHolder servletHolder = new ServletHolder(serviceServlet);
@@ -30,13 +36,6 @@ public class AsyncServer<S extends HttpServlet> {
         server = new Server(port);
         server.setHandler(contextHandler);
         server.start();
-    }
-
-    public void stop() {
-        try {
-            server.stop();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        server.join();
     }
 }

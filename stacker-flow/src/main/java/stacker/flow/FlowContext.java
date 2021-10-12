@@ -51,14 +51,19 @@ public class FlowContext<F> {
     }
 
     void sendReturn() {
-        Object returnT = getFlow().makeReturn(this);
+        Object result = getFlow().makeReturn(this);
         Command command = new Command();
         command.setType(Command.Type.RETURN);
         try {
             command.setContentBody(
                     getFlow().getContract()
-                            .getParser().serialize(returnT)
+                            .getParser().serialize(result)
             );
+            if (getFlow().isDaemon()) {
+                command.setDaemonData(
+                        getFlow().serializeFlowData(getFlowData())
+                );
+            }
         } catch (SerializingException e) {
             getCallback().reject(e);
             return;

@@ -32,7 +32,7 @@ public class FlowServlet extends AsyncServlet {
                 try {
                     command = parser.parse(bytes, Command.class);
                 } catch (ParsingException e) {
-                    e.printStackTrace();
+                    log.error("error parsing command", e);
 
                     return;
                 }

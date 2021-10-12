@@ -7,8 +7,8 @@ import stacker.router.ITransport;
 
 public class MockTransport implements ITransport {
 
-    private Command respCommand;
     public Command lastRequest;
+    private Command respCommand;
 
     public void setRespCommand(Command respCommand) {
         this.respCommand = respCommand;

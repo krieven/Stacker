@@ -25,6 +25,11 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
     }
 
     @Override
+    protected boolean isDaemon() {
+        return false;
+    }
+
+    @Override
     protected TestFlowData createFlowData(String arg) {
         return new TestFlowData();
     }

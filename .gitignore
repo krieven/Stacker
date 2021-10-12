@@ -24,9 +24,10 @@ hs_err_pid*
 
 *.prefs
 
-target/*
+target
 
 .vscode
 
 .idea/*
-.coverage
+.coverage/*
+node_modules

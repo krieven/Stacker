@@ -1,4 +1,4 @@
-package stacker.router.server.config;
+package stacker.common.config.router;
 
 import java.util.List;
 

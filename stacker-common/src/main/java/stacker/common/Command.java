@@ -13,15 +13,7 @@ public class Command implements Serializable {
 
     private byte[] flowData;
 
-    public enum Type {
-        QUESTION,
-        ANSWER,
-
-        OPEN,
-        RETURN,
-
-        ERROR
-    }
+    private byte[] daemonData;
 
     public Type getType() {
         return type;
@@ -63,4 +55,21 @@ public class Command implements Serializable {
         this.flowData = flowData;
     }
 
+    public byte[] getDaemonData() {
+        return daemonData;
+    }
+
+    public void setDaemonData(byte[] daemonData) {
+        this.daemonData = daemonData;
+    }
+
+    public enum Type {
+        QUESTION,
+        ANSWER,
+
+        OPEN,
+        RETURN,
+
+        ERROR
+    }
 }

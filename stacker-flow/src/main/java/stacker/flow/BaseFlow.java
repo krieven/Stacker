@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 /**
  * @param <A> argument type
  * @param <R> returns type
- * @param <F> flow data type
+ * @param <F> flowData type
  */
 public abstract class BaseFlow<A, R, F> {
     private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
@@ -25,7 +25,21 @@ public abstract class BaseFlow<A, R, F> {
     private final IParser flowDataParser;
 
     private final Map<String, BaseState<? super F, ?>> states = new HashMap<>();
+    private final Map<Command.Type, IHandler<Command, F>>
+            incomingHandlers = new HashMap<>();
 
+    {
+        incomingHandlers.put(Command.Type.OPEN, (command, context) ->
+                start(parseRq(command.getContentBody()), context));
+
+        incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
+                getInteractiveState(command.getState())
+                        .handle(command.getContentBody(), context));
+
+        incomingHandlers.put(Command.Type.RETURN, (command, context) ->
+                getInteractiveState(command.getState())
+                        .handle(command.getContentBody(), context));
+    }
 
     public BaseFlow(
             Contract<A, R> contract,
@@ -41,6 +55,8 @@ public abstract class BaseFlow<A, R, F> {
     }
 
     protected abstract void configure();
+
+    protected abstract boolean isDaemon();
 
     protected abstract F createFlowData(A arg);
 
@@ -78,6 +94,13 @@ public abstract class BaseFlow<A, R, F> {
         return states.get(name.trim().toUpperCase());
     }
 
+    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) {
+        BaseState<? super F, ?> state = getState(name);
+        if (state instanceof InteractiveState) {
+            return (InteractiveState<?, ?, ? super F, ?>) state;
+        }
+        throw new IllegalStateException("State with name " + name + " is not interactive");
+    }
 
     /**
      * This method will be called by server to handle request
@@ -117,23 +140,6 @@ public abstract class BaseFlow<A, R, F> {
         }
     }
 
-    private final Map<Command.Type, IHandler<Command, F>>
-            incomingHandlers = new HashMap<>();
-
-    {
-        incomingHandlers.put(Command.Type.OPEN, (command, context) ->
-                start(parseRq(command.getContentBody()), context));
-
-        incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
-                getState(command.getState())
-                        .handle(command.getContentBody(), context));
-
-        incomingHandlers.put(Command.Type.RETURN, (command, context) ->
-                getState(command.getState())
-                        .handle(command.getContentBody(), context));
-    }
-
-
     protected void enterState(String name, FlowContext<F> context) {
         FlowContext<F> transContext =
                 new FlowContext<>(
@@ -168,10 +174,19 @@ public abstract class BaseFlow<A, R, F> {
             log.error("No states are defined");
         }
         for (String key : states.keySet()) {
-            Enum<?>[] exits = getState(key).getExits();
-            if (exits == null) continue;
+            Enum<?>[] exits;
+            try {
+                exits = getInteractiveState(key).getExits();
+            } catch (Exception e) {
+                continue;
+            }
             for (Enum<?> e : exits) {
-                String target = getState(key).getTransition(e);
+                String target;
+                try {
+                    target = getInteractiveState(key).getTransition(e);
+                } catch (Exception e1) {
+                    continue;
+                }
                 if (target == null) {
                     throw new IllegalStateException(
                             "Misconfiguration:\n exit with name \"" +

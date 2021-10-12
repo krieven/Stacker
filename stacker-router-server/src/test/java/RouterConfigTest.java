@@ -1,6 +1,6 @@
-import stacker.router.server.config.FlowConfig;
-import stacker.router.server.config.NameMapping;
-import stacker.router.server.config.RouterConfig;
+import stacker.common.config.router.FlowConfig;
+import stacker.common.config.router.NameMapping;
+import stacker.common.config.router.RouterConfig;
 import org.junit.Test;
 import stacker.common.JsonParser;
 import stacker.common.ParsingException;

@@ -4,9 +4,9 @@ import stacker.common.AsyncServer;
 import stacker.router.ISessionStorage;
 import stacker.router.ITransport;
 import stacker.router.Router;
-import stacker.router.server.config.FlowConfig;
-import stacker.router.server.config.NameMapping;
-import stacker.router.server.config.RouterConfig;
+import stacker.common.config.router.FlowConfig;
+import stacker.common.config.router.NameMapping;
+import stacker.common.config.router.RouterConfig;
 
 public class RouterServer extends AsyncServer<RouterServlet> {
 

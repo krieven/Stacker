@@ -4,7 +4,7 @@ import auth.AuthState;
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
 import stacker.flow.BaseFlow;
-import stacker.flow.ReturnState;
+import stacker.flow.TerminatorState;
 import stacker.flow.Contract;
 
 public class TestFlow extends BaseFlow<String, String, FlowData> {
@@ -28,7 +28,12 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
                 .withExit(AuthState.exits.FORWARD, "exit")
                 .withExit(AuthState.exits.BACKWARD, "exit")
         );
-        addState("exit", new ReturnState<>());
+        addState("exit", new TerminatorState<>());
+    }
+
+    @Override
+    protected boolean isDaemon() {
+        return false;
     }
 
     @Override

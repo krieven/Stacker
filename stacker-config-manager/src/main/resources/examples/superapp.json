@@ -1,0 +1,19 @@
+{
+  "name": "superapp",
+  "title": "The super-puper application",
+  "description": "",
+  "address": "http://localhost:8080",
+  "flows": [
+    {
+      "name": "main",
+      "address": "http://localhost:3001/",
+      "mapping": [
+        {
+          "name": "other-flow",
+          "target": "other-flow-real-name"
+        }
+      ]
+    }
+  ],
+  "mainFlow": "main"
+}

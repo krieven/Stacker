@@ -16,8 +16,6 @@ import static org.junit.Assert.assertEquals;
 public class RouterTest {
     private static Logger log = LoggerFactory.getLogger(RouterTest.class);
 
-    Charset charset = Charset.forName("UTF-8");
-
     @Test
     public void Test() {
         MockTransport transport = new MockTransport();
@@ -27,6 +25,8 @@ public class RouterTest {
 
         router.addFlow("main", "http://main.flow");
         router.setMainFlow("main");
+        router.addFlow("second", "http://main.flow");
+        router.setFlowMapping("main", "main", "second");
 
         ///////////////////////////////////////
         String sid = "111";
@@ -69,6 +69,8 @@ public class RouterTest {
 
             }
         });
+
+        respCommand.setType(Command.Type.OPEN);
 
         router.handleRequest(sid, "Hello again".getBytes(), new Router.IRouterCallback() {
 
