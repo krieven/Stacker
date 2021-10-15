@@ -1,7 +1,7 @@
 import auth.AuthAnswer;
 import flow.TestFlow;
 import org.junit.Test;
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.common.JsonParser;
 import stacker.common.SerializingException;

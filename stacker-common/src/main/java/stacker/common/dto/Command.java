@@ -1,18 +1,14 @@
-package stacker.common;
+package stacker.common.dto;
 
 import java.io.Serializable;
 
 public class Command implements Serializable {
 
     private Type type;
-
     private String flow;
     private String state;
-
     private byte[] contentBody;
-
     private byte[] flowData;
-
     private byte[] daemonData;
 
     public Type getType() {
@@ -66,9 +62,12 @@ public class Command implements Serializable {
     public enum Type {
         QUESTION,
         ANSWER,
+        RESOURCE,
 
         OPEN,
         RETURN,
+//        ABORT,
+
 
         ERROR
     }

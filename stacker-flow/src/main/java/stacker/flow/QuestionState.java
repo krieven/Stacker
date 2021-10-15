@@ -1,19 +1,21 @@
 package stacker.flow;
 
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.SerializingException;
 
 /**
  * @param <Q> question type
  * @param <A> answer type
  * @param <F> flow data type
- * @param <E> exits enum
+ * @param <E> enum of exits
  */
 public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends InteractiveState<Q, A, F, E> {
 
     public QuestionState(Contract<Q, A> contract, E[] exits) {
         super(exits, contract);
     }
+
+    protected abstract void configure(FlowContext<? extends F> context);
 
     @Override
     public final void sendQuestion(Q question, FlowContext<? extends F> context) {
@@ -23,7 +25,7 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
         command.setState(context.getStateName());
         try {
             command.setFlowData(
-                    context.getFlow().serializeFlowData(
+                    getFlow().serializeFlowData(
                             context.getFlowData()
                     )
             );
@@ -43,4 +45,7 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
 
     }
 
+    protected final void addResourceRequestHandler(String path, ResourceRequestHandler<? super F> handler, FlowContext<? extends F> context) {
+        getFlow().addResourceRequestHandler(path, handler);
+    }
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.*;
+import stacker.common.dto.Command;
 
 
 import static org.junit.Assert.*;
@@ -24,7 +25,8 @@ public abstract class BaseFlow<A, R, F> {
     private final Class<F> flowDataClass;
     private final IParser flowDataParser;
 
-    private final Map<String, BaseState<? super F, ?>> states = new HashMap<>();
+    private final Map<String, BaseState<? super F>> states = new HashMap<>();
+    private final Map<String, ResourceRequestHandler<? super F>> resourceHandlers = new HashMap<>();
     private final Map<Command.Type, IHandler<Command, F>>
             incomingHandlers = new HashMap<>();
 
@@ -41,7 +43,7 @@ public abstract class BaseFlow<A, R, F> {
                         .handle(command.getContentBody(), context));
     }
 
-    public BaseFlow(
+    protected BaseFlow(
             Contract<A, R> contract,
             Class<F> flowDataClass,
             IParser flowDataParser) {
@@ -80,7 +82,7 @@ public abstract class BaseFlow<A, R, F> {
         return flowContract;
     }
 
-    protected final void addState(String name, BaseState<? super F, ?> state) {
+    protected final void addState(String name, BaseState<? super F> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -88,18 +90,34 @@ public abstract class BaseFlow<A, R, F> {
         assertNotNull("State should not be null", state);
 
         states.put(name, state);
+        state.setFlow(this);
     }
 
-    private BaseState<? super F, ?> getState(String name) {
+    private BaseState<? super F> getState(String name) {
         return states.get(name.trim().toUpperCase());
     }
 
-    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) {
-        BaseState<? super F, ?> state = getState(name);
+    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) throws Exception {
+        BaseState<? super F> state = getState(name);
         if (state instanceof InteractiveState) {
             return (InteractiveState<?, ?, ? super F, ?>) state;
         }
-        throw new IllegalStateException("State with name " + name + " is not interactive");
+        throw new Exception("State with name " + name + " is not interactive");
+    }
+
+    protected final void addResourceRequestHandler(String path, ResourceRequestHandler<? super F> handler) {
+        assertNotNull("Path could not be null", path);
+        path = path.trim();
+        assertNotEquals("Path could not be empty", "", path);
+        assertNotNull("Handler could not be null", handler);
+        assertFalse("Path \"" + path + "\" already used", resourceHandlers.containsKey(path));
+        resourceHandlers.put(path, handler);
+        log.info("Resource handler for \"" + path + "\" added");
+    }
+
+    private ResourceRequestHandler<F> getResourceRequestHandler(String path) {
+        //TODO implement this
+        return null;
     }
 
     /**
@@ -149,7 +167,7 @@ public abstract class BaseFlow<A, R, F> {
                         context.getFlowData(),
                         context.getCallback()
                 );
-        BaseState<? super F, ?> state = getState(name);
+        BaseState<? super F> state = getState(name);
         if (state == null) {
             throw new IllegalStateException("State \"" + name + "\" was not found");
         }

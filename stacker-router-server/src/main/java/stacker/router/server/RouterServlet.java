@@ -32,7 +32,7 @@ public class RouterServlet extends AsyncServlet {
             @Override
             public void success(byte[] bytes) {
                 String sid = null;
-
+                //TODO may change to request.getRequestedSessionId();
                 if (request.getCookies() != null)
                     for (Cookie cookie : request.getCookies()) {
                         if (cookieName.equals(cookie.getName())) {

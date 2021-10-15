@@ -1,6 +1,6 @@
 package stacker.config.server;
 
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.flow.BaseFlow;
 import stacker.router.ITransport;

@@ -3,12 +3,10 @@ package routerTest;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.router.Router;
 import stacker.router.SessionStack;
-
-import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertEquals;
 

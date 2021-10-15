@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 
 public class Router {

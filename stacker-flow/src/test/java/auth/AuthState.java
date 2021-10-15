@@ -25,10 +25,20 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
     }
 
     @Override
+    protected void onBadAnswer(FlowContext<? extends AuthSupport> context) {
+        onEnter(context);
+    }
+
+    @Override
     public void onEnter(FlowContext<? extends AuthSupport> context) {
         AuthQuestion authQuestion = context.getFlowData().createAuthQuestion();
         authQuestion.setWord("Hello, what is you name?");
         sendQuestion(authQuestion, context);
+    }
+
+    @Override
+    protected void configure(FlowContext<? extends AuthSupport> context) {
+
     }
 
     public enum exits {

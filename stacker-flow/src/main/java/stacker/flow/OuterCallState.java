@@ -1,7 +1,6 @@
 package stacker.flow;
 
-import stacker.common.Command;
-import stacker.common.ParsingException;
+import stacker.common.dto.Command;
 import stacker.common.SerializingException;
 
 /**
@@ -19,6 +18,7 @@ public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends Interac
         this.outerFlowName = outerFlowName;
     }
 
+
     @Override
     public final void sendQuestion(Q question, FlowContext<? extends F> context) {
         Command command = new Command();
@@ -27,7 +27,7 @@ public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends Interac
         command.setState(context.getStateName());
         try {
             command.setFlowData(
-                    context.getFlow().serializeFlowData(
+                    getFlow().serializeFlowData(
                             context.getFlowData()
                     )
             );
@@ -42,7 +42,7 @@ public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends Interac
     }
 
 
-    public String getOuterFlowName() {
+    public final String getOuterFlowName() {
         return outerFlowName;
     }
 

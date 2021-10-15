@@ -1,14 +1,20 @@
 package stacker.flow;
 
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @param <F> flow data type
- * @param <E> exits enum
  */
-public abstract class BaseState<F, E extends Enum<E>> {
+public abstract class BaseState<F> {
+
+    private BaseFlow<?, ?, ? extends F> flow;
 
     public abstract void onEnter(FlowContext<? extends F> context);
 
+    public void setFlow(BaseFlow<?, ?, ? extends F> flow) {
+        this.flow = flow;
+    }
+
+    public BaseFlow<?, ?, ? extends F> getFlow() {
+        return flow;
+    }
 }

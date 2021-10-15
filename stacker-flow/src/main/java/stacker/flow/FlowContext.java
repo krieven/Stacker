@@ -2,7 +2,7 @@ package stacker.flow;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.common.SerializingException;
 
@@ -71,7 +71,7 @@ public class FlowContext<F> {
         getCallback().success(command);
     }
 
-    void sendTransition(String name) {
+    void enterState(String name) {
         getFlow().enterState(name, this);
     }
 

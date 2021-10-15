@@ -3,6 +3,7 @@ package stacker.flow.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.*;
+import stacker.common.dto.Command;
 import stacker.flow.BaseFlow;
 
 import javax.servlet.AsyncContext;
@@ -56,6 +57,7 @@ public class FlowServlet extends AsyncServlet {
                         errorCommand.setContentBody(("Command rejected by flow: " + " " +
                                 error.getClass().getCanonicalName() + ", " +
                                 error.getMessage()).getBytes());
+                        log.error("Command rejected by flow:", error);
                         try {
                             byte[] body = parser.serialize(errorCommand);
                             ctx.getResponse().setContentType(flow.getContract().getParser().getContentType());

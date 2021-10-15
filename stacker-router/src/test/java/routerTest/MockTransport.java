@@ -1,7 +1,7 @@
 package routerTest;
 
 
-import stacker.common.Command;
+import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.router.ITransport;
 

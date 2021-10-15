@@ -1,7 +1,7 @@
 package stacker.router;
 
 
-import stacker.common.Command;
+import stacker.common.dto.Command;
 
 class RouterResponseResult {
     private String sid;
