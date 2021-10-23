@@ -1,4 +1,4 @@
-package auth;
+package states.auth;
 
 public class AuthQuestion {
     private String word;

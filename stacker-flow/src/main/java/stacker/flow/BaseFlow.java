@@ -5,46 +5,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.*;
 import stacker.common.dto.Command;
+import stacker.flow.resource.ResourceLeaf;
+import stacker.flow.resource.ResourceTree;
 
 
 import static org.junit.Assert.*;
 
 /**
- * @param <A> argument type
- * @param <R> returns type
+ * @param <Q> argument type
+ * @param <A> returns type
  * @param <F> flowData type
  */
-public abstract class BaseFlow<A, R, F> {
+public abstract class BaseFlow<Q, A, F> {
     private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
-    private final Contract<A, R> flowContract;
+    private final Map<String, ResourceTree<ResourceController<? super F>>>
+            resourceControllers = new HashMap<>();
+
+    private final Contract<Q, A> flowContract;
     private final Class<F> flowDataClass;
     private final IParser flowDataParser;
 
     private final Map<String, BaseState<? super F>> states = new HashMap<>();
-    private final Map<String, ResourceRequestHandler<? super F>> resourceHandlers = new HashMap<>();
-    private final Map<Command.Type, IHandler<Command, F>>
-            incomingHandlers = new HashMap<>();
+    private final Map<Command.Type, IHandler<Command, F>> incomingHandlers = new HashMap<>();
 
     {
         incomingHandlers.put(Command.Type.OPEN, (command, context) ->
                 start(parseRq(command.getContentBody()), context));
 
         incomingHandlers.put(Command.Type.ANSWER, (command, context) ->
-                getInteractiveState(command.getState())
+                getState(command.getState())
                         .handle(command.getContentBody(), context));
 
         incomingHandlers.put(Command.Type.RETURN, (command, context) ->
-                getInteractiveState(command.getState())
+                getState(command.getState())
                         .handle(command.getContentBody(), context));
+
+        incomingHandlers.put(Command.Type.RESOURCE, new ResourceHandler<>());
     }
 
     protected BaseFlow(
-            Contract<A, R> contract,
+            Contract<Q, A> contract,
             Class<F> flowDataClass,
             IParser flowDataParser) {
 
@@ -56,77 +62,13 @@ public abstract class BaseFlow<A, R, F> {
         this.validate();
     }
 
-    protected abstract void configure();
-
-    protected abstract boolean isDaemon();
-
-    protected abstract F createFlowData(A arg);
-
-    protected abstract R makeReturn(FlowContext<F> context);
-
-    protected abstract void onStart(FlowContext<F> context);
-
-    private void start(A argument, FlowContext<F> context) {
-        F flowData = createFlowData(argument);
-        FlowContext<F> newContext =
-                new FlowContext<>(
-                        this,
-                        context.getFlowName(),
-                        context.getStateName(),
-                        flowData,
-                        context.getCallback());
-        onStart(newContext);
-    }
-
-    public final Contract getContract() {
-        return flowContract;
-    }
-
-    protected final void addState(String name, BaseState<? super F> state) {
-        assertNotNull("The NAME should not be null", name);
-        name = name.trim().toUpperCase();
-        assertNotEquals("The NAME should not be empty string", name, "");
-        assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
-        assertNotNull("State should not be null", state);
-
-        states.put(name, state);
-        state.setFlow(this);
-    }
-
-    private BaseState<? super F> getState(String name) {
-        return states.get(name.trim().toUpperCase());
-    }
-
-    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) throws Exception {
-        BaseState<? super F> state = getState(name);
-        if (state instanceof InteractiveState) {
-            return (InteractiveState<?, ?, ? super F, ?>) state;
-        }
-        throw new Exception("State with name " + name + " is not interactive");
-    }
-
-    protected final void addResourceRequestHandler(String path, ResourceRequestHandler<? super F> handler) {
-        assertNotNull("Path could not be null", path);
-        path = path.trim();
-        assertNotEquals("Path could not be empty", "", path);
-        assertNotNull("Handler could not be null", handler);
-        assertFalse("Path \"" + path + "\" already used", resourceHandlers.containsKey(path));
-        resourceHandlers.put(path, handler);
-        log.info("Resource handler for \"" + path + "\" added");
-    }
-
-    private ResourceRequestHandler<F> getResourceRequestHandler(String path) {
-        //TODO implement this
-        return null;
-    }
-
     /**
-     * This method will be called by server to handle request
+     * This method will be called by server to handle command
      *
      * @param command  - the Command that server receive
      * @param callback - the server callback
      */
-    public void handleCommand(Command command, ICallback<Command> callback) {
+    public void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
 
         F flowData = null;
         if (command.getFlowData() != null) {
@@ -158,6 +100,20 @@ public abstract class BaseFlow<A, R, F> {
         }
     }
 
+    public final Contract getContract() {
+        return flowContract;
+    }
+
+    protected abstract void configure();
+
+    protected abstract boolean isDaemon();
+
+    protected abstract F createFlowData(Q arg);
+
+    protected abstract A makeReturn(FlowContext<F> context);
+
+    protected abstract void onStart(FlowContext<F> context);
+
     protected void enterState(String name, FlowContext<F> context) {
         FlowContext<F> transContext =
                 new FlowContext<>(
@@ -174,16 +130,61 @@ public abstract class BaseFlow<A, R, F> {
         state.onEnter(transContext);
     }
 
-    private A parseRq(byte[] rqString) throws ParsingException {
-        return flowContract.getParser().parse(rqString, flowContract.getQuestionType());
-    }
+    protected void addState(String name, BaseState<? super F> state) {
+        assertNotNull("The NAME should not be null", name);
+        name = name.trim().toUpperCase();
+        assertNotEquals("The NAME should not be empty string", name, "");
+        assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
+        assertNotNull("State should not be null", state);
+        assertFalse("this State already added into the Flow", states.values().contains(state));
 
-    private F parseFlowData(byte[] flowData) throws ParsingException {
-        return flowDataParser.parse(flowData, flowDataClass);
+        states.put(name, state);
+
+        if (state.resourceControllers.size() > 0) {
+            ResourceTree<ResourceController<? super F>> handlers = new ResourceTree<>();
+            resourceControllers.put(name, handlers);
+            state.resourceControllers.forEach((key, value) ->
+                    addResourceController(handlers, key, value)
+            );
+        }
     }
 
     byte[] serializeFlowData(Object o) throws SerializingException {
         return flowDataParser.serialize(o);
+    }
+
+    private void start(Q argument, FlowContext<F> context) {
+        F flowData = context.getFlowData();
+        if (flowData == null) {
+            flowData = createFlowData(argument);
+        }
+        FlowContext<F> newContext =
+                new FlowContext<>(
+                        this,
+                        context.getFlowName(),
+                        context.getStateName(),
+                        flowData,
+                        context.getCallback()
+                );
+        onStart(newContext);
+    }
+
+    private BaseState<? super F> getState(String name) {
+        return states.get(name.trim().toUpperCase());
+    }
+
+    @SuppressWarnings("unchecked")
+    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) throws ClassCastException {
+        BaseState<? super F> state = getState(name);
+        return (InteractiveState<?, ?, ? super F, ?>) state;
+    }
+
+    private Q parseRq(byte[] rq) throws ParsingException {
+        return flowContract.getParser().parse(rq, flowContract.getQuestionType());
+    }
+
+    private F parseFlowData(byte[] flowData) throws ParsingException {
+        return flowDataParser.parse(flowData, flowDataClass);
     }
 
     private void validate() {
@@ -195,29 +196,57 @@ public abstract class BaseFlow<A, R, F> {
             Enum<?>[] exits;
             try {
                 exits = getInteractiveState(key).getExits();
+                if (exits == null || exits.length == 0) {
+                    log.error("InteractiveState should have exits");
+                    continue;
+                }
             } catch (Exception e) {
                 continue;
             }
-            for (Enum<?> e : exits) {
+            for (Enum<?> exit : exits) {
                 String target;
                 try {
-                    target = getInteractiveState(key).getTransition(e);
-                } catch (Exception e1) {
+                    target = getInteractiveState(key).getTransition(exit);
+                } catch (Exception e) {
                     continue;
                 }
                 if (target == null) {
                     throw new IllegalStateException(
                             "Misconfiguration:\n exit with name \"" +
-                                    e.name() + "\" from State \"" + key +
+                                    exit.name() + "\" from State \"" + key +
                                     "\" have no destination target");
                 }
                 targets.add(target);
             }
         }
+        boolean hasTerminator = false;
         for (String key : states.keySet()) {
             if (!targets.contains(key))
                 log.info("State " + key + " is unreachable");
+            if (getState(key) instanceof TerminatorState)
+                hasTerminator = true;
+        }
+        if (!hasTerminator) {
+            throw new IllegalStateException(
+                    "Misconfiguration:\n Flow have no Terminator");
         }
     }
 
+    private void addResourceController(ResourceTree<ResourceController<? super F>> tree, String path, ResourceController<? super F> handler) {
+        assertNotNull("Path could not be null", path);
+        path = path.trim();
+        assertNotEquals("Path could not be empty", "", path);
+        assertNotNull("Handler could not be null", handler);
+
+        tree.add(path, handler);
+
+        log.info("Resource handler for \"" + path + "\" added");
+    }
+
+    ResourceLeaf<ResourceController<? super F>> getResourceLeaf(String stateName, String path) {
+        if (!resourceControllers.containsKey(stateName)) {
+            return null;
+        }
+        return resourceControllers.get(stateName).find(path);
+    }
 }

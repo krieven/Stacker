@@ -1,20 +1,17 @@
 package stacker.flow;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @param <F> flow data type
  */
 public abstract class BaseState<F> {
 
-    private BaseFlow<?, ?, ? extends F> flow;
+    Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
 
     public abstract void onEnter(FlowContext<? extends F> context);
 
-    public void setFlow(BaseFlow<?, ?, ? extends F> flow) {
-        this.flow = flow;
-    }
-
-    public BaseFlow<?, ?, ? extends F> getFlow() {
-        return flow;
-    }
+    abstract void handle(byte[] answer, FlowContext<? extends F> context);
 }

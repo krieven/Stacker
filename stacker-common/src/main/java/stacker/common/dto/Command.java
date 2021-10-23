@@ -7,9 +7,10 @@ public class Command implements Serializable {
     private Type type;
     private String flow;
     private String state;
+    private String bodyContentType;
     private byte[] contentBody;
     private byte[] flowData;
-    private byte[] daemonData;
+    private ResourceRequest resourceRequest;
 
     public Type getType() {
         return type;
@@ -51,12 +52,20 @@ public class Command implements Serializable {
         this.flowData = flowData;
     }
 
-    public byte[] getDaemonData() {
-        return daemonData;
+    public String getBodyContentType() {
+        return bodyContentType;
     }
 
-    public void setDaemonData(byte[] daemonData) {
-        this.daemonData = daemonData;
+    public void setBodyContentType(String bodyContentType) {
+        this.bodyContentType = bodyContentType;
+    }
+
+    public ResourceRequest getResourceRequest() {
+        return resourceRequest;
+    }
+
+    public void setResourceRequest(ResourceRequest resourceRequest) {
+        this.resourceRequest = resourceRequest;
     }
 
     public enum Type {

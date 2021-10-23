@@ -1,6 +1,6 @@
 package flow;
 
-import auth.AuthState;
+import states.auth.AuthState;
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
 import stacker.flow.BaseFlow;
@@ -8,7 +8,6 @@ import stacker.flow.TerminatorState;
 import stacker.flow.Contract;
 
 public class TestFlow extends BaseFlow<String, String, FlowData> {
-
 
     public TestFlow() {
         super(
@@ -38,7 +37,7 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
 
     @Override
     protected FlowData createFlowData(String arg) {
-        return new FlowData();
+        return new FlowData(arg);
     }
 
     @Override

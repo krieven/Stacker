@@ -1,4 +1,4 @@
-import auth.AuthAnswer;
+import states.auth.AuthAnswer;
 import flow.TestFlow;
 import org.junit.Test;
 import stacker.common.dto.Command;
@@ -51,11 +51,13 @@ public class RunTest {
                         setState("first");
                         this.setFlowData(question1.getFlowData());
                         try {
-                            this.setContentBody(new JsonParser().serialize(new AuthAnswer() {
-                                {
-                                    this.setName("John Smith");
-                                }
-                            }));
+                            this.setContentBody(new JsonParser().serialize(
+                                    new AuthAnswer() {
+                                        {
+                                            setName("John Smith");
+                                        }
+                                    })
+                            );
                         } catch (SerializingException e) {
                             e.printStackTrace();
                         }

@@ -60,7 +60,7 @@ public class FlowServlet extends AsyncServlet {
                         log.error("Command rejected by flow:", error);
                         try {
                             byte[] body = parser.serialize(errorCommand);
-                            ctx.getResponse().setContentType(flow.getContract().getParser().getContentType());
+                            ctx.getResponse().setContentType(flow.getContract().getContentType());
 
                             writeBody(ctx, body);
                             log.info(new String(errorCommand.getContentBody()));

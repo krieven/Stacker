@@ -1,28 +1,30 @@
 package stacker.flow;
 
 import stacker.common.IParser;
+import stacker.common.ParsingException;
+import stacker.common.SerializingException;
 
 /**
- * @param <A> ArgumentType
- * @param <R> ReturnType
+ * @param <Q> ArgumentType
+ * @param <A> ReturnType
  */
 
-public final class Contract<A, R> {
-    private final Class<A> questionType;
-    private final Class<R> answerType;
+public final class Contract<Q, A> {
+    private final Class<Q> questionType;
+    private final Class<A> answerType;
     private final IParser parser;
 
-    public Contract(Class<A> questionType, Class<R> answerType, IParser parser) {
+    public Contract(Class<Q> questionType, Class<A> answerType, IParser parser) {
         this.questionType = questionType;
         this.answerType = answerType;
         this.parser = parser;
     }
 
-    public Class<A> getQuestionType() {
+    public Class<Q> getQuestionType() {
         return questionType;
     }
 
-    public Class<R> getAnswerType() {
+    public Class<A> getAnswerType() {
         return answerType;
     }
 
@@ -30,4 +32,15 @@ public final class Contract<A, R> {
         return parser;
     }
 
+    public String getContentType() {
+        return getParser().getContentType();
+    }
+
+    public byte[] serialize(Q question) throws SerializingException {
+        return getParser().serialize(question);
+    }
+
+    public A parse(byte[] answer) throws ParsingException {
+        return getParser().parse(answer, getAnswerType());
+    }
 }

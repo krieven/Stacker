@@ -10,4 +10,9 @@ public final class TerminatorState<F> extends BaseState<F> {
         context.sendReturn();
     }
 
+    @Override
+    void handle(byte[] answer, FlowContext<? extends F> context) {
+        throw new IllegalStateException("Terminator does not handling answers");
+    }
+
 }

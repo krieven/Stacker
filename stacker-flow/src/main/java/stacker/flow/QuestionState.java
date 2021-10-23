@@ -1,5 +1,6 @@
 package stacker.flow;
 
+import org.jetbrains.annotations.NotNull;
 import stacker.common.dto.Command;
 import stacker.common.SerializingException;
 
@@ -15,17 +16,15 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
         super(exits, contract);
     }
 
-    protected abstract void configure(FlowContext<? extends F> context);
-
     @Override
-    public final void sendQuestion(Q question, FlowContext<? extends F> context) {
+    public final void sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.QUESTION);
         command.setFlow(context.getFlowName());
         command.setState(context.getStateName());
         try {
             command.setFlowData(
-                    getFlow().serializeFlowData(
+                    context.getFlow().serializeFlowData(
                             context.getFlowData()
                     )
             );
@@ -35,7 +34,8 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
         }
 
         try {
-            byte[] sResult = getContract().getParser().serialize(question);
+            byte[] sResult = getContract().serialize(question);
+            command.setBodyContentType(getContract().getContentType());
             command.setContentBody(sResult);
         } catch (SerializingException e) {
             context.getCallback().reject(e);
@@ -45,7 +45,7 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
 
     }
 
-    protected final void addResourceRequestHandler(String path, ResourceRequestHandler<? super F> handler, FlowContext<? extends F> context) {
-        getFlow().addResourceRequestHandler(path, handler);
+    protected final void defineResourceController(String path, ResourceController<F> handler) {
+        resourceControllers.put(path, handler);
     }
 }

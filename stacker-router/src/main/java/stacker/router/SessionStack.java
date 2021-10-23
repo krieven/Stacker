@@ -8,10 +8,8 @@ import java.util.Stack;
 public class SessionStack implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private Stack<SessionStackEntry> stack = new Stack<>();
-
     private final Map<String, byte[]> daemonData = new HashMap<>();
+    private Stack<SessionStackEntry> stack = new Stack<>();
 
     public byte[] getDaemonData(String flowName) {
         flowName = flowName.trim().toUpperCase();

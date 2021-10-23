@@ -1,4 +1,4 @@
-package auth;
+package states.auth;
 
 public interface AuthSupport {
     AuthQuestion createAuthQuestion();

@@ -1,5 +1,6 @@
 package stacker.flow;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import stacker.common.ParsingException;
 
@@ -18,7 +19,6 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
 
         this.exits = exits;
         this.contract = contract;
-
     }
 
 
@@ -26,11 +26,14 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
 
     protected abstract void handleAnswer(A answer, FlowContext<? extends F> context);
 
-    protected abstract void onBadAnswer(FlowContext<? extends F> context);
+    protected void onBadAnswer(FlowContext<? extends F> context) {
+        this.onEnter(context);
+    }
 
+    @Override
     void handle(byte[] answer, FlowContext<? extends F> context) {
         try {
-            A value = getContract().getParser().parse(answer, getContract().getAnswerType());
+            A value = getContract().parse(answer);
             handleAnswer(value, context);
         } catch (ParsingException e) {
             onBadAnswer(context);
@@ -50,7 +53,7 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
         return this;
     }
 
-    protected final void exitState(E exit, FlowContext<? extends F> context) {
+    protected final void exitState(E exit, @NotNull FlowContext<? extends F> context) {
         context.enterState(getTransition(exit));
     }
 

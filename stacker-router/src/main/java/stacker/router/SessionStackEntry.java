@@ -1,7 +1,9 @@
 package stacker.router;
 
 public class SessionStackEntry {
+
     private String flow;
+    private String address;
     private String state;
     private byte[] flowData;
 
@@ -31,4 +33,11 @@ public class SessionStackEntry {
     }
 
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }

@@ -1,5 +1,6 @@
 package stacker.flow;
 
+import org.jetbrains.annotations.NotNull;
 import stacker.common.dto.Command;
 import stacker.common.SerializingException;
 
@@ -18,21 +19,20 @@ public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends Interac
         this.outerFlowName = outerFlowName;
     }
 
-
     @Override
-    public final void sendQuestion(Q question, FlowContext<? extends F> context) {
+    public final void sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
         command.setFlow(getOuterFlowName());
         command.setState(context.getStateName());
         try {
             command.setFlowData(
-                    getFlow().serializeFlowData(
+                    context.getFlow().serializeFlowData(
                             context.getFlowData()
                     )
             );
             command.setContentBody(
-                    getContract().getParser().serialize(question)
+                    getContract().serialize(question)
             );
         } catch (SerializingException e) {
             context.getCallback().reject(e);

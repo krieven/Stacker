@@ -1,4 +1,4 @@
-package auth;
+package states.auth;
 
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
@@ -16,6 +16,7 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
                 ),
                 exits.values()
         );
+        defineResourceController("/", new AuthController());
     }
 
     @Override
@@ -34,11 +35,6 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
         AuthQuestion authQuestion = context.getFlowData().createAuthQuestion();
         authQuestion.setWord("Hello, what is you name?");
         sendQuestion(authQuestion, context);
-    }
-
-    @Override
-    protected void configure(FlowContext<? extends AuthSupport> context) {
-
     }
 
     public enum exits {

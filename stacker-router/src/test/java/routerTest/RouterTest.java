@@ -45,7 +45,7 @@ public class RouterTest {
                 assertEquals("Response body", new String(body));
                 Command lastRequest = transport.lastRequest;
                 assertEquals("Hello world", new String(lastRequest.getContentBody()));
-                assertEquals("OPEN", lastRequest.getType().toString());
+                assertEquals(Command.Type.OPEN, lastRequest.getType());
                 sessionStorage.find(sid, new ICallback<SessionStack>() {
 
                     @Override

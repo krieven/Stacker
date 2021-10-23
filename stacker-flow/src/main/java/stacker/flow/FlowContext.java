@@ -9,15 +9,14 @@ import stacker.common.SerializingException;
 /**
  * @param <F> FlowDataT
  */
-public class FlowContext<F> {
-    private static Logger log = LoggerFactory.getLogger(FlowContext.class);
+public class FlowContext<F> implements IContext<F> {
 
-    private String flowName;
-    private String stateName;
-    private F flowData;
+    private final String flowName;
+    private final String stateName;
+    private final F flowData;
 
-    private BaseFlow<?, ?, F> flow;
-    private ICallback<Command> callback;
+    private final BaseFlow<?, ?, F> flow;
+    private final ICallback<Command> callback;
 
     FlowContext(BaseFlow<?, ?, F> flow,
                 String flowName, String stateName,
@@ -30,14 +29,17 @@ public class FlowContext<F> {
         this.callback = callback;
     }
 
+    @Override
     public String getFlowName() {
         return flowName;
     }
 
+    @Override
     public String getStateName() {
         return stateName;
     }
 
+    @Override
     public F getFlowData() {
         return flowData;
     }
@@ -56,11 +58,10 @@ public class FlowContext<F> {
         command.setType(Command.Type.RETURN);
         try {
             command.setContentBody(
-                    getFlow().getContract()
-                            .getParser().serialize(result)
+                    getFlow().getContract().getParser().serialize(result)
             );
             if (getFlow().isDaemon()) {
-                command.setDaemonData(
+                command.setFlowData(
                         getFlow().serializeFlowData(getFlowData())
                 );
             }

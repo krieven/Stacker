@@ -70,7 +70,7 @@ public class Router {
                                 command.getFlow()
                         )
                 );
-
+                newEntry.setAddress(getAddress(newEntry.getFlow()));
                 sessionStack.push(newEntry);
                 sessionStorage.save(sid, sessionStack);
 
@@ -81,7 +81,7 @@ public class Router {
                 newCommand.setFlowData(sessionStack.getDaemonData(newEntry.getFlow()));
 
                 try {
-                    transport.sendRequest(getAddress(newEntry.getFlow()), newCommand,
+                    transport.sendRequest(newEntry.getAddress(), newCommand,
                             new OnResponseReceived(sid, sessionStack)
                     );
                 } catch (Exception e) {
@@ -104,7 +104,7 @@ public class Router {
                 Command command = responseResult.getResponse();
 
                 String flow = sessionStack.pop().getFlow();
-                sessionStack.setDaemonData(flow, command.getDaemonData());
+                sessionStack.setDaemonData(flow, command.getFlowData());
 
                 SessionStackEntry currentEntry = sessionStack.peek();
 
@@ -117,7 +117,7 @@ public class Router {
 
                 sessionStorage.save(sid, sessionStack);
                 try {
-                    transport.sendRequest(getAddress(newCommand.getFlow()), newCommand,
+                    transport.sendRequest(currentEntry.getAddress(), newCommand,
                             new OnResponseReceived(sid, sessionStack)
                     );
                 } catch (Exception e) {
@@ -218,7 +218,7 @@ public class Router {
             }
             sessionLock.put(sid, callback);
         }
-        sessionStorage.find(sid, new OnSessionFound(sid, body));
+        sessionStorage.find(sid, new OnSessionFound(sid, body, Command.Type.ANSWER));
     }
 
     public interface IRouterCallback {
@@ -229,21 +229,24 @@ public class Router {
 
     private class OnSessionFound implements ICallback<SessionStack> {
 
-        private String sid;
-        private byte[] body;
+        private final String sid;
+        private final byte[] body;
+        private final Command.Type rqType;
 
-        OnSessionFound(String sid, byte[] body) {
+        OnSessionFound(String sid, byte[] body, Command.Type rqType) {
             this.sid = sid;
             this.body = body;
+            this.rqType = rqType;
         }
 
         @Override
         public void success(SessionStack sessionStack) {
-            Command.Type type = Command.Type.ANSWER;
+            Command.Type type = rqType;
             if (sessionStack == null || sessionStack.empty()) {
                 sessionStack = new SessionStack();
                 SessionStackEntry entry = new SessionStackEntry();
                 entry.setFlow(mainFlow);
+                entry.setAddress(getAddress(mainFlow));
                 sessionStack.push(entry);
                 type = Command.Type.OPEN;
             }
@@ -256,7 +259,7 @@ public class Router {
             command.setContentBody(body);
 
             try {
-                transport.sendRequest(getAddress(command.getFlow()), command, new OnResponseReceived(sid, sessionStack));
+                transport.sendRequest(entry.getAddress(), command, new OnResponseReceived(sid, sessionStack));
             } catch (Exception e) {
                 reject(e);
             }
