@@ -1,11 +1,9 @@
 package flow;
 
+import org.jetbrains.annotations.NotNull;
+import stacker.flow.*;
 import states.auth.AuthState;
 import stacker.common.JsonParser;
-import stacker.flow.FlowContext;
-import stacker.flow.BaseFlow;
-import stacker.flow.TerminatorState;
-import stacker.flow.Contract;
 
 public class TestFlow extends BaseFlow<String, String, FlowData> {
 
@@ -45,8 +43,9 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
         return context.getFlowData().getAuthAnswer().getName();
     }
 
+    @NotNull
     @Override
-    protected void onStart(FlowContext<FlowData> context) {
-        enterState("first", context);
+    protected StateCompletion onStart(FlowContext<FlowData> context) {
+        return enterState("first", context);
     }
 }

@@ -1,7 +1,6 @@
 package stacker.common;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
@@ -13,6 +12,7 @@ public class AsyncServer<S extends HttpServlet> {
     private static final Logger log = LoggerFactory.getLogger(AsyncServer.class);
     protected final S serviceServlet;
     private final int port;
+    @SuppressWarnings("FieldCanBeLocal")
     private Server server;
     private ServletContextHandler contextHandler;
 

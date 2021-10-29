@@ -1,9 +1,11 @@
 package states.auth;
 
+import org.jetbrains.annotations.NotNull;
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
 import stacker.flow.QuestionState;
 import stacker.flow.Contract;
+import stacker.flow.StateCompletion;
 
 public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSupport, AuthState.exits> {
 
@@ -19,22 +21,19 @@ public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSuppo
         defineResourceController("/", new AuthController());
     }
 
+    @NotNull
     @Override
-    protected void handleAnswer(AuthAnswer input, FlowContext<? extends AuthSupport> context) {
+    protected StateCompletion handleAnswer(AuthAnswer input, FlowContext<? extends AuthSupport> context) {
         context.getFlowData().setAuthAnswer(input);
-        exitState(exits.FORWARD, context);
+        return exitState(exits.FORWARD, context);
     }
 
+    @NotNull
     @Override
-    protected void onBadAnswer(FlowContext<? extends AuthSupport> context) {
-        onEnter(context);
-    }
-
-    @Override
-    public void onEnter(FlowContext<? extends AuthSupport> context) {
+    public StateCompletion onEnter(FlowContext<? extends AuthSupport> context) {
         AuthQuestion authQuestion = context.getFlowData().createAuthQuestion();
-        authQuestion.setWord("Hello, what is you name?");
-        sendQuestion(authQuestion, context);
+        authQuestion.setWord("Hello, what is your name?");
+        return sendQuestion(authQuestion, context);
     }
 
     public enum exits {

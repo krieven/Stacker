@@ -68,13 +68,14 @@ public abstract class BaseFlow<Q, A, F> {
      * @param command  - the Command that server receive
      * @param callback - the server callback
      */
-    public void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
+    public final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
 
         F flowData = null;
         if (command.getFlowData() != null) {
             try {
                 flowData = parseFlowData(command.getFlowData());
             } catch (ParsingException e) {
+                //TODO change it
                 log.error("Error parsing request", e);
                 callback.reject(e);
                 return;
@@ -112,9 +113,11 @@ public abstract class BaseFlow<Q, A, F> {
 
     protected abstract A makeReturn(FlowContext<F> context);
 
-    protected abstract void onStart(FlowContext<F> context);
+    @NotNull
+    protected abstract StateCompletion onStart(FlowContext<F> context);
 
-    protected void enterState(String name, FlowContext<F> context) {
+    @NotNull
+    protected StateCompletion enterState(String name, FlowContext<F> context) {
         FlowContext<F> transContext =
                 new FlowContext<>(
                         this,
@@ -127,7 +130,7 @@ public abstract class BaseFlow<Q, A, F> {
         if (state == null) {
             throw new IllegalStateException("State \"" + name + "\" was not found");
         }
-        state.onEnter(transContext);
+        return state.onEnter(transContext);
     }
 
     protected void addState(String name, BaseState<? super F> state) {
@@ -166,7 +169,7 @@ public abstract class BaseFlow<Q, A, F> {
                         flowData,
                         context.getCallback()
                 );
-        onStart(newContext);
+        onStart(newContext).completeState();
     }
 
     private BaseState<? super F> getState(String name) {

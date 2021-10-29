@@ -1,6 +1,8 @@
 package stacker.flow;
 
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,8 +12,18 @@ import java.util.Map;
 public abstract class BaseState<F> {
 
     Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
+    private String name;
 
-    public abstract void onEnter(FlowContext<? extends F> context);
+    @NotNull
+    public abstract StateCompletion onEnter(FlowContext<? extends F> context);
 
     abstract void handle(byte[] answer, FlowContext<? extends F> context);
+
+    void setName(String name) {
+        this.name = name;
+    }
+
+    String getName() {
+        return name;
+    }
 }

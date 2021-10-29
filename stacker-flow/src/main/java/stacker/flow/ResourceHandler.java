@@ -17,13 +17,15 @@ public final class ResourceHandler<F> implements IHandler<Command, F> {
         ResourceLeaf<ResourceController<? super F>> leaf =
                 context.getFlow().getResourceLeaf(context.getStateName(), request.getPath());
         if (leaf != null) {
-            leaf.getResource().handle(leaf.getPathInfo(), request.getParameters(), context);
+            leaf.getResource().handle(leaf.getPathInfo(), request.getParameters(), context).completeState();
+            return;
         }
         context.getCallback().success(
                 new Command() {
                     {
                         setType(Type.RESOURCE);
                         setBodyContentType("text/html");
+                        setContentBody("404 Resource not found".getBytes());
                     }
                 }
         );

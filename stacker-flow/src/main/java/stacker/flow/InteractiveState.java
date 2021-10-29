@@ -13,7 +13,7 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
 
     private Contract<Q, A> contract;
 
-    protected InteractiveState(Enum<E>[] exits, Contract<Q, A> contract) {
+    InteractiveState(Enum<E>[] exits, Contract<Q, A> contract) {
         Assert.assertNotNull("exits should not be null", exits);
         Assert.assertNotNull("contract should not be null", contract);
 
@@ -22,21 +22,23 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
     }
 
 
-    protected abstract void sendQuestion(Q question, FlowContext<? extends F> context);
+    @NotNull
+    protected abstract StateCompletion sendQuestion(Q question, FlowContext<? extends F> context);
 
-    protected abstract void handleAnswer(A answer, FlowContext<? extends F> context);
+    @NotNull
+    protected abstract StateCompletion handleAnswer(A answer, FlowContext<? extends F> context);
 
-    protected void onBadAnswer(FlowContext<? extends F> context) {
-        this.onEnter(context);
+    protected StateCompletion onBadAnswer(FlowContext<? extends F> context) {
+        return this.onEnter(context);
     }
 
     @Override
     void handle(byte[] answer, FlowContext<? extends F> context) {
         try {
             A value = getContract().parse(answer);
-            handleAnswer(value, context);
+            handleAnswer(value, context).completeState();
         } catch (ParsingException e) {
-            onBadAnswer(context);
+            onBadAnswer(context).completeState();
         }
     }
 
@@ -53,8 +55,8 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
         return this;
     }
 
-    protected final void exitState(E exit, @NotNull FlowContext<? extends F> context) {
-        context.enterState(getTransition(exit));
+    protected final StateCompletion exitState(E exit, @NotNull FlowContext<? extends F> context) {
+        return context.enterState(getTransition(exit));
     }
 
     Enum<?>[] getExits() {

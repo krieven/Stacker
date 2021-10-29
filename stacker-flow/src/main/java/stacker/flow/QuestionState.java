@@ -16,8 +16,9 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
         super(exits, contract);
     }
 
+    @NotNull
     @Override
-    public final void sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
+    public final StateCompletion sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.QUESTION);
         command.setFlow(context.getFlowName());
@@ -29,8 +30,7 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
                     )
             );
         } catch (SerializingException e) {
-            context.getCallback().reject(e);
-            return;
+            return new StateCompletion(() -> context.getCallback().reject(e));
         }
 
         try {
@@ -38,11 +38,9 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
             command.setBodyContentType(getContract().getContentType());
             command.setContentBody(sResult);
         } catch (SerializingException e) {
-            context.getCallback().reject(e);
-            return;
+            return new StateCompletion(() -> context.getCallback().reject(e));
         }
-        context.getCallback().success(command);
-
+        return new StateCompletion(() -> context.getCallback().success(command));
     }
 
     protected final void defineResourceController(String path, ResourceController<F> handler) {

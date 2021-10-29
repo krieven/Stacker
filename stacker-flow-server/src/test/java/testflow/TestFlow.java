@@ -1,9 +1,11 @@
 package testflow;
 
+import org.jetbrains.annotations.NotNull;
 import stacker.common.JsonParser;
 import stacker.flow.BaseFlow;
 import stacker.flow.Contract;
 import stacker.flow.FlowContext;
+import stacker.flow.StateCompletion;
 
 
 public class TestFlow extends BaseFlow<String, String, TestFlowData> {
@@ -39,8 +41,9 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
         return null;
     }
 
+    @NotNull
     @Override
-    protected void onStart(FlowContext<TestFlowData> context) {
-        enterState("", context);
+    protected StateCompletion onStart(FlowContext<TestFlowData> context) {
+        return enterState("", context);
     }
 }

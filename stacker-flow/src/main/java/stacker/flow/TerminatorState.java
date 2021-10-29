@@ -1,13 +1,16 @@
 package stacker.flow;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  *
  */
 public final class TerminatorState<F> extends BaseState<F> {
 
+    @NotNull
     @Override
-    public void onEnter(FlowContext<? extends F> context) {
-        context.sendReturn();
+    public StateCompletion onEnter(FlowContext<? extends F> context) {
+        return new StateCompletion(context::sendReturn);
     }
 
     @Override

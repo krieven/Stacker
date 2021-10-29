@@ -10,6 +10,7 @@ import stacker.common.SerializingException;
  * @param <F> FlowDataT
  */
 public class FlowContext<F> implements IContext<F> {
+    private static final Logger log = LoggerFactory.getLogger(FlowContext.class);
 
     private final String flowName;
     private final String stateName;
@@ -72,8 +73,8 @@ public class FlowContext<F> implements IContext<F> {
         getCallback().success(command);
     }
 
-    void enterState(String name) {
-        getFlow().enterState(name, this);
+    StateCompletion enterState(String name) {
+        return getFlow().enterState(name, this);
     }
 
 }

@@ -12,14 +12,16 @@ import java.util.Map;
 public abstract class ResourceController<F> {
     private static final Logger log = LoggerFactory.getLogger(ResourceController.class);
 
-    protected abstract void handle(
-            List<String> path, Map<String, String> parameters, FlowContext<? extends F> context
+    @NotNull
+    protected abstract StateCompletion handle(
+            List<String> pathInfo, Map<String, String> parameters, FlowContext<? extends F> context
     );
 
     protected abstract String getContentType();
 
-    protected final void sendResponse(byte[] resp, @NotNull FlowContext<? extends F> context) {
-        context.getCallback().success(
+    protected final StateCompletion sendResponse(byte[] resp, @NotNull FlowContext<? extends F> context) {
+
+        return new StateCompletion(() -> context.getCallback().success(
                 new Command() {
                     {
                         setType(Type.RESOURCE);
@@ -27,6 +29,6 @@ public abstract class ResourceController<F> {
                         setContentBody(resp);
                     }
                 }
-        );
+        ));
     }
 }

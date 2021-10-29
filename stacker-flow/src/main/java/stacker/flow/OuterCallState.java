@@ -12,15 +12,14 @@ import stacker.common.SerializingException;
  */
 public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends InteractiveState<Q, A, F, E> {
 
-    private String outerFlowName;
 
-    public OuterCallState(String outerFlowName, Contract<Q, A> outerCallContract, E[] exits) {
+    public OuterCallState(Contract<Q, A> outerCallContract, E[] exits) {
         super(exits, outerCallContract);
-        this.outerFlowName = outerFlowName;
     }
 
+    @NotNull
     @Override
-    public final void sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
+    public final StateCompletion sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
         command.setFlow(getOuterFlowName());
@@ -35,15 +34,15 @@ public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends Interac
                     getContract().serialize(question)
             );
         } catch (SerializingException e) {
-            context.getCallback().reject(e);
-            return;
+            return new StateCompletion(() -> context.getCallback().reject(e));
         }
-        context.getCallback().success(command);
+
+        return new StateCompletion(() -> context.getCallback().success(command));
     }
 
 
     public final String getOuterFlowName() {
-        return outerFlowName;
+        return getName();
     }
 
 }
