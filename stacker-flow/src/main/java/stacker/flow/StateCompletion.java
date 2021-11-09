@@ -7,12 +7,11 @@ import java.util.concurrent.CompletableFuture;
 
 public final class StateCompletion {
 
-    private final Runnable runnable;
+    private Runnable runnable = null;
 
     @ApiStatus.Experimental
     public StateCompletion(CompletableFuture<StateCompletion> future) {
-        runnable = () -> {
-        };
+        future.thenAccept(StateCompletion::doCompletion);
     }
 
     StateCompletion(@NotNull Runnable runnable) {
@@ -20,6 +19,9 @@ public final class StateCompletion {
     }
 
     void doCompletion() {
+        if (runnable == null) {
+            return;
+        }
         runnable.run();
     }
 

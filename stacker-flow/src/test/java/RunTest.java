@@ -144,6 +144,43 @@ public class RunTest {
                     @Override
                     public void success(Command command) {
                         assertNotNull(command);
+                        assertEquals(Command.Type.RESOURCE, command.getType());
+                        assertEquals("Hello hello", new String(command.getContentBody()));
+                        assertNull(command.getFlowData());
+                        assertEquals("text/plain", command.getBodyContentType());
+                    }
+
+                    @Override
+                    public void reject(Exception error) {
+                        assertNull(error);
+                    }
+                }
+        );
+
+        flow.handleCommand(
+                new Command() {
+                    {
+                        setType(Type.RESOURCE);
+                        setFlow("main");
+                        setState("first");
+                        setFlowData("{\"authAnswer\":{\"name\":\"John Smith\"}}".getBytes());
+                        setResourceRequest(
+                                new ResourceRequest() {
+                                    {
+                                        setPath("/world");
+                                    }
+                                }
+                        );
+                    }
+                },
+                new ICallback<Command>() {
+                    @Override
+                    public void success(Command command) {
+                        assertNotNull(command);
+                        assertEquals(Command.Type.RESOURCE, command.getType());
+                        assertEquals("404 Resource not found", new String(command.getContentBody()));
+                        assertNull(command.getFlowData());
+                        assertEquals("text/html", command.getBodyContentType());
                     }
 
                     @Override

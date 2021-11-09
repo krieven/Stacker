@@ -82,10 +82,10 @@ public class Router {
 
                 try {
                     transport.sendRequest(newEntry.getAddress(), newCommand,
-                            new OnResponseReceived(sid, sessionStack)
+                            new ResponseConsumer(sid, sessionStack)
                     );
                 } catch (Exception e) {
-                    new OnResponseReceived(sid, sessionStack).reject(e);
+                    new ResponseConsumer(sid, sessionStack).reject(e);
                 }
             }
 
@@ -118,10 +118,10 @@ public class Router {
                 sessionStorage.save(sid, sessionStack);
                 try {
                     transport.sendRequest(currentEntry.getAddress(), newCommand,
-                            new OnResponseReceived(sid, sessionStack)
+                            new ResponseConsumer(sid, sessionStack)
                     );
                 } catch (Exception e) {
-                    new OnResponseReceived(sid, sessionStack).reject(e);
+                    new ResponseConsumer(sid, sessionStack).reject(e);
                 }
             }
 
@@ -218,7 +218,7 @@ public class Router {
             }
             sessionLock.put(sid, callback);
         }
-        sessionStorage.find(sid, new OnSessionFound(sid, body, Command.Type.ANSWER));
+        sessionStorage.find(sid, new SessionConsumer(sid, body, Command.Type.ANSWER));
     }
 
     public interface IRouterCallback {
@@ -227,13 +227,13 @@ public class Router {
         void reject(Exception exception);
     }
 
-    private class OnSessionFound implements ICallback<SessionStack> {
+    private class SessionConsumer implements ICallback<SessionStack> {
 
         private final String sid;
         private final byte[] body;
         private final Command.Type rqType;
 
-        OnSessionFound(String sid, byte[] body, Command.Type rqType) {
+        SessionConsumer(String sid, byte[] body, Command.Type rqType) {
             this.sid = sid;
             this.body = body;
             this.rqType = rqType;
@@ -259,7 +259,7 @@ public class Router {
             command.setContentBody(body);
 
             try {
-                transport.sendRequest(entry.getAddress(), command, new OnResponseReceived(sid, sessionStack));
+                transport.sendRequest(entry.getAddress(), command, new ResponseConsumer(sid, sessionStack));
             } catch (Exception e) {
                 reject(e);
             }
@@ -277,11 +277,11 @@ public class Router {
         }
     }
 
-    private class OnResponseReceived implements ICallback<Command> {
+    private class ResponseConsumer implements ICallback<Command> {
         private String sid;
         private SessionStack sessionStack;
 
-        OnResponseReceived(String sid, SessionStack sessionStack) {
+        ResponseConsumer(String sid, SessionStack sessionStack) {
             this.sid = sid;
             this.sessionStack = sessionStack;
         }

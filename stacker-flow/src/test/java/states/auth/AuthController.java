@@ -16,8 +16,11 @@ public class AuthController extends ResourceController<AuthSupport> {
     @Override
     protected StateCompletion handle(List<String> path, Map<String, String> parameters, FlowContext<? extends AuthSupport> context) {
 //        return sendResponse("Hello hello".getBytes(Charset.forName("UTF-8")), context);
+
         return new StateCompletion(
-                CompletableFuture.supplyAsync(() -> sendResponse("Hello hello".getBytes(Charset.forName("UTF-8")), context))
+                CompletableFuture.supplyAsync(
+                        () -> sendResponse("Hello hello".getBytes(Charset.forName("UTF-8")), context)
+                )
         );
     }
 

@@ -31,7 +31,7 @@ public class ResourceTree<T> {
     }
 
     @Nullable
-    private ResourceLeaf<T> find(LinkedList<String> path) {
+    private ResourceLeaf<T> find(List<String> path) {
 
         ResourceTree<T> lastFound = this;
         ResourceTree<T> current = this;
@@ -39,7 +39,10 @@ public class ResourceTree<T> {
 
         for (String part : path) {
             pathInfo.add(part);
-            //todo current may be null
+
+            if (current == null) {
+                continue;
+            }
             if (current.children.containsKey(part) && current.children.get(part).hasResource()) {
                 lastFound = current.children.get(part);
                 pathInfo = new ArrayList<>();

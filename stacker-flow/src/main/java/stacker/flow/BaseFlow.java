@@ -200,11 +200,11 @@ public abstract class BaseFlow<Q, A, F> {
             Enum<?>[] exits;
             try {
                 exits = getInteractiveState(key).getExits();
-                if (exits == null || exits.length == 0) {
-                    throw new IllegalStateException("StateInteractive " + key + " should have exits");
-                }
             } catch (Exception e) {
                 continue;
+            }
+            if (exits == null || exits.length == 0) {
+                throw new IllegalStateException("StateInteractive " + key + " should have exits");
             }
             for (Enum<?> exit : exits) {
                 String target;
