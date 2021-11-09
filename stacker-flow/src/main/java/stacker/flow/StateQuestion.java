@@ -10,9 +10,9 @@ import stacker.common.SerializingException;
  * @param <F> flow data type
  * @param <E> enum of exits
  */
-public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends InteractiveState<Q, A, F, E> {
+public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInteractive<Q, A, F, E> {
 
-    public QuestionState(Contract<Q, A> contract, E[] exits) {
+    public StateQuestion(Contract<Q, A> contract, E[] exits) {
         super(exits, contract);
     }
 
@@ -41,6 +41,12 @@ public abstract class QuestionState<Q, A, F, E extends Enum<E>> extends Interact
             return new StateCompletion(() -> context.getCallback().reject(e));
         }
         return new StateCompletion(() -> context.getCallback().success(command));
+    }
+
+    @NotNull
+    @Override
+    public StateCompletion onErrorParsingAnswer(FlowContext<? extends F> context) {
+        return this.onEnter(context);
     }
 
     protected final void defineResourceController(String path, ResourceController<F> handler) {

@@ -3,17 +3,14 @@ package flow;
 import states.auth.AuthAnswer;
 import states.auth.AuthSupport;
 import states.auth.AuthQuestion;
+import states.outer.OuterSupport;
 
-public class FlowData implements AuthSupport {
+public class FlowData implements AuthSupport, OuterSupport {
 
     private String argument;
     private AuthAnswer authAnswer;
 
     public FlowData() {
-    }
-
-    FlowData(String argument) {
-        this.argument = argument;
     }
 
     @Override

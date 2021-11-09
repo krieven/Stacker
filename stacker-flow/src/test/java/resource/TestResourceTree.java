@@ -5,13 +5,14 @@ import org.junit.Test;
 import stacker.flow.resource.ResourceLeaf;
 import stacker.flow.resource.ResourceTree;
 
-public class TestResource {
+public class TestResourceTree {
 
     @Test
     public void treeTest() {
         ResourceTree<String> tree = new ResourceTree<>();
         tree.add("/some/path", "somePath");
 
+        Assert.assertNull(tree.find(null));
         Assert.assertNull(tree.find("/"));
         Assert.assertNull(tree.find("/some"));
         Assert.assertNull(tree.find("/another"));

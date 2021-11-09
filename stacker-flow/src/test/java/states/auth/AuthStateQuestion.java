@@ -3,13 +3,13 @@ package states.auth;
 import org.jetbrains.annotations.NotNull;
 import stacker.common.JsonParser;
 import stacker.flow.FlowContext;
-import stacker.flow.QuestionState;
+import stacker.flow.StateQuestion;
 import stacker.flow.Contract;
 import stacker.flow.StateCompletion;
 
-public class AuthState extends QuestionState<AuthQuestion, AuthAnswer, AuthSupport, AuthState.exits> {
+public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, AuthSupport, AuthStateQuestion.exits> {
 
-    public AuthState() {
+    public AuthStateQuestion() {
         super(
                 new Contract<>(
                         AuthQuestion.class,

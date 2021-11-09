@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-public class StateCompletion {
+public final class StateCompletion {
 
     private final Runnable runnable;
 
@@ -19,7 +19,7 @@ public class StateCompletion {
         this.runnable = runnable;
     }
 
-    void completeState() {
+    void doCompletion() {
         runnable.run();
     }
 

@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class TerminatorState<F> extends BaseState<F> {
+public final class StateTerminator<F> extends BaseState<F> {
 
     @NotNull
     @Override

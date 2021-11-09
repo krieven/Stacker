@@ -1,3 +1,5 @@
+import org.junit.Ignore;
+import stacker.common.dto.ResourceRequest;
 import states.auth.AuthAnswer;
 import flow.TestFlow;
 import org.junit.Test;
@@ -7,16 +9,17 @@ import stacker.common.JsonParser;
 import stacker.common.SerializingException;
 import stacker.flow.BaseFlow;
 
+import java.util.HashMap;
+
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 
 public class RunTest {
+    private BaseFlow flow = new TestFlow();
+
     @Test
-    public void runTest() {
-        BaseFlow flow = new TestFlow();
-
-        Command question1 = new Command();
-
+    public void testOpen() {
         flow.handleCommand(
                 new Command() {
                     {
@@ -33,23 +36,34 @@ public class RunTest {
                     @Override
                     public void success(Command command) {
                         assertNotNull(command);
-                        question1.setFlowData(command.getFlowData());
+                        assertEquals(Command.Type.QUESTION, command.getType());
+                        assertEquals(
+                                "{\"argument\":\"hello\",\"authAnswer\":null}",
+                                new String(command.getFlowData())
+                        );
+                        assertEquals(
+                                "{\"word\":\"Hello, what is your name?\"}",
+                                new String(command.getContentBody())
+                        );
                     }
 
                     @Override
                     public void reject(Exception error) {
-                        throw new RuntimeException(error);
+                        assertNull(error);
                     }
                 }
         );
+    }
 
+    @Test
+    public void testAnswer() {
         flow.handleCommand(
                 new Command() {
                     {
                         setType(Type.ANSWER);
                         setFlow("main");
                         setState("first");
-                        this.setFlowData(question1.getFlowData());
+                        this.setFlowData("{\"argument\":\"hello\"}".getBytes());
                         try {
                             this.setContentBody(new JsonParser().serialize(
                                     new AuthAnswer() {
@@ -61,6 +75,69 @@ public class RunTest {
                         } catch (SerializingException e) {
                             e.printStackTrace();
                         }
+                    }
+                },
+                new ICallback<Command>() {
+                    @Override
+                    public void success(Command command) {
+                        assertNotNull(command);
+                        assertEquals("OUTERCALL", command.getFlow());
+                        assertEquals("OUTERCALL", command.getState());
+                        assertEquals("{}", new String(command.getContentBody()));
+                        assertEquals("{\"argument\":\"hello\",\"authAnswer\":{\"name\":\"John Smith\"}}", new String(command.getFlowData()));
+                    }
+
+                    @Override
+                    public void reject(Exception error) {
+                        assertNull(error);
+                    }
+                }
+        );
+    }
+
+    @Test
+    public void testReturn() {
+        flow.handleCommand(
+                new Command() {
+                    {
+                        setType(Type.RETURN);
+                        setFlow("main");
+                        setState("outerCall");
+                        setFlowData("{\"authAnswer\":{\"name\":\"John Smith\"}}".getBytes());
+                        setContentBody("{}".getBytes());
+                    }
+                },
+                new ICallback<Command>() {
+                    @Override
+                    public void success(Command command) {
+                        assertNotNull(command);
+                        assertEquals(Command.Type.RETURN, command.getType());
+                        assertEquals("\"John Smith\"", new String(command.getContentBody()));
+                    }
+
+                    @Override
+                    public void reject(Exception error) {
+                        assertNull(error);
+                    }
+                });
+    }
+
+    @Test
+    public void testResource() {
+        flow.handleCommand(
+                new Command() {
+                    {
+                        setType(Type.RESOURCE);
+                        setFlow("main");
+                        setState("first");
+                        setFlowData("{\"authAnswer\":{\"name\":\"John Smith\"}}".getBytes());
+                        setResourceRequest(
+                                new ResourceRequest() {
+                                    {
+                                        setPath("/hello/world");
+                                    }
+                                }
+                        );
                     }
                 },
                 new ICallback<Command>() {

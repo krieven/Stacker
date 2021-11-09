@@ -10,10 +10,10 @@ import stacker.common.SerializingException;
  * @param <F> flow data type
  * @param <E> exits enum
  */
-public abstract class OuterCallState<Q, A, F, E extends Enum<E>> extends InteractiveState<Q, A, F, E> {
+public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateInteractive<Q, A, F, E> {
 
 
-    public OuterCallState(Contract<Q, A> outerCallContract, E[] exits) {
+    public StateOuterCall(Contract<Q, A> outerCallContract, E[] exits) {
         super(exits, outerCallContract);
     }
 

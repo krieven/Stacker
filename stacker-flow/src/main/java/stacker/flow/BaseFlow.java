@@ -46,7 +46,7 @@ public abstract class BaseFlow<Q, A, F> {
                 getState(command.getState())
                         .handle(command.getContentBody(), context));
 
-        incomingHandlers.put(Command.Type.RESOURCE, new ResourceHandler<>());
+        incomingHandlers.put(Command.Type.RESOURCE, new HandlerResource<>());
     }
 
     protected BaseFlow(
@@ -75,7 +75,6 @@ public abstract class BaseFlow<Q, A, F> {
             try {
                 flowData = parseFlowData(command.getFlowData());
             } catch (ParsingException e) {
-                //TODO change it
                 log.error("Error parsing request", e);
                 callback.reject(e);
                 return;
@@ -96,6 +95,7 @@ public abstract class BaseFlow<Q, A, F> {
         try {
             handler.handle(command, context);
         } catch (Exception e) {
+            //todo change it to ERROR(IllegalArgument)
             log.error("Error handling request", e);
             callback.reject(e);
         }
@@ -142,6 +142,7 @@ public abstract class BaseFlow<Q, A, F> {
         assertFalse("this State already added into the Flow", states.values().contains(state));
 
         states.put(name, state);
+        state.setName(name);
 
         if (state.resourceControllers.size() > 0) {
             ResourceTree<ResourceController<? super F>> handlers = new ResourceTree<>();
@@ -169,7 +170,7 @@ public abstract class BaseFlow<Q, A, F> {
                         flowData,
                         context.getCallback()
                 );
-        onStart(newContext).completeState();
+        onStart(newContext).doCompletion();
     }
 
     private BaseState<? super F> getState(String name) {
@@ -177,9 +178,9 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     @SuppressWarnings("unchecked")
-    private InteractiveState<?, ?, ? super F, ?> getInteractiveState(String name) throws ClassCastException {
+    private StateInteractive<?, ?, ? super F, ?> getInteractiveState(String name) throws ClassCastException {
         BaseState<? super F> state = getState(name);
-        return (InteractiveState<?, ?, ? super F, ?>) state;
+        return (StateInteractive<?, ?, ? super F, ?>) state;
     }
 
     private Q parseRq(byte[] rq) throws ParsingException {
@@ -200,8 +201,7 @@ public abstract class BaseFlow<Q, A, F> {
             try {
                 exits = getInteractiveState(key).getExits();
                 if (exits == null || exits.length == 0) {
-                    log.error("InteractiveState should have exits");
-                    continue;
+                    throw new IllegalStateException("StateInteractive " + key + " should have exits");
                 }
             } catch (Exception e) {
                 continue;
@@ -225,8 +225,8 @@ public abstract class BaseFlow<Q, A, F> {
         boolean hasTerminator = false;
         for (String key : states.keySet()) {
             if (!targets.contains(key))
-                log.info("State " + key + " is unreachable");
-            if (getState(key) instanceof TerminatorState)
+                log.warn("State " + key + " is unreachable");
+            if (getState(key) instanceof StateTerminator)
                 hasTerminator = true;
         }
         if (!hasTerminator) {
@@ -247,6 +247,7 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     ResourceLeaf<ResourceController<? super F>> getResourceLeaf(String stateName, String path) {
+        stateName = stateName.trim().toUpperCase();
         if (!resourceControllers.containsKey(stateName)) {
             return null;
         }

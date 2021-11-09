@@ -2,8 +2,9 @@ package flow;
 
 import org.jetbrains.annotations.NotNull;
 import stacker.flow.*;
-import states.auth.AuthState;
+import states.auth.AuthStateQuestion;
 import stacker.common.JsonParser;
+import states.outer.OuterCall;
 
 public class TestFlow extends BaseFlow<String, String, FlowData> {
 
@@ -21,11 +22,15 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
 
     @Override
     protected void configure() {
-        addState("first", new AuthState()
-                .withExit(AuthState.exits.FORWARD, "exit")
-                .withExit(AuthState.exits.BACKWARD, "exit")
+        addState("first", new AuthStateQuestion()
+                .withExit(AuthStateQuestion.exits.FORWARD, "outerCall")
+                .withExit(AuthStateQuestion.exits.BACKWARD, "exit")
         );
-        addState("exit", new TerminatorState<>());
+        addState("outerCall", new OuterCall()
+                .withExit(OuterCall.Exits.SUCCESS, "exit")
+                .withExit(OuterCall.Exits.ERROR, "exit")
+        );
+        addState("exit", new StateTerminator<>());
     }
 
     @Override
@@ -35,7 +40,9 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
 
     @Override
     protected FlowData createFlowData(String arg) {
-        return new FlowData(arg);
+        return new FlowData() {{
+            setArgument(arg);
+        }};
     }
 
     @Override

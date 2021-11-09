@@ -9,6 +9,10 @@
           "target": "other-flow-real-name"
         }
       ]
+    },
+    {
+      "name": "other-flow-real-name",
+      "address": "http://localhost:3002/"
     }
   ],
   "mainFlow": "main"

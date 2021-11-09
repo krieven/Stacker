@@ -7,13 +7,13 @@ import stacker.common.ParsingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseState<F> {
+public abstract class StateInteractive<Q, A, F, E extends Enum<E>> extends BaseState<F> {
     private final Map<Enum<?>, String> transitions = new HashMap<>();
     private final Enum<?>[] exits;
 
     private Contract<Q, A> contract;
 
-    InteractiveState(Enum<E>[] exits, Contract<Q, A> contract) {
+    StateInteractive(Enum<E>[] exits, Contract<Q, A> contract) {
         Assert.assertNotNull("exits should not be null", exits);
         Assert.assertNotNull("contract should not be null", contract);
 
@@ -28,17 +28,16 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
     @NotNull
     protected abstract StateCompletion handleAnswer(A answer, FlowContext<? extends F> context);
 
-    protected StateCompletion onBadAnswer(FlowContext<? extends F> context) {
-        return this.onEnter(context);
-    }
+    @NotNull
+    protected abstract StateCompletion onErrorParsingAnswer(FlowContext<? extends F> context);
 
     @Override
     void handle(byte[] answer, FlowContext<? extends F> context) {
         try {
             A value = getContract().parse(answer);
-            handleAnswer(value, context).completeState();
+            handleAnswer(value, context).doCompletion();
         } catch (ParsingException e) {
-            onBadAnswer(context).completeState();
+            onErrorParsingAnswer(context).doCompletion();
         }
     }
 
@@ -46,7 +45,7 @@ public abstract class InteractiveState<Q, A, F, E extends Enum<E>> extends BaseS
         return transitions.get(key);
     }
 
-    public final InteractiveState<Q, A, F, E> withExit(E exit, String target) {
+    public final StateInteractive<Q, A, F, E> withExit(E exit, String target) {
         target = target.trim().toUpperCase();
         if (transitions.containsKey(exit)) {
             throw new IllegalArgumentException("transition \"" + exit + "\" already defined");
