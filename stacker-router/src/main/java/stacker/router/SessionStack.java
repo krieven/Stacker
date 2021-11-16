@@ -9,7 +9,7 @@ public class SessionStack implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private final Map<String, byte[]> daemonData = new HashMap<>();
-    private Stack<SessionStackEntry> stack = new Stack<>();
+    private final Stack<SessionStackEntry> stack = new Stack<>();
 
     public byte[] getDaemonData(String flowName) {
         flowName = flowName.trim().toUpperCase();
@@ -29,8 +29,8 @@ public class SessionStack implements Serializable {
         return stack.peek();
     }
 
-    public SessionStackEntry push(SessionStackEntry entry) {
-        return stack.push(entry);
+    public void push(SessionStackEntry entry) {
+        stack.push(entry);
     }
 
     public boolean empty() {

@@ -1,14 +1,15 @@
 package stacker.router;
 
 
+import org.jetbrains.annotations.NotNull;
 import stacker.common.dto.Command;
 
 class RouterResponseResult {
-    private String sid;
-    private SessionStack sessionStack;
-    private Command response;
+    private final String sid;
+    private final SessionStack sessionStack;
+    private final Command response;
 
-    RouterResponseResult(String sid, SessionStack sessionStack, Command response) {
+    RouterResponseResult(@NotNull String sid, @NotNull SessionStack sessionStack, @NotNull Command response) {
         this.sid = sid;
         this.sessionStack = sessionStack;
         this.response = response;

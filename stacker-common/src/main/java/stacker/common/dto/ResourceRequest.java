@@ -21,4 +21,12 @@ public class ResourceRequest {
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
     }
+
+    @Override
+    public String toString() {
+        return "ResourceRequest{" +
+                "path='" + path + '\'' +
+                ", parameters=" + parameters +
+                '}';
+    }
 }

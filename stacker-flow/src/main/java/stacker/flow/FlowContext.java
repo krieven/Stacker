@@ -57,6 +57,7 @@ public class FlowContext<F> implements IContext<F> {
         Object result = getFlow().makeReturn(this);
         Command command = new Command();
         command.setType(Command.Type.RETURN);
+        command.setBodyContentType(getFlow().getContract().getContentType());
         try {
             command.setContentBody(
                     getFlow().getContract().getParser().serialize(result)

@@ -36,6 +36,7 @@ public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInt
         try {
             byte[] sResult = getContract().serialize(question);
             command.setBodyContentType(getContract().getContentType());
+            command.setBodyContentType(getContract().getContentType());
             command.setContentBody(sResult);
         } catch (SerializingException e) {
             return new StateCompletion(() -> context.getCallback().reject(e));

@@ -6,31 +6,33 @@ import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.dto.Command;
 import stacker.common.ICallback;
 
 public class Router {
-    private static Logger log = LoggerFactory.getLogger(Router.class);
+    private static final Logger log = LoggerFactory.getLogger(Router.class);
 
-    private ITransport transport;
-    private ISessionStorage sessionStorage;
+    private final ITransport transport;
+    private final ISessionStorage sessionStorage;
 
-    private Map<String, String> flows = new HashMap<>();
-    private Map<String, Map<String, String>> flowMapping = new HashMap<>();
+    private final Map<String, String> flows = new HashMap<>();
+    private final Map<String, Map<String, String>> flowMapping = new HashMap<>();
     private String mainFlow;
 
-    private Map<Command.Type, ICallback<RouterResponseResult>> responseHandlers = new HashMap<>();
-    private Map<String, IRouterCallback> sessionLock = new HashMap<>();
+    private final Map<Command.Type, Consumer<RouterResponseResult>> responseHandlers = new HashMap<>();
+    private final Map<String, IRouterCallback> sessionLock = new HashMap<>();
 
     //here responseHandlers are
     {
-        responseHandlers.put(Command.Type.QUESTION, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.QUESTION, new Consumer<RouterResponseResult>() {
 
             @Override
-            public void success(RouterResponseResult responseResult) {
+            public void accept(RouterResponseResult responseResult) {
                 String sid = responseResult.getSid();
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
@@ -42,19 +44,14 @@ public class Router {
 
                 sessionStorage.save(sid, sessionStack);
                 IRouterCallback routerCallback = sessionLock.remove(sid);
-                routerCallback.success(sid, command.getContentBody());
-            }
-
-            @Override
-            public void reject(Exception error) {
-                log.error(error.getMessage(), error);
+                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
             }
         });
 
-        responseHandlers.put(Command.Type.OPEN, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.OPEN, new Consumer<RouterResponseResult>() {
 
             @Override
-            public void success(RouterResponseResult responseResult) {
+            public void accept(RouterResponseResult responseResult) {
                 String sid = responseResult.getSid();
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
@@ -82,69 +79,70 @@ public class Router {
 
                 try {
                     transport.sendRequest(newEntry.getAddress(), newCommand,
-                            new ResponseConsumer(sid, sessionStack)
+                            new ResponseCallback(sid, sessionStack)
                     );
                 } catch (Exception e) {
-                    new ResponseConsumer(sid, sessionStack).reject(e);
+                    sessionLock.remove(sid).reject(e);
                 }
-            }
-
-            @Override
-            public void reject(Exception error) {
-                log.error(error.getMessage(), error);
             }
         });
 
-        responseHandlers.put(Command.Type.RETURN, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.RETURN, new Consumer<RouterResponseResult>() {
 
             @Override
-            public void success(RouterResponseResult responseResult) {
+            public void accept(RouterResponseResult responseResult) {
                 String sid = responseResult.getSid();
                 SessionStack sessionStack = responseResult.getSessionStack();
                 Command command = responseResult.getResponse();
 
                 String flow = sessionStack.pop().getFlow();
                 sessionStack.setDaemonData(flow, command.getFlowData());
+                sessionStorage.save(sid, sessionStack);
 
                 SessionStackEntry currentEntry = sessionStack.peek();
 
-                Command newCommand = new Command();
-                newCommand.setType(Command.Type.RETURN);
-                newCommand.setFlow(currentEntry.getFlow());
-                newCommand.setState(currentEntry.getState());
-                newCommand.setFlowData(currentEntry.getFlowData());
-                newCommand.setContentBody(command.getContentBody());
+                if (currentEntry != null) {
+                    Command newCommand = new Command();
+                    newCommand.setType(Command.Type.RETURN);
+                    newCommand.setFlow(currentEntry.getFlow());
+                    newCommand.setState(currentEntry.getState());
+                    newCommand.setFlowData(currentEntry.getFlowData());
+                    newCommand.setContentBody(command.getContentBody());
 
-                sessionStorage.save(sid, sessionStack);
-                try {
-                    transport.sendRequest(currentEntry.getAddress(), newCommand,
-                            new ResponseConsumer(sid, sessionStack)
-                    );
-                } catch (Exception e) {
-                    new ResponseConsumer(sid, sessionStack).reject(e);
+                    try {
+                        transport.sendRequest(currentEntry.getAddress(), newCommand,
+                                new ResponseCallback(sid, sessionStack)
+                        );
+                    } catch (Exception e) {
+                        new ResponseCallback(sid, sessionStack).reject(e);
+                    }
+                    return;
                 }
-            }
-
-            @Override
-            public void reject(Exception error) {
-                log.error(error.getMessage(), error);
+                sessionLock.remove(sid).success(sid, command.getBodyContentType(), command.getContentBody());
             }
         });
 
-        responseHandlers.put(Command.Type.ERROR, new ICallback<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.ERROR, new Consumer<RouterResponseResult>() {
             @Override
-            public void success(RouterResponseResult result) {
+            public void accept(RouterResponseResult result) {
+                String sid = result.getSid();
+                IRouterCallback routerCallback = sessionLock.remove(sid);
+                Command command = result.getResponse();
+                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
+            }
+        });
+
+        responseHandlers.put(Command.Type.RESOURCE, new Consumer<RouterResponseResult>() {
+            @Override
+            public void accept(RouterResponseResult result) {
                 String sid = result.getSid();
                 Command command = result.getResponse();
                 IRouterCallback routerCallback = sessionLock.remove(sid);
-                routerCallback.success(sid, command.getContentBody());
-            }
-
-            @Override
-            public void reject(Exception error) {
-                log.error(error.getMessage(), error);
+                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
             }
         });
+
+        responseHandlers.put(Command.Type.ANSWER, responseHandlers.get(Command.Type.ERROR));
     }
 
     public Router(ITransport transport, ISessionStorage sessionStorage) {
@@ -170,10 +168,7 @@ public class Router {
         mainFlow = name;
     }
 
-    public void setFlowMapping(String caller, String name, String target) {
-        if (caller == null || name == null || target == null) {
-            return;
-        }
+    public void setFlowMapping(@NotNull String caller, @NotNull String name, @NotNull String target) {
         caller = caller.trim().toUpperCase();
         name = name.trim().toUpperCase();
         target = target.trim().toUpperCase();
@@ -185,10 +180,8 @@ public class Router {
         mapping.put(name, target);
     }
 
-    private String getMapped(String caller, String name) {
-        if (caller == null || name == null) {
-            throw new IllegalArgumentException("caller and name should be defined");
-        }
+    private String getMapped(@NotNull String caller, @NotNull String name) {
+
         caller = caller.trim().toUpperCase();
         name = name.trim().toUpperCase();
         if (!flowMapping.containsKey(caller)) {
@@ -218,22 +211,26 @@ public class Router {
             }
             sessionLock.put(sid, callback);
         }
-        sessionStorage.find(sid, new SessionConsumer(sid, body, Command.Type.ANSWER));
+        sessionStorage.find(sid, new SessionCallback(sid, body, Command.Type.ANSWER));
+    }
+
+    public void handleResourceRequest(String sid, String path, Map<String, String> parameters, IRouterCallback callback) {
+
     }
 
     public interface IRouterCallback {
-        void success(String sid, byte[] body);
+        void success(String sid, String contentType, byte[] body);
 
         void reject(Exception exception);
     }
 
-    private class SessionConsumer implements ICallback<SessionStack> {
+    private class SessionCallback implements ICallback<SessionStack> {
 
         private final String sid;
         private final byte[] body;
         private final Command.Type rqType;
 
-        SessionConsumer(String sid, byte[] body, Command.Type rqType) {
+        SessionCallback(String sid, byte[] body, Command.Type rqType) {
             this.sid = sid;
             this.body = body;
             this.rqType = rqType;
@@ -259,7 +256,7 @@ public class Router {
             command.setContentBody(body);
 
             try {
-                transport.sendRequest(entry.getAddress(), command, new ResponseConsumer(sid, sessionStack));
+                transport.sendRequest(entry.getAddress(), command, new ResponseCallback(sid, sessionStack));
             } catch (Exception e) {
                 reject(e);
             }
@@ -277,11 +274,11 @@ public class Router {
         }
     }
 
-    private class ResponseConsumer implements ICallback<Command> {
-        private String sid;
-        private SessionStack sessionStack;
+    private class ResponseCallback implements ICallback<Command> {
+        private final String sid;
+        private final SessionStack sessionStack;
 
-        ResponseConsumer(String sid, SessionStack sessionStack) {
+        ResponseCallback(String sid, SessionStack sessionStack) {
             this.sid = sid;
             this.sessionStack = sessionStack;
         }
@@ -294,7 +291,7 @@ public class Router {
                     log.error("router callback was not found for sid=" + sid);
                     return;
                 }
-                ICallback<RouterResponseResult> handler = responseHandlers.get(result.getType());
+                Consumer<RouterResponseResult> handler = responseHandlers.get(result.getType());
 
                 if (handler == null) {
                     log.error("handler not found for " + result.getType());
@@ -303,7 +300,7 @@ public class Router {
                     return;
                 }
                 RouterResponseResult responseResult = new RouterResponseResult(sid, sessionStack, result);
-                handler.success(responseResult);
+                handler.accept(responseResult);
             }
         }
 

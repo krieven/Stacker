@@ -46,9 +46,10 @@ public class RouterServlet extends AsyncServlet {
                 }
                 router.handleRequest(sid, bytes, new Router.IRouterCallback() {
                     @Override
-                    public void success(String sid, byte[] body) {
+                    public void success(String sid, String contentType, byte[] body) {
                         try {
-                            response.setHeader("Content-Length", String.valueOf(body.length));
+                            response.setContentLength(body.length);
+                            response.setContentType(contentType);
                             writeBody(ctx, body);
                         } catch (IOException e) {
                             log.error(e.getMessage(), e);

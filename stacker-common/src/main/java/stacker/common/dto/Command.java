@@ -1,6 +1,7 @@
 package stacker.common.dto;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Command implements Serializable {
 
@@ -66,6 +67,19 @@ public class Command implements Serializable {
 
     public void setResourceRequest(ResourceRequest resourceRequest) {
         this.resourceRequest = resourceRequest;
+    }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "type=" + type +
+                ", flow='" + flow + '\'' +
+                ", state='" + state + '\'' +
+                ", bodyContentType='" + bodyContentType + '\'' +
+                ", contentBody=" + Arrays.toString(contentBody) +
+                ", flowData=" + Arrays.toString(flowData) +
+                ", resourceRequest=" + resourceRequest +
+                '}';
     }
 
     public enum Type {

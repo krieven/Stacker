@@ -33,6 +33,7 @@ public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateIn
             command.setContentBody(
                     getContract().serialize(question)
             );
+            command.setBodyContentType(getContract().getContentType());
         } catch (SerializingException e) {
             return new StateCompletion(() -> context.getCallback().reject(e));
         }
