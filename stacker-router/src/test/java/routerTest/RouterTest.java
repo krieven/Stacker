@@ -309,7 +309,7 @@ public class RouterTest {
                 setContentBody("ResourceRequest".getBytes());
             }
         };
-        Map<String, String> parameters = new HashMap<>();
+        Map<String, String[]> parameters = new HashMap<>();
 
         router.handleResourceRequest(sid, "/path/info", parameters, new Router.IRouterCallback() {
 

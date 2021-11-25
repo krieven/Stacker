@@ -14,7 +14,7 @@ public class AuthController extends ResourceController<AuthSupport> {
 
     @NotNull
     @Override
-    protected StateCompletion handle(List<String> path, Map<String, String> parameters, FlowContext<? extends AuthSupport> context) {
+    protected StateCompletion handle(List<String> path, Map<String, String[]> parameters, FlowContext<? extends AuthSupport> context) {
 //        return sendResponse("Hello hello".getBytes(Charset.forName("UTF-8")), context);
 
         return new StateCompletion(

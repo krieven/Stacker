@@ -211,7 +211,7 @@ public class Router {
         }
     }
 
-    public void handleResourceRequest(String sid, String path, Map<String, String> parameters, IRouterCallback callback) {
+    public void handleResourceRequest(String sid, String path, Map<String, String[]> parameters, IRouterCallback callback) {
         ResourceRequest resourceRequest = new ResourceRequest();
         resourceRequest.setPath(path);
         resourceRequest.setParameters(parameters);

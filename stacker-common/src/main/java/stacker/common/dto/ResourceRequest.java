@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class ResourceRequest {
     private String path;
-    private Map<String, String> parameters;
+    private Map<String, String[]> parameters;
 
     public String getPath() {
         return path;
@@ -14,11 +14,11 @@ public class ResourceRequest {
         this.path = path;
     }
 
-    public Map<String, String> getParameters() {
+    public Map<String, String[]> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, String> parameters) {
+    public void setParameters(Map<String, String[]> parameters) {
         this.parameters = parameters;
     }
 

@@ -14,7 +14,7 @@ public abstract class ResourceController<F> {
 
     @NotNull
     protected abstract StateCompletion handle(
-            List<String> pathInfo, Map<String, String> parameters, FlowContext<? extends F> context
+            List<String> pathInfo, Map<String, String[]> parameters, FlowContext<? extends F> context
     );
 
     protected abstract String getContentType();

@@ -11,6 +11,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -33,13 +34,14 @@ public class RouterServlet extends AsyncServlet {
             public void success(byte[] bytes) {
                 String sid = null;
                 //TODO may change to request.getRequestedSessionId();
-                if (request.getCookies() != null)
+                if (request.getCookies() != null) {
                     for (Cookie cookie : request.getCookies()) {
                         if (cookieName.equals(cookie.getName())) {
                             sid = cookie.getValue();
                             break;
                         }
                     }
+                }
                 if (sid == null) {
                     sid = UUID.randomUUID().toString();
                     response.addCookie(new Cookie(cookieName, sid));
@@ -79,4 +81,36 @@ public class RouterServlet extends AsyncServlet {
         });
     }
 
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final AsyncContext ctx = request.startAsync();
+
+        if (request.getCookies() == null) {
+            writeBody(ctx, "400 bad Request".getBytes());
+            return;
+        }
+        String sid = null;
+        for (Cookie cookie : request.getCookies()) {
+            if (cookieName.equals(cookie.getName())) {
+                sid = cookie.getValue();
+                break;
+            }
+        }
+        if (sid == null) {
+            writeBody(ctx, "400 bad Request".getBytes());
+            return;
+        }
+
+        router.handleResourceRequest(sid, request.getPathInfo(), request.getParameterMap(), new Router.IRouterCallback() {
+            @Override
+            public void success(String sid, String contentType, byte[] body) {
+
+            }
+
+            @Override
+            public void reject(Exception exception) {
+
+            }
+        });
+
+    }
 }
