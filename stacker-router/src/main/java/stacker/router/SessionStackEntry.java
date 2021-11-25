@@ -3,8 +3,8 @@ package stacker.router;
 public class SessionStackEntry {
 
     private String flow;
-    private String address;
     private String state;
+    private String address;
     private byte[] flowData;
 
     public String getState() {

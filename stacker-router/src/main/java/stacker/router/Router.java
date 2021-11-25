@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stacker.common.dto.Command;
 import stacker.common.ICallback;
+import stacker.common.dto.ResourceRequest;
 
 public class Router {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
@@ -57,6 +58,7 @@ public class Router {
                 Command command = responseResult.getResponse();
 
                 SessionStackEntry currentEntry = sessionStack.peek();
+
                 currentEntry.setState(command.getState());
                 currentEntry.setFlowData(command.getFlowData());
 
@@ -99,9 +101,9 @@ public class Router {
                 sessionStack.setDaemonData(flow, command.getFlowData());
                 sessionStorage.save(sid, sessionStack);
 
-                SessionStackEntry currentEntry = sessionStack.peek();
+                if (!sessionStack.empty()) {
+                    SessionStackEntry currentEntry = sessionStack.peek();
 
-                if (currentEntry != null) {
                     Command newCommand = new Command();
                     newCommand.setType(Command.Type.RETURN);
                     newCommand.setFlow(currentEntry.getFlow());
@@ -122,25 +124,14 @@ public class Router {
             }
         });
 
-        responseHandlers.put(Command.Type.ERROR, new Consumer<RouterResponseResult>() {
-            @Override
-            public void accept(RouterResponseResult result) {
-                String sid = result.getSid();
-                IRouterCallback routerCallback = sessionLock.remove(sid);
-                Command command = result.getResponse();
-                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
-            }
+        responseHandlers.put(Command.Type.ERROR, result -> {
+            String sid = result.getSid();
+            IRouterCallback routerCallback = sessionLock.remove(sid);
+            Command command = result.getResponse();
+            routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
         });
 
-        responseHandlers.put(Command.Type.RESOURCE, new Consumer<RouterResponseResult>() {
-            @Override
-            public void accept(RouterResponseResult result) {
-                String sid = result.getSid();
-                Command command = result.getResponse();
-                IRouterCallback routerCallback = sessionLock.remove(sid);
-                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
-            }
-        });
+        responseHandlers.put(Command.Type.RESOURCE, responseHandlers.get(Command.Type.ERROR));
 
         responseHandlers.put(Command.Type.ANSWER, responseHandlers.get(Command.Type.ERROR));
     }
@@ -203,19 +194,28 @@ public class Router {
         return flows.get(name);
     }
 
-    public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
+    private boolean putSessionLock(String sid, IRouterCallback callback) {
         synchronized (sid.intern()) {
             if (sessionLock.get(sid) != null) {
                 sessionLock.put(sid, callback);
-                return;
+                return false;
             }
             sessionLock.put(sid, callback);
+            return true;
         }
-        sessionStorage.find(sid, new SessionCallback(sid, body, Command.Type.ANSWER));
+    }
+
+    public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
+        if (putSessionLock(sid, callback)) {
+            sessionStorage.find(sid, new SessionCallback(sid, body, Command.Type.ANSWER));
+        }
     }
 
     public void handleResourceRequest(String sid, String path, Map<String, String> parameters, IRouterCallback callback) {
-
+        ResourceRequest resourceRequest = new ResourceRequest();
+        resourceRequest.setPath(path);
+        resourceRequest.setParameters(parameters);
+        sessionStorage.find(sid, new SessionResourceCallback(sid, resourceRequest, callback));
     }
 
     public interface IRouterCallback {
@@ -265,12 +265,66 @@ public class Router {
         @Override
         public void reject(Exception exception) {
             synchronized (sid.intern()) {
-                log.error(exception.getMessage(), exception);
+                log.error("SessionStorage rejects with exception: " + exception.getMessage(), exception);
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {
                     callback.reject(exception);
                 }
             }
+        }
+    }
+
+    private class SessionResourceCallback implements ICallback<SessionStack> {
+
+        private final String sid;
+        private final ResourceRequest resourceRequest;
+        private final IRouterCallback callback;
+
+        SessionResourceCallback(String sid, ResourceRequest resourceRequest, IRouterCallback callback) {
+            this.sid = sid;
+            this.resourceRequest = resourceRequest;
+            this.callback = callback;
+        }
+
+        @Override
+        public void success(SessionStack stack) {
+
+            if (stack == null || stack.empty()) {
+                reject(new Exception("Session stack not found or empty"));
+                return;
+            }
+
+            SessionStackEntry entry = stack.peek();
+
+            Command command = new Command();
+            command.setType(Command.Type.RESOURCE);
+            command.setFlow(entry.getFlow());
+            command.setState(entry.getState());
+            command.setFlowData(entry.getFlowData());
+            command.setResourceRequest(resourceRequest);
+
+            transport.sendRequest(entry.getAddress(), command, new ICallback<Command>() {
+                @Override
+                public void success(Command result) {
+                    if (result == null) {
+                        callback.reject(new Exception("Flow " + entry.getFlow() + " returns empty response"));
+                        return;
+                    }
+                    callback.success(sid, result.getBodyContentType(), result.getContentBody());
+                }
+
+                @Override
+                public void reject(Exception error) {
+                    callback.reject(new Exception("Flow " + entry.getFlow() + " is broken cause " + error.getMessage(), error));
+                }
+            });
+        }
+
+        @Override
+        public void reject(Exception error) {
+            Exception exception = new Exception("Resource request have been rejected by router, SessionStorage rejects" + error.getMessage(), error);
+            log.error("bad response from session storage", exception);
+            callback.reject(exception);
         }
     }
 
@@ -291,12 +345,16 @@ public class Router {
                     log.error("router callback was not found for sid=" + sid);
                     return;
                 }
+                if (result == null) {
+                    routerCallback.reject(new Exception("null response from flow"));
+                    return;
+                }
                 Consumer<RouterResponseResult> handler = responseHandlers.get(result.getType());
 
                 if (handler == null) {
-                    log.error("handler not found for " + result.getType());
+                    log.error("Unknown response type, handler not found for " + result.getType());
                     sessionLock.remove(sid)
-                            .reject(new Exception("responseHandler not found"));
+                            .reject(new Exception("Unknown response type, responseHandler not found"));
                     return;
                 }
                 RouterResponseResult responseResult = new RouterResponseResult(sid, sessionStack, result);
@@ -306,7 +364,7 @@ public class Router {
 
         @Override
         public void reject(Exception exception) {
-            log.error(exception.getMessage(), exception);
+            log.error("Transport rejects with exception " + exception.getMessage(), exception);
             synchronized (sid.intern()) {
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {

@@ -17,7 +17,7 @@ public class RouterConfigTest {
         RouterConfig routerConfig = new RouterConfig();
         routerConfig.setMainFlow("main");
 
-        List<FlowConfig> flows = new ArrayList<FlowConfig>();
+        List<FlowConfig> flows = new ArrayList<>();
         routerConfig.setFlows(flows);
 
         FlowConfig flowConfig = new FlowConfig();

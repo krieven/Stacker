@@ -34,7 +34,7 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
     }
 
     @Override
-    protected boolean isDaemon() {
+    protected boolean isDaemon(FlowContext<FlowData> context) {
         return false;
     }
 

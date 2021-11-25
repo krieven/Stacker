@@ -62,7 +62,7 @@ public class FlowContext<F> implements IContext<F> {
             command.setContentBody(
                     getFlow().getContract().getParser().serialize(result)
             );
-            if (getFlow().isDaemon()) {
+            if (getFlow().isDaemon(this)) {
                 command.setFlowData(
                         getFlow().serializeFlowData(getFlowData())
                 );

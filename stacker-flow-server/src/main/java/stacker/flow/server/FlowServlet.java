@@ -72,6 +72,7 @@ public class FlowServlet extends AsyncServlet {
             public void reject(Exception error) {
                 Command errorCommand = new Command();
                 errorCommand.setType(Command.Type.ERROR);
+                errorCommand.setBodyContentType("text/html");
                 errorCommand.setContentBody(("Command rejected by flow: " + " " +
                         error.getClass().getCanonicalName() + ", " +
                         error.getMessage()).getBytes());

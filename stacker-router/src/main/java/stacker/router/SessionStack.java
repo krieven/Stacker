@@ -22,10 +22,16 @@ public class SessionStack implements Serializable {
     }
 
     public SessionStackEntry pop() {
+        if (empty()) {
+            return null;
+        }
         return stack.pop();
     }
 
     public SessionStackEntry peek() {
+        if (empty()) {
+            return null;
+        }
         return stack.peek();
     }
 

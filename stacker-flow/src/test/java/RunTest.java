@@ -1,4 +1,3 @@
-import org.junit.Ignore;
 import stacker.common.dto.ResourceRequest;
 import states.auth.AuthAnswer;
 import flow.TestFlow;
@@ -8,8 +7,6 @@ import stacker.common.ICallback;
 import stacker.common.JsonParser;
 import stacker.common.SerializingException;
 import stacker.flow.BaseFlow;
-
-import java.util.HashMap;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;

@@ -107,7 +107,7 @@ public abstract class BaseFlow<Q, A, F> {
 
     protected abstract void configure();
 
-    protected abstract boolean isDaemon();
+    protected abstract boolean isDaemon(FlowContext<F> context);
 
     protected abstract F createFlowData(Q arg);
 
