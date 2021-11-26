@@ -11,9 +11,7 @@ import stacker.router.SessionStack;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 
 public class RouterTest {
@@ -327,4 +325,24 @@ public class RouterTest {
     }
 
 
+    @Test
+    public void configValidationTestOk() {
+        Router router = new Router(transport, sessionStorage) {
+            {
+                addFlow("main", "m1");
+
+                addFlow("l1c1", "a1");
+                setFlowMapping("main", "c1", "l1c1");
+                addFlow("l1c2", "a1");
+                setFlowMapping("main", "c2", "l1c2");
+                addFlow("l1c3", "a1");
+                setFlowMapping("main", "c3", "l1c3");
+                addFlow("l1c4", "a1");
+                setFlowMapping("main", "c4", "l1c4");
+
+                setMainFlow("main");
+            }
+        };
+        assertTrue(router.isValidConfiguration());
+    }
 }

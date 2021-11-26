@@ -11,7 +11,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -46,27 +45,7 @@ public class RouterServlet extends AsyncServlet {
                     sid = UUID.randomUUID().toString();
                     response.addCookie(new Cookie(cookieName, sid));
                 }
-                router.handleRequest(sid, bytes, new Router.IRouterCallback() {
-                    @Override
-                    public void success(String sid, String contentType, byte[] body) {
-                        try {
-                            response.setContentLength(body.length);
-                            response.setContentType(contentType);
-                            writeBody(ctx, body);
-                        } catch (IOException e) {
-                            log.error(e.getMessage(), e);
-                        }
-                    }
-
-                    @Override
-                    public void reject(Exception exception) {
-                        try {
-                            writeBody(ctx, exception.getMessage().getBytes());
-                        } catch (IOException e) {
-                            log.error(e.getMessage(), e);
-                        }
-                    }
-                });
+                router.handleRequest(sid, bytes, new RouterCallback(ctx));
             }
 
             @Override
@@ -100,17 +79,36 @@ public class RouterServlet extends AsyncServlet {
             return;
         }
 
-        router.handleResourceRequest(sid, request.getPathInfo(), request.getParameterMap(), new Router.IRouterCallback() {
-            @Override
-            public void success(String sid, String contentType, byte[] body) {
+        router.handleResourceRequest(sid, request.getPathInfo(), request.getParameterMap(), new RouterCallback(ctx));
 
+    }
+
+    private class RouterCallback implements Router.IRouterCallback {
+
+        private final AsyncContext ctx;
+
+        private RouterCallback(AsyncContext ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void success(String sid, String contentType, byte[] body) {
+            try {
+                ctx.getResponse().setContentLength(body.length);
+                ctx.getResponse().setContentType(contentType);
+                writeBody(ctx, body);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
+        }
 
-            @Override
-            public void reject(Exception exception) {
-
+        @Override
+        public void reject(Exception exception) {
+            try {
+                writeBody(ctx, exception.getMessage().getBytes());
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
-        });
-
+        }
     }
 }

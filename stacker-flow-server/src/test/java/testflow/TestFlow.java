@@ -2,10 +2,7 @@ package testflow;
 
 import org.jetbrains.annotations.NotNull;
 import stacker.common.JsonParser;
-import stacker.flow.BaseFlow;
-import stacker.flow.Contract;
-import stacker.flow.FlowContext;
-import stacker.flow.StateCompletion;
+import stacker.flow.*;
 
 
 public class TestFlow extends BaseFlow<String, String, TestFlowData> {
@@ -23,7 +20,7 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
 
     @Override
     protected void configure() {
-
+        addState("exit", new StateTerminator<>());
     }
 
     @Override
@@ -44,6 +41,6 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
     @NotNull
     @Override
     protected StateCompletion onStart(FlowContext<TestFlowData> context) {
-        return enterState("", context);
+        return enterState("exit", context);
     }
 }

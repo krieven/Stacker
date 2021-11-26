@@ -21,10 +21,11 @@ public class RouterServerRunner {
             byteBuffer.write(buf, 0, len);
         }
 
-        server.start();
 
         RouterConfig config = new JsonParser().parse(byteBuffer.toByteArray(), RouterConfig.class);
         server.setConfig(config);
+
+        server.start();
 
     }
 }

@@ -4,13 +4,18 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stacker.common.config.router.FlowConfig;
+import stacker.common.config.router.NameMapping;
+import stacker.common.config.router.RouterConfig;
 import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.common.dto.ResourceRequest;
@@ -136,7 +141,7 @@ public class Router {
         responseHandlers.put(Command.Type.ANSWER, responseHandlers.get(Command.Type.ERROR));
     }
 
-    public Router(ITransport transport, ISessionStorage sessionStorage) {
+    public Router(@NotNull ITransport transport, @NotNull ISessionStorage sessionStorage) {
         assertNotNull(transport);
         assertNotNull(sessionStorage);
         this.transport = transport;
@@ -169,6 +174,61 @@ public class Router {
         }
         Map<String, String> mapping = flowMapping.get(caller);
         mapping.put(name, target);
+    }
+
+    public boolean setConfig(RouterConfig config) {
+        if (config == null || config.getFlows() == null) {
+            return false;
+        }
+        for (FlowConfig flowConfig : config.getFlows()) {
+            addFlow(flowConfig.getName(), flowConfig.getAddress());
+            if (flowConfig.getMapping() == null) {
+                continue;
+            }
+            for (NameMapping mapping : flowConfig.getMapping()) {
+                setFlowMapping(flowConfig.getName(), mapping.getName(), mapping.getTarget());
+            }
+        }
+        setMainFlow(config.getMainFlow());
+
+        return isValidConfiguration();
+    }
+
+    public boolean isValidConfiguration() {
+        boolean result = true;
+        if (flows.isEmpty()) {
+            log.error("no flows configured");
+            result = false;
+        }
+        if (mainFlow == null || !flows.containsKey(mainFlow)) {
+            log.error("mainFlow should be configured flow name");
+            result = false;
+        }
+
+        result = result && !hasRecursion(new ArrayList<>(), mainFlow);
+
+        return result;
+    }
+
+    private boolean hasRecursion(List<String> path, String name) {
+        if (path.contains(name)) {
+            log.error(name + " - is recursively mapped");
+            return true;
+        }
+        Map<String, String> mapping = flowMapping.get(name);
+        if (mapping == null) {
+            return false;
+        }
+
+        List<String> newPath = new ArrayList<>(path);
+        newPath.add(name);
+
+        boolean result = false;
+
+        for (String child : mapping.values()) {
+            result = result || hasRecursion(newPath, child);
+        }
+        return result;
     }
 
     private String getMapped(@NotNull String caller, @NotNull String name) {
@@ -322,7 +382,7 @@ public class Router {
 
         @Override
         public void reject(Exception error) {
-            Exception exception = new Exception("Resource request have been rejected by router, SessionStorage rejects" + error.getMessage(), error);
+            Exception exception = new Exception("Resource request have been rejected by router, SessionStorage rejects: " + error.getMessage(), error);
             log.error("bad response from session storage", exception);
             callback.reject(exception);
         }

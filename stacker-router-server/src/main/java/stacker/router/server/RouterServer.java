@@ -1,14 +1,15 @@
 package stacker.router.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import stacker.common.AsyncServer;
 import stacker.router.ISessionStorage;
 import stacker.router.ITransport;
 import stacker.router.Router;
-import stacker.common.config.router.FlowConfig;
-import stacker.common.config.router.NameMapping;
 import stacker.common.config.router.RouterConfig;
 
 public class RouterServer extends AsyncServer<RouterServlet> {
+    private static Logger log = LoggerFactory.getLogger(RouterServer.class);
 
     private final ITransport transport;
     private final ISessionStorage sessionStorage;
@@ -21,14 +22,13 @@ public class RouterServer extends AsyncServer<RouterServlet> {
 
     public void setConfig(RouterConfig config) {
         Router router = new Router(transport, sessionStorage);
-        for (FlowConfig flowConfig : config.getFlows()) {
-            router.addFlow(flowConfig.getName(), flowConfig.getAddress());
-            for (NameMapping mapping : flowConfig.getMapping()) {
-                router.setFlowMapping(flowConfig.getName(), mapping.getName(), mapping.getTarget());
-            }
+
+        if (router.setConfig(config)) {
+            serviceServlet.setRouter(router);
+            log.info("new configuration have been applied");
+            return;
         }
-        router.setMainFlow(config.getMainFlow());
-        serviceServlet.setRouter(router);
+        log.error("Configuration is not valid and not applied");
     }
 
 }

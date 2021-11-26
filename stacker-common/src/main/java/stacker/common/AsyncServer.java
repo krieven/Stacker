@@ -11,14 +11,24 @@ import javax.servlet.http.HttpServlet;
 public class AsyncServer<S extends HttpServlet> {
     private static final Logger log = LoggerFactory.getLogger(AsyncServer.class);
     protected final S serviceServlet;
-    private final int port;
     @SuppressWarnings("FieldCanBeLocal")
     private Server server;
-    private ServletContextHandler contextHandler;
+    private final ServletContextHandler contextHandler;
 
     public AsyncServer(S servlet, int port) {
         this.serviceServlet = servlet;
-        this.port = port;
+
+        contextHandler = new ServletContextHandler();
+        contextHandler.setContextPath("/");
+
+        ServletHolder servletHolder = new ServletHolder(serviceServlet);
+
+        server = new Server(port);
+        server.setHandler(contextHandler);
+
+        servletHolder.setAsyncSupported(true);
+        contextHandler.addServlet(servletHolder, "/");
+
     }
 
     public ServletContextHandler getContextHandler() {
@@ -26,15 +36,6 @@ public class AsyncServer<S extends HttpServlet> {
     }
 
     public void start() throws Exception {
-        contextHandler = new ServletContextHandler();
-        contextHandler.setContextPath("/");
-
-        ServletHolder servletHolder = new ServletHolder(serviceServlet);
-        servletHolder.setAsyncSupported(true);
-        contextHandler.addServlet(servletHolder, "/");
-
-        server = new Server(port);
-        server.setHandler(contextHandler);
         server.start();
         server.join();
     }
