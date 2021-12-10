@@ -64,6 +64,7 @@ public class FlowContext<F> {
         Command command = new Command();
         command.setType(Command.Type.RETURN);
         command.setBodyContentType(getFlow().getContract().getContentType());
+        log.info("Flow {} ends on {} with command {}", getFlowName(), getStateName(), command);
         try {
             command.setContentBody(
                     getFlow().getContract().getParser().serialize(result)
@@ -74,6 +75,8 @@ public class FlowContext<F> {
                 );
             }
         } catch (SerializingException e) {
+            log.error("Flow {} cant send return value at {}", getFlowName(), getStateName());
+            log.error("cause", e);
             getCallback().reject(e);
             return;
         }
@@ -81,6 +84,7 @@ public class FlowContext<F> {
     }
 
     StateCompletion enterState(String name) {
+        log.info("Flow {} entering state {}", getFlowName(), getStateName());
         return getFlow().enterState(name, this);
     }
 
