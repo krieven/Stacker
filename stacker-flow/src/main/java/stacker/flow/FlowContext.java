@@ -6,10 +6,12 @@ import stacker.common.dto.Command;
 import stacker.common.ICallback;
 import stacker.common.SerializingException;
 
+import java.util.Map;
+
 /**
  * @param <F> FlowDataT
  */
-public class FlowContext<F> implements IContext<F> {
+public class FlowContext<F> {
     private static final Logger log = LoggerFactory.getLogger(FlowContext.class);
 
     private final String flowName;
@@ -17,32 +19,36 @@ public class FlowContext<F> implements IContext<F> {
     private final F flowData;
 
     private final BaseFlow<?, ?, F> flow;
+    private final Map<String, String> properties;
+
     private final ICallback<Command> callback;
 
     FlowContext(BaseFlow<?, ?, F> flow,
                 String flowName, String stateName,
-                F flowData, ICallback<Command> callback
+                F flowData, Map<String, String> properties, ICallback<Command> callback
     ) {
         this.flowName = flowName;
         this.stateName = stateName;
         this.flow = flow;
         this.flowData = flowData;
+        this.properties = properties;
         this.callback = callback;
     }
 
-    @Override
     public String getFlowName() {
         return flowName;
     }
 
-    @Override
     public String getStateName() {
         return stateName;
     }
 
-    @Override
     public F getFlowData() {
         return flowData;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
     }
 
     ICallback<Command> getCallback() {

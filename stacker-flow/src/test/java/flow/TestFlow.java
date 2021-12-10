@@ -47,6 +47,7 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
 
     @Override
     protected String makeReturn(FlowContext<FlowData> context) {
+
         return context.getFlowData().getAuthAnswer().getName();
     }
 

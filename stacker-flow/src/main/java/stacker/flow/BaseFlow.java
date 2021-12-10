@@ -87,6 +87,7 @@ public abstract class BaseFlow<Q, A, F> {
                         command.getFlow(),
                         command.getState(),
                         flowData,
+                        command.getProperties(),
                         callback);
 
         IHandler<Command, F> handler =
@@ -95,7 +96,6 @@ public abstract class BaseFlow<Q, A, F> {
         try {
             handler.handle(command, context);
         } catch (Exception e) {
-            //todo change it to ERROR(IllegalArgument)
             log.error("Error handling request", e);
             callback.reject(e);
         }
@@ -124,6 +124,7 @@ public abstract class BaseFlow<Q, A, F> {
                         context.getFlowName(),
                         name,
                         context.getFlowData(),
+                        context.getProperties(),
                         context.getCallback()
                 );
         BaseState<? super F> state = getState(name);
@@ -168,6 +169,7 @@ public abstract class BaseFlow<Q, A, F> {
                         context.getFlowName(),
                         context.getStateName(),
                         flowData,
+                        context.getProperties(),
                         context.getCallback()
                 );
         onStart(newContext).doCompletion();

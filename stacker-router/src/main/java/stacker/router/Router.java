@@ -4,10 +4,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +25,7 @@ public class Router {
 
     private final Map<String, String> flows = new HashMap<>();
     private final Map<String, Map<String, String>> flowMapping = new HashMap<>();
+    private Map<String, Map<String, String>> properties = new HashMap<>();
     private String mainFlow;
 
     private final Map<Command.Type, Consumer<RouterResponseResult>> responseHandlers = new HashMap<>();
@@ -182,6 +180,8 @@ public class Router {
         }
         for (FlowConfig flowConfig : config.getFlows()) {
             addFlow(flowConfig.getName(), flowConfig.getAddress());
+            setProperties(flowConfig.getName(), flowConfig.getProperties());
+
             if (flowConfig.getMapping() == null) {
                 continue;
             }
@@ -192,6 +192,10 @@ public class Router {
         setMainFlow(config.getMainFlow());
 
         return isValidConfiguration();
+    }
+
+    private void setProperties(String name, HashMap<String, String> properties) {
+        this.properties.put(name, properties);
     }
 
     public boolean isValidConfiguration() {
@@ -267,7 +271,7 @@ public class Router {
 
     public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
         if (putSessionLock(sid, callback)) {
-            sessionStorage.find(sid, new SessionCallback(sid, body, Command.Type.ANSWER));
+            sessionStorage.find(sid, new SessionCallback(sid, body));
         }
     }
 
@@ -288,17 +292,15 @@ public class Router {
 
         private final String sid;
         private final byte[] body;
-        private final Command.Type rqType;
 
-        SessionCallback(String sid, byte[] body, Command.Type rqType) {
+        SessionCallback(String sid, byte[] body) {
             this.sid = sid;
             this.body = body;
-            this.rqType = rqType;
         }
 
         @Override
         public void success(SessionStack sessionStack) {
-            Command.Type type = rqType;
+            Command.Type type = Command.Type.ANSWER;
             if (sessionStack == null || sessionStack.empty()) {
                 sessionStack = new SessionStack();
                 SessionStackEntry entry = new SessionStackEntry();
@@ -314,6 +316,7 @@ public class Router {
             command.setState(entry.getState());
             command.setFlowData(entry.getFlowData());
             command.setContentBody(body);
+            command.setProperties(properties.get(entry.getFlow()));
 
             try {
                 transport.sendRequest(entry.getAddress(), command, new ResponseCallback(sid, sessionStack));
@@ -362,6 +365,7 @@ public class Router {
             command.setState(entry.getState());
             command.setFlowData(entry.getFlowData());
             command.setResourceRequest(resourceRequest);
+            command.setProperties(properties.get(entry.getFlow()));
 
             transport.sendRequest(entry.getAddress(), command, new ICallback<Command>() {
                 @Override

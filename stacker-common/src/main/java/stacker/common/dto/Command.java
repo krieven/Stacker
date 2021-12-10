@@ -2,6 +2,7 @@ package stacker.common.dto;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Map;
 
 public class Command implements Serializable {
 
@@ -12,6 +13,7 @@ public class Command implements Serializable {
     private byte[] contentBody;
     private byte[] flowData;
     private ResourceRequest resourceRequest;
+    private Map<String, String> properties;
 
     public Type getType() {
         return type;
@@ -69,6 +71,14 @@ public class Command implements Serializable {
         this.resourceRequest = resourceRequest;
     }
 
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+
     @Override
     public String toString() {
         return "Command{" +
@@ -79,8 +89,10 @@ public class Command implements Serializable {
                 ", contentBody=" + Arrays.toString(contentBody) +
                 ", flowData=" + Arrays.toString(flowData) +
                 ", resourceRequest=" + resourceRequest +
+                ", properties=" + properties +
                 '}';
     }
+
 
     public enum Type {
         QUESTION,
