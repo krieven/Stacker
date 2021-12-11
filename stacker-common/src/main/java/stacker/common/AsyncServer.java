@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServlet;
 public class AsyncServer<S extends HttpServlet> {
     private static final Logger log = LoggerFactory.getLogger(AsyncServer.class);
     protected final S serviceServlet;
-    @SuppressWarnings("FieldCanBeLocal")
-    private Server server;
+    private final Server server;
     private final ServletContextHandler contextHandler;
 
     public AsyncServer(S servlet, int port) {

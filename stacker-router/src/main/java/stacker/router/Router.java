@@ -194,7 +194,7 @@ public class Router {
         return isValidConfiguration();
     }
 
-    private void setProperties(String name, HashMap<String, String> properties) {
+    private void setProperties(String name, Map<String, String> properties) {
         this.properties.put(name, properties);
     }
 
@@ -216,7 +216,7 @@ public class Router {
 
     private boolean hasRecursion(List<String> path, String name) {
         if (path.contains(name)) {
-            log.error(name + " - is recursively mapped");
+            log.error(name + " - is recursively mapped in {}", path);
             return true;
         }
         Map<String, String> mapping = flowMapping.get(name);

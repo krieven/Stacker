@@ -345,4 +345,25 @@ public class RouterTest {
         };
         assertTrue(router.isValidConfiguration());
     }
+
+    @Test
+    public void configValidationTestBad() {
+        Router router = new Router(transport, sessionStorage) {
+            {
+                addFlow("main", "m1");
+
+                addFlow("l1c1", "a1");
+                setFlowMapping("main", "c1", "l1c1");
+                addFlow("l1c2", "a1");
+                setFlowMapping("main", "c2", "l1c2");
+                addFlow("l1c3", "a1");
+                setFlowMapping("main", "c3", "l1c3");
+                addFlow("l1c4", "a1");
+                setFlowMapping("main", "c4", "main");
+
+                setMainFlow("main");
+            }
+        };
+        assertFalse(router.isValidConfiguration());
+    }
 }

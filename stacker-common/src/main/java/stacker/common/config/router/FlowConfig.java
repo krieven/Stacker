@@ -1,7 +1,7 @@
 package stacker.common.config.router;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FlowConfig {
     private String name;
@@ -9,7 +9,7 @@ public class FlowConfig {
     private String description;
     private String address;
     private List<NameMapping> mapping;
-    private HashMap<String, String> properties;
+    private Map<String, String> properties;
 
     public String getName() {
         return name;
@@ -51,12 +51,11 @@ public class FlowConfig {
         this.description = description;
     }
 
-
-    public HashMap<String, String> getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
-    public void setProperties(HashMap<String, String> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 }
