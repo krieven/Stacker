@@ -29,7 +29,7 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
     }
 
     @Override
-    protected TestFlowData createFlowData(String arg) {
+    protected TestFlowData createFlowData(String arg, FlowContext<TestFlowData> context) {
         return new TestFlowData();
     }
 

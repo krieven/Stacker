@@ -17,6 +17,14 @@ import stacker.flow.resource.ResourceTree;
 import static org.junit.Assert.*;
 
 /**
+ * Base class for any plain Workflow.
+ * Each Workflow implements Role part of BPMN schema,
+ * can receive argument of type Q and return some value of type A.
+ *
+ * Workflow consists of States,
+ * all data, that should be passed trough Workflow between states,
+ * should be stored in the instance of your FlowData class.
+ *
  * @param <Q> argument type
  * @param <A> returns type
  * @param <F> flowData type
@@ -49,6 +57,14 @@ public abstract class BaseFlow<Q, A, F> {
         incomingHandlers.put(Command.Type.RESOURCE, new HandlerResource<>());
     }
 
+    /**
+     * Constructor of BaseFlow, you should call it in the constructor of your concrete Workflow class.
+     *
+     * @param contract       - the contract of your Workflow - Question type, Answer type and serializing format,
+     *                       defined by parser.
+     * @param flowDataClass  - the class of the FlowData
+     * @param flowDataParser - parser of FlowData
+     */
     protected BaseFlow(
             Contract<Q, A> contract,
             Class<F> flowDataClass,
@@ -63,7 +79,7 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     /**
-     * This method will be called by server to handle command
+     * This method should be called by server to handle command
      *
      * @param command  - the Command that server receive
      * @param callback - the server callback
@@ -105,17 +121,53 @@ public abstract class BaseFlow<Q, A, F> {
         return flowContract;
     }
 
+    /**
+     * In this method you should configure Workflow schema by adding States and defining transitions
+     */
     protected abstract void configure();
 
+    /**
+     * Sometimes the same Answer of some Workflow needed many times.
+     * If your Workflow should store its FlowData in the context of current user session
+     * for next call, this method should return true, otherwise it should return false.
+     *
+     * @param context - the context of this flow
+     * @return boolean true, if FlowData should be stored for current user session
+     */
     protected abstract boolean isDaemon(FlowContext<F> context);
 
-    protected abstract F createFlowData(Q arg);
+    /**
+     * When the Workflow starts, it requires the FlowData to store collected data
+     *
+     * @param arg     - the Question on which this Workflow should answer
+     * @param context - the context of the current Workflow
+     * @return new instance of your FlowData for the current call of Workflow
+     */
+    protected abstract F createFlowData(Q arg, FlowContext<F> context);
 
+    /**
+     * This method should extract Answer of current Workflow from its context
+     *
+     * @param context - the context of the current Workflow
+     * @return the instance of Answer class or null
+     */
     protected abstract A makeReturn(FlowContext<F> context);
 
+    /**
+     * When Workflow starts, you should determine - which State should be entered firstly
+     *
+     * @param context - the context of the current Workflow
+     * @return StateCompletion, it can be taked from enterState method
+     */
     @NotNull
     protected abstract StateCompletion onStart(FlowContext<F> context);
 
+    /**
+     *
+     * @param name - the name of the entering State in the schema
+     * @param context - the context of this Workflow
+     * @return StateCompletion
+     */
     @NotNull
     protected StateCompletion enterState(String name, FlowContext<F> context) {
         FlowContext<F> transContext =
@@ -134,6 +186,12 @@ public abstract class BaseFlow<Q, A, F> {
         return state.onEnter(transContext);
     }
 
+    /**
+     * Adds State to Workflow schema
+     *
+     * @param name - the name of adding State
+     * @param state - the instance of adding State class
+     */
     protected void addState(String name, BaseState<? super F> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
@@ -161,7 +219,7 @@ public abstract class BaseFlow<Q, A, F> {
     private void start(Q argument, FlowContext<F> context) {
         F flowData = context.getFlowData();
         if (flowData == null) {
-            flowData = createFlowData(argument);
+            flowData = createFlowData(argument, context);
         }
         FlowContext<F> newContext =
                 new FlowContext<>(

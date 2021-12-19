@@ -39,7 +39,7 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
     }
 
     @Override
-    protected FlowData createFlowData(String arg) {
+    protected FlowData createFlowData(String arg, FlowContext<FlowData> context) {
         return new FlowData() {{
             setArgument(arg);
         }};

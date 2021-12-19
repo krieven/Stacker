@@ -22,7 +22,7 @@ public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateIn
     public final StateCompletion sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
-        command.setFlow(getOuterFlowName());
+        command.setFlow(getName());
         command.setState(context.getStateName());
         try {
             command.setFlowData(
@@ -39,11 +39,6 @@ public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateIn
         }
 
         return new StateCompletion(() -> context.getCallback().success(command));
-    }
-
-
-    public final String getOuterFlowName() {
-        return getName();
     }
 
 }
