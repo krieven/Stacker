@@ -20,15 +20,12 @@ public final class HandlerResource<F> implements IHandler<Command, F> {
             leaf.getResource().handle(leaf.getPathInfo(), request.getParameters(), context).doCompletion();
             return;
         }
-        context.getCallback().success(
-                new Command() {
-                    {
-                        setType(Type.RESOURCE);
-                        setBodyContentType("text/html");
-                        setContentBody("404 Resource not found".getBytes());
-                    }
-                }
-        );
+        Command response = new Command();
+        response.setType(Command.Type.RESOURCE);
+        response.setBodyContentType("text/html");
+        response.setContentBody("404 Resource not found".getBytes());
+
+        context.getCallback().success(response);
 
     }
 }
