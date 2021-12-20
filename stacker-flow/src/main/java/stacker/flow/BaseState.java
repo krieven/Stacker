@@ -7,13 +7,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @param <F> flow data type
+ * Base State class, all States are instances of this
+ *
+ * @param <F> flow data type interface
  */
 public abstract class BaseState<F> {
 
     Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
     private String name;
 
+    /**
+     * When Workflow enter the State, you should determine what to do.
+     * You can call one of exitWith or sendQuestion method
+     *
+     * @param context - the context of current Workflow
+     * @return StateCompletion
+     */
     @NotNull
     public abstract StateCompletion onEnter(FlowContext<? extends F> context);
 
@@ -23,6 +32,9 @@ public abstract class BaseState<F> {
         this.name = name;
     }
 
+    /**
+     * @return String - the name of this State in the Workflow schema
+     */
     public String getName() {
         return name;
     }

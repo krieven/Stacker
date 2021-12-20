@@ -5,15 +5,25 @@ import stacker.common.ParsingException;
 import stacker.common.SerializingException;
 
 /**
+ * The instance of this class represents interaction Contract between State and opening Workflow
+ * or between State and Client.
+ * Contract is immutable
+ *
  * @param <Q> ArgumentType
  * @param <A> ReturnType
  */
-
 public final class Contract<Q, A> {
     private final Class<Q> questionType;
     private final Class<A> answerType;
     private final IParser parser;
 
+    /**
+     * Constructs the Contract
+     *
+     * @param questionType - the Question type class
+     * @param answerType   - the Answer type class
+     * @param parser       -
+     */
     public Contract(Class<Q> questionType, Class<A> answerType, IParser parser) {
         this.questionType = questionType;
         this.answerType = answerType;

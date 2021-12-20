@@ -20,15 +20,10 @@ public abstract class ResourceController<F> {
     protected abstract String getContentType();
 
     protected final StateCompletion sendResponse(byte[] resp, @NotNull FlowContext<? extends F> context) {
-
-        return new StateCompletion(() -> context.getCallback().success(
-                new Command() {
-                    {
-                        setType(Type.RESOURCE);
-                        setBodyContentType(getContentType());
-                        setContentBody(resp);
-                    }
-                }
-        ));
+        Command command = new Command();
+        command.setType(Command.Type.RESOURCE);
+        command.setBodyContentType(getContentType());
+        command.setContentBody(resp);
+        return new StateCompletion(() -> context.getCallback().success(command));
     }
 }

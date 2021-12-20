@@ -9,7 +9,9 @@ import stacker.common.SerializingException;
 import java.util.Map;
 
 /**
- * @param <F> FlowDataT
+ * The FlowContext instance glues up Workflow data
+ *
+ * @param <F> FlowData type
  */
 public class FlowContext<F> {
     private static final Logger log = LoggerFactory.getLogger(FlowContext.class);
@@ -35,18 +37,38 @@ public class FlowContext<F> {
         this.callback = callback;
     }
 
+    /**
+     * Provides the name of current flow in context of whole Process schema
+     *
+     * @return String - the name of current Workflow
+     */
     public String getFlowName() {
         return flowName;
     }
 
+    /**
+     * Provides current State name in the context of current Workflow
+     *
+     * @return String - the current State name
+     */
     public String getStateName() {
         return stateName;
     }
 
+    /**
+     * Provides FlowData of current Process in the current Workflow
+     *
+     * @return the instance of FlowData type
+     */
     public F getFlowData() {
         return flowData;
     }
 
+    /**
+     * Provides configuration properties of the current Workflow in the current Process
+     *
+     * @return the Map of cofiguration properties
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
