@@ -14,7 +14,6 @@
         <module>stacker-router-server</module>
         <module>stacker-flow</module>
         <module>stacker-flow-server</module>
-        <module>stacker-config-manager</module>
     </modules>
 
     <name>stacker</name>
