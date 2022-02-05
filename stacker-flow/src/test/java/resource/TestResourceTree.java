@@ -2,8 +2,8 @@ package resource;
 
 import org.junit.Assert;
 import org.junit.Test;
-import stacker.flow.resource.ResourceLeaf;
-import stacker.flow.resource.ResourceTree;
+import io.github.krieven.stacker.flow.resource.ResourceLeaf;
+import io.github.krieven.stacker.flow.resource.ResourceTree;
 
 public class TestResourceTree {
 

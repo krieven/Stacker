@@ -1,9 +1,9 @@
 package flow;
 
+import io.github.krieven.stacker.flow.*;
 import org.jetbrains.annotations.NotNull;
-import stacker.flow.*;
 import states.auth.AuthStateQuestion;
-import stacker.common.JsonParser;
+import io.github.krieven.stacker.common.JsonParser;
 import states.outer.OuterCall;
 
 public class TestFlow extends BaseFlow<String, String, FlowData> {

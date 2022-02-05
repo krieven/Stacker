@@ -1,11 +1,11 @@
 package states.outer;
 
 import org.jetbrains.annotations.NotNull;
-import stacker.common.JsonParser;
-import stacker.flow.Contract;
-import stacker.flow.FlowContext;
-import stacker.flow.StateOuterCall;
-import stacker.flow.StateCompletion;
+import io.github.krieven.stacker.common.JsonParser;
+import io.github.krieven.stacker.flow.Contract;
+import io.github.krieven.stacker.flow.FlowContext;
+import io.github.krieven.stacker.flow.StateOuterCall;
+import io.github.krieven.stacker.flow.StateCompletion;
 
 public class OuterCall extends StateOuterCall<OuterQuestion, OuterAnsver, OuterSupport, OuterCall.Exits> {
 

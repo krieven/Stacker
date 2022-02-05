@@ -1,12 +1,12 @@
-import stacker.common.dto.ResourceRequest;
+import io.github.krieven.stacker.common.dto.ResourceRequest;
 import states.auth.AuthAnswer;
 import flow.TestFlow;
 import org.junit.Test;
-import stacker.common.dto.Command;
-import stacker.common.ICallback;
-import stacker.common.JsonParser;
-import stacker.common.SerializingException;
-import stacker.flow.BaseFlow;
+import io.github.krieven.stacker.common.dto.Command;
+import io.github.krieven.stacker.common.ICallback;
+import io.github.krieven.stacker.common.JsonParser;
+import io.github.krieven.stacker.common.SerializingException;
+import io.github.krieven.stacker.flow.BaseFlow;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;

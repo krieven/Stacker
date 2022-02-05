@@ -3,9 +3,9 @@ package routerTest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stacker.common.dto.Command;
-import stacker.common.ICallback;
-import stacker.router.ITransport;
+import io.github.krieven.stacker.common.dto.Command;
+import io.github.krieven.stacker.common.ICallback;
+import io.github.krieven.stacker.router.ITransport;
 
 public class MockTransport implements ITransport {
     private static final Logger log = LoggerFactory.getLogger(MockTransport.class);

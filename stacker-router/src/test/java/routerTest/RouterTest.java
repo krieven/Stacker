@@ -3,10 +3,10 @@ package routerTest;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stacker.common.dto.Command;
-import stacker.common.ICallback;
-import stacker.router.Router;
-import stacker.router.SessionStack;
+import io.github.krieven.stacker.common.dto.Command;
+import io.github.krieven.stacker.common.ICallback;
+import io.github.krieven.stacker.router.Router;
+import io.github.krieven.stacker.router.SessionStack;
 
 import java.util.HashMap;
 import java.util.Map;

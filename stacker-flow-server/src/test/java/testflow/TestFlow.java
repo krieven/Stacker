@@ -1,8 +1,8 @@
 package testflow;
 
+import io.github.krieven.stacker.flow.*;
 import org.jetbrains.annotations.NotNull;
-import stacker.common.JsonParser;
-import stacker.flow.*;
+import io.github.krieven.stacker.common.JsonParser;
 
 
 public class TestFlow extends BaseFlow<String, String, TestFlowData> {

@@ -1,10 +1,10 @@
-import stacker.common.config.router.FlowConfig;
-import stacker.common.config.router.NameMapping;
-import stacker.common.config.router.RouterConfig;
+import io.github.krieven.stacker.common.config.router.FlowConfig;
+import io.github.krieven.stacker.common.config.router.NameMapping;
+import io.github.krieven.stacker.common.config.router.RouterConfig;
 import org.junit.Test;
-import stacker.common.JsonParser;
-import stacker.common.ParsingException;
-import stacker.common.SerializingException;
+import io.github.krieven.stacker.common.JsonParser;
+import io.github.krieven.stacker.common.ParsingException;
+import io.github.krieven.stacker.common.SerializingException;
 
 import java.util.ArrayList;
 import java.util.List;

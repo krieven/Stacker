@@ -1,9 +1,9 @@
 package states.auth;
 
 import org.jetbrains.annotations.NotNull;
-import stacker.flow.FlowContext;
-import stacker.flow.ResourceController;
-import stacker.flow.StateCompletion;
+import io.github.krieven.stacker.flow.FlowContext;
+import io.github.krieven.stacker.flow.ResourceController;
+import io.github.krieven.stacker.flow.StateCompletion;
 
 import java.nio.charset.Charset;
 import java.util.List;

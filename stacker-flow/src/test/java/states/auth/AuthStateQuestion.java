@@ -1,11 +1,11 @@
 package states.auth;
 
 import org.jetbrains.annotations.NotNull;
-import stacker.common.JsonParser;
-import stacker.flow.FlowContext;
-import stacker.flow.StateQuestion;
-import stacker.flow.Contract;
-import stacker.flow.StateCompletion;
+import io.github.krieven.stacker.common.JsonParser;
+import io.github.krieven.stacker.flow.FlowContext;
+import io.github.krieven.stacker.flow.StateQuestion;
+import io.github.krieven.stacker.flow.Contract;
+import io.github.krieven.stacker.flow.StateCompletion;
 
 public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, AuthSupport, AuthStateQuestion.exits> {
 
