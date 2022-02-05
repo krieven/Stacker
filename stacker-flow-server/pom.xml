@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>stacker</artifactId>
-        <groupId>stacker.su</groupId>
+        <groupId>io.github.krieven.stacker</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,13 +12,13 @@
     <artifactId>stacker-flow-server</artifactId>
     <dependencies>
         <dependency>
-            <groupId>stacker.su</groupId>
+            <groupId>io.github.krieven.stacker</groupId>
             <artifactId>stacker-common</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>stacker.su</groupId>
+            <groupId>io.github.krieven.stacker</groupId>
             <artifactId>stacker-flow</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
