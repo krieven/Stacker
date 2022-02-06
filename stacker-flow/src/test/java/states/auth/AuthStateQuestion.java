@@ -19,6 +19,8 @@ public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, A
                 exits.values()
         );
         defineResourceController("/hello", new AuthController());
+        defineResourceController("/welcome", new AuthController());
+
     }
 
     @NotNull

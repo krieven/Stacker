@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.SerializingException;
 
+import java.util.function.BiFunction;
+
 /**
  * @param <Q> question type
  * @param <A> answer type
@@ -12,8 +14,15 @@ import io.github.krieven.stacker.common.SerializingException;
  */
 public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInteractive<Q, A, F, E> {
 
+    private final BiFunction<Q, FlowContext<?>, ?> qWrapper;
+
     public StateQuestion(Contract<Q, A> contract, E[] exits) {
+        this(contract, (q, c) -> q, exits);
+    }
+
+    public StateQuestion(Contract<Q, A> contract, BiFunction<Q, FlowContext<?>, ?> qWrapper, E[] exits) {
         super(exits, contract);
+        this.qWrapper = qWrapper;
     }
 
     @NotNull
@@ -34,7 +43,7 @@ public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInt
         }
 
         try {
-            byte[] sResult = getContract().serialize(question);
+            byte[] sResult = getContract().getParser().serialize(qWrapper.apply(question, context));
             command.setBodyContentType(getContract().getContentType());
             command.setBodyContentType(getContract().getContentType());
             command.setContentBody(sResult);
