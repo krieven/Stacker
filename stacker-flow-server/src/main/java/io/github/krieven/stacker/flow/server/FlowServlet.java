@@ -23,6 +23,11 @@ public class FlowServlet extends AsyncServlet {
         this.flow = flow;
     }
 
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.getWriter().print("{\"status\":\"" + (flow != null ? "ok" : "bad") + "\"}");
+    }
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final AsyncContext ctx = request.startAsync();
         readBody(ctx, new ICallback<byte[]>() {
@@ -44,8 +49,7 @@ public class FlowServlet extends AsyncServlet {
         try {
             command = parser.parse(bytes, Command.class);
         } catch (ParsingException e) {
-            log.error("error parsing command", e);
-
+            handleError(e, ctx);
             return;
         }
         flow.handleCommand(command, new ICallback<Command>() {
@@ -70,24 +74,28 @@ public class FlowServlet extends AsyncServlet {
 
             @Override
             public void reject(Exception error) {
-                Command errorCommand = new Command();
-                errorCommand.setType(Command.Type.ERROR);
-                errorCommand.setBodyContentType("text/html");
-                errorCommand.setContentBody(("Command rejected by flow: " + " " +
-                        error.getClass().getCanonicalName() + ", " +
-                        error.getMessage()).getBytes());
-                log.error("Command rejected by flow:", error);
-                try {
-                    byte[] body = parser.serialize(errorCommand);
-                    ctx.getResponse().setContentType(flow.getContract().getContentType());
-
-                    writeBody(ctx, body);
-                    log.info(new String(errorCommand.getContentBody()));
-                } catch (Exception e) {
-                    log.error("Error writing error response", e);
-                    ctx.complete();
-                }
+                handleError(error, ctx);
             }
         });
+    }
+
+    private void handleError(Throwable error, AsyncContext ctx) {
+        Command errorCommand = new Command();
+        errorCommand.setType(Command.Type.ERROR);
+        errorCommand.setBodyContentType("text/html");
+        errorCommand.setContentBody(("Command rejected by flow: " + " " +
+                error.getClass().getCanonicalName() + ", " +
+                error.getMessage()).getBytes());
+        log.error("Command rejected by flow:", error);
+        try {
+            byte[] body = parser.serialize(errorCommand);
+            ctx.getResponse().setContentType(flow.getContract().getContentType());
+
+            writeBody(ctx, body);
+            log.info(new String(errorCommand.getContentBody()));
+        } catch (Exception e) {
+            log.error("Error writing error response", e);
+            ctx.complete();
+        }
     }
 }
