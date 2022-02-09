@@ -3,7 +3,7 @@ package contract;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.krieven.stacker.common.contract.ContractRepresentationGenerator;
+import io.github.krieven.stacker.common.contract.jsonSchema.ContractRepresentationGenerator;
 import io.github.krieven.stacker.common.dto.Command;
 import org.junit.Test;
 import org.slf4j.Logger;

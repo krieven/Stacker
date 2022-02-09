@@ -1,4 +1,4 @@
-package io.github.krieven.stacker.common.contract;
+package io.github.krieven.stacker.common.contract.jsonSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

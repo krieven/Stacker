@@ -73,7 +73,7 @@ public abstract class BaseFlow<Q, A, F> {
             Class<F> flowDataClass,
             IParser flowDataParser) {
 
-        flowContract = contract;
+        this.flowContract = contract;
         this.flowDataClass = flowDataClass;
         this.flowDataParser = flowDataParser;
 
