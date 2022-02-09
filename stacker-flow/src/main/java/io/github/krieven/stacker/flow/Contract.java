@@ -53,4 +53,9 @@ public final class Contract<Q, A> {
     public A parse(byte[] answer) throws ParsingException {
         return getParser().parse(answer, getAnswerType());
     }
+
+    public String getSchema() {
+
+        return null;
+    }
 }

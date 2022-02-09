@@ -1,0 +1,130 @@
+{
+  "question": {
+    "$schema": "http://json-schema.org/draft/2019-09/schema#",
+    "title": "Question",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "titlr": {
+        "type": "string",
+        "default": "null"
+      },
+      "type": {
+        "type": "string",
+        "default": "OPEN",
+        "enum": [
+          "QUESTION",
+          "ANSWER",
+          "RESOURCE",
+          "OPEN",
+          "RETURN",
+          "ERROR"
+        ]
+      },
+      "values": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Value"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "values"
+    ],
+    "definitions": {
+      "Value": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "first": {
+            "type": "string"
+          },
+          "second": {
+            "type": "string"
+          },
+          "integerValue": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "integerValue"
+        ]
+      }
+    }
+  },
+  "answer": {
+    "$schema": "http://json-schema.org/draft/2019-09/schema#",
+    "title": "Command",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": [
+          "QUESTION",
+          "ANSWER",
+          "RESOURCE",
+          "OPEN",
+          "RETURN",
+          "ERROR"
+        ]
+      },
+      "flow": {
+        "type": "string"
+      },
+      "state": {
+        "type": "string"
+      },
+      "bodyContentType": {
+        "type": "string"
+      },
+      "contentBody": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+      "flowData": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+      "resourceRequest": {
+        "$ref": "#/definitions/ResourceRequest"
+      },
+      "properties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "definitions": {
+      "ResourceRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "contentType": "application/json"
+}
