@@ -37,7 +37,7 @@ Stacker позволяет строить горизонтально масшт�
     [StateQuestion](./stacker-flow/src/main/java/io/github/krieven/stacker/flow/StateQuestion.java) 
     - разработка точек передачи управления в другие компоненты (вызов subflow) 
     [StateOuterCall](./stacker-flow/src/main/java/io/github/krieven/stacker/flow/StateOuterCall.java) 
-    - реализация схемы и контракта фронтального сценария BaseFlow
+    - реализация схемы и контракта фронтального сценария 
     [BaseFlow](./stacker-flow/src/main/java/io/github/krieven/stacker/flow/BaseFlow.java) 
 
 ### Роль - администратор приложения

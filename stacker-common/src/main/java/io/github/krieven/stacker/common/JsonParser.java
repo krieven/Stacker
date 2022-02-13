@@ -10,15 +10,19 @@ import java.io.IOException;
 public class JsonParser implements IParser {
     private static ObjectMapper PARSER = new ObjectMapper();
 
-    public JsonParser() {
+    static {
         PARSER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        PARSER.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        PARSER.configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false);
 
+        PARSER.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false);
+        PARSER.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        PARSER.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+        PARSER.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
     }
 
     @Override
     public <T> T parse(byte[] s, Class<T> type) throws ParsingException {
-        if (s == null) return null;
+        if (s == null || s.length == 0) return null;
         try {
             return PARSER.readValue(s, type);
         } catch (IOException e) {
@@ -28,6 +32,7 @@ public class JsonParser implements IParser {
 
     @Override
     public byte[] serialize(Object o) throws SerializingException {
+        if (o == null) return new byte[0];
         try {
             return PARSER.writeValueAsBytes(o);
         } catch (JsonProcessingException e) {

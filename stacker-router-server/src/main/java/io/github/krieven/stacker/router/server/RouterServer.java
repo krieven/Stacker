@@ -20,15 +20,16 @@ public class RouterServer extends AsyncServer<RouterServlet> {
         this.sessionStorage = sessionStorage;
     }
 
-    public void setConfig(RouterConfig config) {
+    public boolean setConfig(RouterConfig config) {
         Router router = new Router(transport, sessionStorage);
 
         if (router.setConfig(config)) {
             serviceServlet.setRouter(router);
             log.info("new configuration have been applied");
-            return;
+            return true;
         }
         log.error("Configuration is not valid and not applied");
+        return false;
     }
 
 }

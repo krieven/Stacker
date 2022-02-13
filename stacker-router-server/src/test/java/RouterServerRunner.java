@@ -23,9 +23,10 @@ public class RouterServerRunner {
 
 
         RouterConfig config = new JsonParser().parse(byteBuffer.toByteArray(), RouterConfig.class);
-        server.setConfig(config);
 
-        server.start();
+        if (server.setConfig(config)) {
+            server.start();
+        }
 
     }
 }
