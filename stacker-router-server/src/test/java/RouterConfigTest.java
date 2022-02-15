@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.krieven.stacker.common.config.router.FlowConfig;
 import io.github.krieven.stacker.common.config.router.NameMapping;
 import io.github.krieven.stacker.common.config.router.RouterConfig;
@@ -6,6 +7,7 @@ import io.github.krieven.stacker.common.JsonParser;
 import io.github.krieven.stacker.common.ParsingException;
 import io.github.krieven.stacker.common.SerializingException;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,5 +66,29 @@ public class RouterConfigTest {
                 RouterConfig.class
         );
         assertNotNull(config);
+    }
+
+    @Test
+    public void testFromFile() throws IOException {
+        RouterConfig config = new ObjectMapper().readValue(
+                readResource("router-config-view.json"),
+                RouterConfig.class);
+
+        assertNotNull(config);
+    }
+
+    void copy(InputStream source, OutputStream target) throws IOException {
+        byte[] buf = new byte[8192];
+        int length;
+        while ((length = source.read(buf)) > 0) {
+            target.write(buf, 0, length);
+        }
+    }
+
+    byte[] readResource(String path) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        InputStream in = RouterConfigTest.class.getResourceAsStream(path);
+        copy(in, out);
+        return out.toByteArray();
     }
 }

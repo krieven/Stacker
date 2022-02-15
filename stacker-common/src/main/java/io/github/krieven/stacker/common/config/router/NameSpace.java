@@ -2,21 +2,21 @@ package io.github.krieven.stacker.common.config.router;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class RouterConfig {
+public class NameSpace {
     private String name;
     private String title;
     private String description;
-    private String mainFlow;
     private List<FlowConfig> flows = new ArrayList<>();
-    private List<NameSpace> nameSpaces;
+    private Map<String, String> export;
 
-    public String getMainFlow() {
-        return mainFlow;
+    public String getName() {
+        return name;
     }
 
-    public void setMainFlow(String mainFlow) {
-        this.mainFlow = mainFlow;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<FlowConfig> getFlows() {
@@ -25,14 +25,6 @@ public class RouterConfig {
 
     public void setFlows(List<FlowConfig> flows) {
         this.flows = flows;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getTitle() {
@@ -51,12 +43,11 @@ public class RouterConfig {
         this.description = description;
     }
 
-    public List<NameSpace> getNameSpaces() {
-        return nameSpaces;
+    public Map<String, String> getExport() {
+        return export;
     }
 
-    public void setNameSpaces(List<NameSpace> nameSpaces) {
-        this.nameSpaces = nameSpaces;
+    public void setExport(Map<String, String> export) {
+        this.export = export;
     }
-
 }
