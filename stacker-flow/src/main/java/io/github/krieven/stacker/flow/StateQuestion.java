@@ -14,13 +14,13 @@ import java.util.function.BiFunction;
  */
 public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInteractive<Q, A, F, E> {
 
-    private final BiFunction<Q, FlowContext<?>, ?> qWrapper;
+    private final BiFunction<Object, FlowContext<?>, Object> qWrapper;
 
     public StateQuestion(Contract<Q, A> contract, E[] exits) {
         this(contract, (q, c) -> q, exits);
     }
 
-    public StateQuestion(Contract<Q, A> contract, BiFunction<Q, FlowContext<?>, ?> qWrapper, E[] exits) {
+    public StateQuestion(Contract<Q, A> contract, BiFunction<Object, FlowContext<?>, Object> qWrapper, E[] exits) {
         super(exits, contract);
         this.qWrapper = qWrapper;
     }
