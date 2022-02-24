@@ -1,4 +1,5 @@
 import io.github.krieven.stacker.common.dto.ResourceRequest;
+import io.github.krieven.stacker.flow.FlowHandler;
 import states.auth.AuthAnswer;
 import flow.TestFlow;
 import org.junit.Test;
@@ -13,7 +14,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 
 public class RunTest {
-    private BaseFlow flow = new TestFlow();
+    private final FlowHandler flow = FlowHandler.create(new TestFlow());
 
     @Test
     public void testOpen() {

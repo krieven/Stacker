@@ -1,6 +1,7 @@
 package io.github.krieven.stacker.flow.server;
 
 import io.github.krieven.stacker.common.*;
+import io.github.krieven.stacker.flow.FlowHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
@@ -12,15 +13,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class FlowServlet extends AsyncServlet {
-    private static Logger log = LoggerFactory.getLogger(FlowServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(FlowServlet.class);
 
-    private IParser parser = new JsonParser();
+    private final IParser parser = new JsonParser();
 
-    private BaseFlow<?, ?, ?> flow;
+    private final FlowHandler flow;
 
     FlowServlet(BaseFlow<?, ?, ?> flow) {
         super();
-        this.flow = flow;
+        this.flow = FlowHandler.create(flow);
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -89,7 +90,7 @@ public class FlowServlet extends AsyncServlet {
         log.error("Command rejected by flow:", error);
         try {
             byte[] body = parser.serialize(errorCommand);
-            ctx.getResponse().setContentType(flow.getContract().getContentType());
+            ctx.getResponse().setContentType(flow.getFlow().getContract().getContentType());
 
             writeBody(ctx, body);
             log.info(new String(errorCommand.getContentBody()));
