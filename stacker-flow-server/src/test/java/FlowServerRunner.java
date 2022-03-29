@@ -4,7 +4,7 @@ import io.github.krieven.stacker.flow.server.FlowServer;
 import testflow.TestFlow;
 
 public class FlowServerRunner {
-    private static Logger log = LoggerFactory.getLogger(FlowServerRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(FlowServerRunner.class);
 
     public static void main(String[] args) {
         FlowServer flowServer = new FlowServer(new TestFlow(), 3001);
