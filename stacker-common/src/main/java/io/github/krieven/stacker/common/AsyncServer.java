@@ -17,17 +17,15 @@ public class AsyncServer<S extends HttpServlet> {
     public AsyncServer(S servlet, int port) {
         this.serviceServlet = servlet;
 
+        ServletHolder servletHolder = new ServletHolder(serviceServlet);
+        servletHolder.setAsyncSupported(true);
+
         contextHandler = new ServletContextHandler();
         contextHandler.setContextPath("/");
-
-        ServletHolder servletHolder = new ServletHolder(serviceServlet);
+        contextHandler.addServlet(servletHolder, "/");
 
         server = new Server(port);
         server.setHandler(contextHandler);
-
-        servletHolder.setAsyncSupported(true);
-        contextHandler.addServlet(servletHolder, "/");
-
     }
 
     public ServletContextHandler getContextHandler() {
