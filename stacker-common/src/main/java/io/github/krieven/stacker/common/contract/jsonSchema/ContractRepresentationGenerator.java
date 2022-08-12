@@ -15,13 +15,13 @@ public class ContractRepresentationGenerator implements ContractRepresentationGe
 
 
     @Override
-    public ContractRepresentation generate(Class question, Class answer, String contentType) {
+    public ContractRepresentation generate(Class<?> question, Class<?> answer, String contentType) {
         JsonSchemaConfig config = JsonSchemaConfig.vanillaJsonSchemaDraft4().withJsonSchemaDraft(JsonSchemaDraft.DRAFT_07);
 
         return new ContractRepresentation(classToJson(question), classToJson(answer), contentType);
     }
 
-    private JsonNode classToJson(Class clazz) {
+    private JsonNode classToJson(Class<?> clazz) {
         return jsonSchemaGenerator.generateJsonSchema(clazz);
     }
 

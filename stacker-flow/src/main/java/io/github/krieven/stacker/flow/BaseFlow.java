@@ -76,10 +76,10 @@ public abstract class BaseFlow<Q, A, F> {
         this.flowContract = contract;
         this.flowDataClass = flowDataClass;
         this.flowDataParser = flowDataParser;
-
-        this.configure();
-        this.validate();
     }
+
+
+
 
     /**
      * This method should be called by server to handle command
@@ -87,7 +87,7 @@ public abstract class BaseFlow<Q, A, F> {
      * @param command  - the Command that server receive
      * @param callback - the server callback
      */
-    public final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
+     final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
 
         F flowData = null;
         if (command.getFlowData() != null) {
@@ -120,7 +120,7 @@ public abstract class BaseFlow<Q, A, F> {
         }
     }
 
-    public final Contract getContract() {
+    public final Contract<?,?> getContract() {
         return flowContract;
     }
 
@@ -201,7 +201,7 @@ public abstract class BaseFlow<Q, A, F> {
         assertNotEquals("The NAME should not be empty string", name, "");
         assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
         assertNotNull("State should not be null", state);
-        assertFalse("this State already added into the Flow", states.values().contains(state));
+        assertFalse("this State already added into the Flow", states.containsValue(state));
 
         states.put(name, state);
         state.setName(name);
@@ -217,6 +217,11 @@ public abstract class BaseFlow<Q, A, F> {
 
     byte[] serializeFlowData(Object o) throws SerializingException {
         return flowDataParser.serialize(o);
+    }
+
+    final void configureAndVerify(){
+        this.configure();
+        this.validate();
     }
 
     private void start(Q argument, FlowContext<F> context) {
