@@ -119,12 +119,13 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
         NameSpaceConfig nameSpace;
         if (path == null ||
                 getNameSpaceMap() == null ||
-                (nameSpace = getNameSpaceMap().get(path[0])) == null
+                (nameSpace = getNameSpaceMap().get(path[0])) == null ||
+                nameSpace.getFlowConfigMap() == null
         ) {
             return null;
         }
 
-        return nameSpace.get(path[1]);
+        return nameSpace.getFlowConfigMap().get(path[1]);
 
     }
 
