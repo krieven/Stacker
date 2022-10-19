@@ -9,7 +9,7 @@ import io.github.krieven.stacker.router.Router;
 import io.github.krieven.stacker.common.config.router.RouterConfig;
 
 public class RouterServer extends AsyncServer<RouterServlet> {
-    private static Logger log = LoggerFactory.getLogger(RouterServer.class);
+    private static final Logger log = LoggerFactory.getLogger(RouterServer.class);
 
     private final ITransport transport;
     private final ISessionStorage sessionStorage;

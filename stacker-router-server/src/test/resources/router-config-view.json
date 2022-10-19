@@ -15,29 +15,5 @@
       "address": "http://localhost:3002/"
     }
   ],
-  "nameSpaces": [
-    {
-      "name": "my_ns",
-      "flows": [
-        {
-          "name": "enter",
-          "address": "http://localhost:3001/",
-          "mapping": [
-            {
-              "name": "other-flow",
-              "target": "other-flow-real-name"
-            }
-          ]
-        },
-        {
-          "name": "other-flow-real-name",
-          "address": "http://localhost:3002/"
-        }
-      ],
-      "export": {
-        "main": "enter"
-      }
-    }
-  ],
   "mainFlow": "main"
 }

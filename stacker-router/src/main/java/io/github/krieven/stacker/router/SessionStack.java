@@ -12,7 +12,6 @@ public class SessionStack implements Serializable {
     private final Stack<SessionStackEntry> stack = new Stack<>();
 
     public byte[] getDaemonData(String flowName) {
-        flowName = flowName.trim().toUpperCase();
         return daemonData.get(flowName);
     }
 

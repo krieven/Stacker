@@ -11,7 +11,7 @@ public abstract class StateInteractive<Q, A, F, E extends Enum<E>> extends BaseS
     private final Map<Enum<?>, String> transitions = new HashMap<>();
     private final Enum<?>[] exits;
 
-    private Contract<Q, A> contract;
+    private final Contract<Q, A> contract;
 
     StateInteractive(Enum<E>[] exits, Contract<Q, A> contract) {
         Assert.assertNotNull("exits should not be null", exits);

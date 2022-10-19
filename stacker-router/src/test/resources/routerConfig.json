@@ -1,0 +1,16 @@
+{
+  "mainFlow": "main/main",
+  "nameSpaceMap": {
+    "main": {
+      "main": {
+        "address": "http://localhost:3001",
+        "mapping": {
+          "subflow": "welcome"
+        }
+      },
+      "welcome": {
+        "type": "LOCAL"
+      }
+    }
+  }
+}

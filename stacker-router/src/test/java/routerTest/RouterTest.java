@@ -1,5 +1,8 @@
 package routerTest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.krieven.stacker.common.config.router.RouterConfig;
+import io.github.krieven.stacker.common.config.router.nsRouterConfig.NSRouterConfig;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +11,7 @@ import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.router.Router;
 import io.github.krieven.stacker.router.SessionStack;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,22 +20,24 @@ import static org.junit.Assert.*;
 
 public class RouterTest {
     private static final Logger log = LoggerFactory.getLogger(RouterTest.class);
-    private MockSessionStorage sessionStorage = new MockSessionStorage();
-    private MockTransport transport = new MockTransport();
-    private Router router = new Router(transport, sessionStorage);
-    private String sid = "111";
+    private static final ObjectMapper PARSER = new ObjectMapper();
 
+    private final MockSessionStorage sessionStorage = new MockSessionStorage();
+    private final MockTransport transport = new MockTransport();
+    private final Router router = new Router(transport, sessionStorage);
+    private final String sid = "111";
 
     {
-        router.addFlow("main", "http://main.flow");
-        router.setMainFlow("main");
-        router.addFlow("second", "http://second.flow");
-        router.setFlowMapping("main", "subflow", "second");
+        try {
+            RouterConfig config = PARSER.readValue(RouterTest.class.getClassLoader().getResourceAsStream("routerConfig.json"), NSRouterConfig.class);
+            router.setConfig(config);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void testQuestion() {
-
 
         Command respCommand =
 
@@ -112,7 +118,7 @@ public class RouterTest {
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(2, sessionStackEntries.size());
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("SECOND", sessionStackEntries.peek().getFlow());
+                        assertEquals("main/welcome", sessionStackEntries.peek().getFlow());
                         assertEquals("session Data SECOND", new String(sessionData));
                     }
 
@@ -166,7 +172,7 @@ public class RouterTest {
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("MAIN", sessionStackEntries.peek().getFlow());
+                        assertEquals("main/main", sessionStackEntries.peek().getFlow());
                         assertEquals("session Data ++", new String(sessionData));
                     }
 
@@ -211,7 +217,7 @@ public class RouterTest {
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("MAIN", sessionStackEntries.peek().getFlow());
+                        assertEquals("main/main", sessionStackEntries.peek().getFlow());
                         assertEquals("session Data ++", new String(sessionData));
                     }
 
@@ -253,7 +259,7 @@ public class RouterTest {
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("MAIN", sessionStackEntries.peek().getFlow());
+                        assertEquals("main/main", sessionStackEntries.peek().getFlow());
                         assertEquals("session Data ++", new String(sessionData));
                     }
 
@@ -285,7 +291,7 @@ public class RouterTest {
                     public void success(SessionStack sessionStackEntries) {
                         assertEquals(1, sessionStackEntries.size());
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("MAIN", sessionStackEntries.peek().getFlow());
+                        assertEquals("main/main", sessionStackEntries.peek().getFlow());
                         assertEquals("session Data ++", new String(sessionData));
                     }
 
@@ -324,46 +330,4 @@ public class RouterTest {
         });
     }
 
-
-    @Test
-    public void configValidationTestOk() {
-        Router router = new Router(transport, sessionStorage) {
-            {
-                addFlow("main", "m1");
-
-                addFlow("l1c1", "a1");
-                setFlowMapping("main", "c1", "l1c1");
-                addFlow("l1c2", "a1");
-                setFlowMapping("main", "c2", "l1c2");
-                addFlow("l1c3", "a1");
-                setFlowMapping("main", "c3", "l1c3");
-                addFlow("l1c4", "a1");
-                setFlowMapping("main", "c4", "l1c4");
-
-                setMainFlow("main");
-            }
-        };
-        assertTrue(router.isValidConfiguration());
-    }
-
-    @Test
-    public void configValidationTestBad() {
-        Router router = new Router(transport, sessionStorage) {
-            {
-                addFlow("main", "m1");
-
-                addFlow("l1c1", "a1");
-                setFlowMapping("main", "c1", "l1c1");
-                addFlow("l1c2", "a1");
-                setFlowMapping("main", "c2", "l1c2");
-                addFlow("l1c3", "a1");
-                setFlowMapping("main", "c3", "l1c3");
-                addFlow("l1c4", "a1");
-                setFlowMapping("main", "c4", "main");
-
-                setMainFlow("main");
-            }
-        };
-        assertFalse(router.isValidConfiguration());
-    }
 }

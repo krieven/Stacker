@@ -1,62 +1,56 @@
 package io.github.krieven.stacker.common.config.router;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class RouterConfig {
-    private String name;
-    private String title;
-    private String description;
-    private String mainFlow;
-    private List<FlowConfig> flows = new ArrayList<>();
-    private List<NameSpace> nameSpaces;
+/**
+ * Config of Stacker application
+ */
+public interface RouterConfig {
+    /**
+     * Display name of application
+     * @return String title
+     */
+    String getTitle();
 
-    public String getMainFlow() {
-        return mainFlow;
-    }
+    /**
+     * Description of application
+     * @return String description
+     */
+    String getDescription();
 
-    public void setMainFlow(String mainFlow) {
-        this.mainFlow = mainFlow;
-    }
+    /**
+     * The MainFlow - is the root flow of the application
+     * @return String full name of the MainFlow
+     */
+    String getMainFlow();
 
-    public List<FlowConfig> getFlows() {
-        return flows;
-    }
+    /**
+     *
+     * @param callerFlowFullName
+     * @param name
+     * @return
+     */
+    String resolveSubFlow(String callerFlowFullName, String name);
 
-    public void setFlows(List<FlowConfig> flows) {
-        this.flows = flows;
-    }
+    /**
+     *
+     * @param fullFlowName
+     * @return
+     */
+    List<String> resolveSubFlows(String fullFlowName);
 
-    public String getName() {
-        return name;
-    }
+    /**
+     *
+     * @param fullFlowName
+     * @return
+     */
+    String resolveAddress(String fullFlowName);
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<NameSpace> getNameSpaces() {
-        return nameSpaces;
-    }
-
-    public void setNameSpaces(List<NameSpace> nameSpaces) {
-        this.nameSpaces = nameSpaces;
-    }
-
+    /**
+     *
+     * @param fullFlowName
+     * @return
+     */
+    Map<String, String> resolveProperties(String fullFlowName);
 }

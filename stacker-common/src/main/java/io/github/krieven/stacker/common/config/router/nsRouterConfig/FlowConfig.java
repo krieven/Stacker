@@ -1,15 +1,16 @@
-package io.github.krieven.stacker.common.config.router;
+package io.github.krieven.stacker.common.config.router.nsRouterConfig;
 
-import java.util.List;
 import java.util.Map;
 
 public class FlowConfig {
     private String name;
     private String title;
+    private Type type;
     private String description;
     private String address;
-    private List<NameMapping> mapping;
+    private Map<String, String> mapping;
     private Map<String, String> properties;
+    private Boolean isPublic;
 
     public String getName() {
         return name;
@@ -25,14 +26,6 @@ public class FlowConfig {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public List<NameMapping> getMapping() {
-        return mapping;
-    }
-
-    public void setMapping(List<NameMapping> mapping) {
-        this.mapping = mapping;
     }
 
     public String getTitle() {
@@ -58,4 +51,34 @@ public class FlowConfig {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean aPublic) {
+        isPublic = aPublic;
+    }
+
+    public Map<String, String> getMapping() {
+        return mapping;
+    }
+
+    public void setMapping(Map<String, String> mapping) {
+        this.mapping = mapping;
+    }
+
+    public enum Type{
+        LOCAL,
+        IMPORT
+    }
+
 }

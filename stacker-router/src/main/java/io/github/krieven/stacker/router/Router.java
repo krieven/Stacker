@@ -1,18 +1,15 @@
 package io.github.krieven.stacker.router;
 
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.util.*;
 import java.util.function.Consumer;
 
+import io.github.krieven.stacker.common.config.router.RouterConfig;
+import io.github.krieven.stacker.common.config.router.RouterConfigValidator;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.github.krieven.stacker.common.config.router.FlowConfig;
-import io.github.krieven.stacker.common.config.router.NameMapping;
-import io.github.krieven.stacker.common.config.router.RouterConfig;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.common.dto.ResourceRequest;
@@ -23,13 +20,9 @@ public class Router {
     private final ITransport transport;
     private final ISessionStorage sessionStorage;
 
-    private final Map<String, String> flows = new HashMap<>();
-    private final Map<String, Map<String, String>> flowMapping = new HashMap<>();
-    private Map<String, Map<String, String>> properties = new HashMap<>();
-    private String mainFlow;
-
     private final Map<Command.Type, Consumer<RouterResponseResult>> responseHandlers = new HashMap<>();
     private final Map<String, IRouterCallback> sessionLock = new HashMap<>();
+    private RouterConfig config;
 
     //here responseHandlers are
     {
@@ -67,12 +60,12 @@ public class Router {
 
                 SessionStackEntry newEntry = new SessionStackEntry();
                 newEntry.setFlow(
-                        getMapped(
-                                currentEntry.getFlow(),
-                                command.getFlow()
-                        )
+                       config.resolveSubFlow(
+                               currentEntry.getFlow(),
+                               command.getFlow()
+                       )
                 );
-                newEntry.setAddress(getAddress(newEntry.getFlow()));
+                newEntry.setAddress(config.resolveAddress(newEntry.getFlow()));
                 sessionStack.push(newEntry);
                 sessionStorage.save(sid, sessionStack);
 
@@ -146,116 +139,12 @@ public class Router {
         this.sessionStorage = sessionStorage;
     }
 
-    public void addFlow(String name, String address) {
-        assertNotNull("Name should be not null", name);
-        name = name.trim().toUpperCase();
-        assertNotEquals("Name should not be empty string", name, "");
-        assertNotNull("Address should be not null", address);
-        assertNull("Flow '" + name + "' already registered", flows.get(name));
-        flows.put(name, address);
-    }
-
-    public void setMainFlow(String name) {
-        assertNotNull("mainFlow should not be null", name);
-        name = name.trim().toUpperCase();
-        assertNotNull("Flow '" + name + "' not found", flows.get(name));
-        mainFlow = name;
-    }
-
-    public void setFlowMapping(@NotNull String caller, @NotNull String name, @NotNull String target) {
-        caller = caller.trim().toUpperCase();
-        name = name.trim().toUpperCase();
-        target = target.trim().toUpperCase();
-        //caller and target should be registered flow names
-        if (!flowMapping.containsKey(caller)) {
-            flowMapping.put(caller, new HashMap<>());
-        }
-        Map<String, String> mapping = flowMapping.get(caller);
-        mapping.put(name, target);
-    }
-
     public boolean setConfig(RouterConfig config) {
-        if (config == null || config.getFlows() == null) {
+        if (config == null || !RouterConfigValidator.isValid(config)) {
             return false;
         }
-        for (FlowConfig flowConfig : config.getFlows()) {
-            addFlow(flowConfig.getName(), flowConfig.getAddress());
-            setProperties(flowConfig.getName(), flowConfig.getProperties());
-
-            if (flowConfig.getMapping() == null) {
-                continue;
-            }
-            for (NameMapping mapping : flowConfig.getMapping()) {
-                setFlowMapping(flowConfig.getName(), mapping.getName(), mapping.getTarget());
-            }
-        }
-        setMainFlow(config.getMainFlow());
-
-        return isValidConfiguration();
-    }
-
-    private void setProperties(String name, Map<String, String> properties) {
-        this.properties.put(name, properties);
-    }
-
-    public boolean isValidConfiguration() {
-        boolean result = true;
-        if (flows.isEmpty()) {
-            log.error("no flows configured");
-            result = false;
-        }
-        if (mainFlow == null || !flows.containsKey(mainFlow)) {
-            log.error("mainFlow should be configured flow name");
-            result = false;
-        }
-
-        result = result && !hasRecursion(new ArrayList<>(), mainFlow);
-
-        return result;
-    }
-
-    private boolean hasRecursion(List<String> path, String name) {
-        if (path.contains(name)) {
-            log.error(name + " - is recursively mapped in {}", path);
-            return true;
-        }
-        Map<String, String> mapping = flowMapping.get(name);
-        if (mapping == null) {
-            return false;
-        }
-
-        List<String> newPath = new ArrayList<>(path);
-        newPath.add(name);
-
-        boolean result = false;
-
-        for (String child : mapping.values()) {
-            result = result || hasRecursion(newPath, child);
-        }
-        return result;
-    }
-
-    private String getMapped(@NotNull String caller, @NotNull String name) {
-
-        caller = caller.trim().toUpperCase();
-        name = name.trim().toUpperCase();
-        if (!flowMapping.containsKey(caller)) {
-            throw new IllegalStateException("no flows mapped on '" + name + "' for '" + caller + "'");
-        }
-        return flowMapping.get(caller).get(name);
-    }
-
-    private String getAddress(String name) {
-        if (name == null) {
-            log.info("Flow cannot be found, null name detected");
-            throw new IllegalArgumentException("Flow cannot be found, null name detected");
-        }
-        name = name.trim().toUpperCase();
-        if (!flows.containsKey(name)) {
-            log.info("Flow cannot be found");
-            throw new IllegalArgumentException("Flow cannot be found, name \"" + name + "\" not configured");
-        }
-        return flows.get(name);
+        this.config = config;
+        return true;
     }
 
     private boolean putSessionLock(String sid, IRouterCallback callback) {
@@ -302,10 +191,13 @@ public class Router {
         public void success(SessionStack sessionStack) {
             Command.Type type = Command.Type.ANSWER;
             if (sessionStack == null || sessionStack.empty()) {
+                String mainFlow = config.getMainFlow();
+
                 sessionStack = new SessionStack();
                 SessionStackEntry entry = new SessionStackEntry();
+
                 entry.setFlow(mainFlow);
-                entry.setAddress(getAddress(mainFlow));
+                entry.setAddress(config.resolveAddress(mainFlow));
                 sessionStack.push(entry);
                 type = Command.Type.OPEN;
             }
@@ -316,7 +208,7 @@ public class Router {
             command.setState(entry.getState());
             command.setFlowData(entry.getFlowData());
             command.setContentBody(body);
-            command.setProperties(properties.get(entry.getFlow()));
+            command.setProperties(config.resolveProperties(entry.getFlow()));
 
             try {
                 transport.sendRequest(entry.getAddress(), command, new ResponseCallback(sid, sessionStack));
@@ -365,7 +257,7 @@ public class Router {
             command.setState(entry.getState());
             command.setFlowData(entry.getFlowData());
             command.setResourceRequest(resourceRequest);
-            command.setProperties(properties.get(entry.getFlow()));
+            command.setProperties(config.resolveProperties(entry.getFlow()));
 
             transport.sendRequest(entry.getAddress(), command, new ICallback<Command>() {
                 @Override
