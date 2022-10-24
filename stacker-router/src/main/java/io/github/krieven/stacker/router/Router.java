@@ -140,7 +140,7 @@ public class Router {
     }
 
     public boolean setConfig(RouterConfig config) {
-        if (config == null || !RouterConfigValidator.isValid(config)) {
+        if (!RouterConfigValidator.isValid(config)) {
             return false;
         }
         this.config = config;

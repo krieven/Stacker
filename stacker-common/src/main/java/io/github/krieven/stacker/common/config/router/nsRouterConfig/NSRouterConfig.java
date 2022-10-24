@@ -3,7 +3,6 @@ package io.github.krieven.stacker.common.config.router.nsRouterConfig;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.BooleanUtils;
 
 public class NSRouterConfig implements io.github.krieven.stacker.common.config.router.RouterConfig {
 
@@ -61,21 +60,17 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
                 (flowName = flowConfig.getMapping().get(name)) == null) {
             return null;
         }
-        String[] mapped = {path[0], flowName};
-        FlowConfig foundFlowConfig = resolveFlow(mapped);
+
+        FlowConfig foundFlowConfig = resolveFlow(new String[]{path[0], flowName});
         if (foundFlowConfig == null) {
             return null;
         }
-        if (foundFlowConfig.getType() != FlowConfig.Type.IMPORT) {
+        if (!foundFlowConfig.isImport()) {
             return path[0] + PATH_SPLITTER + flowName;
         }
 
-        String[] importPath = toPath(foundFlowConfig.getAddress());
         FlowConfig targetFlow;
-        if ((targetFlow = resolveFlow(importPath)) == null) {
-            return null;
-        }
-        if (BooleanUtils.isTrue(targetFlow.getIsPublic())) {
+        if ((targetFlow = resolveFlow(toPath(foundFlowConfig.getAddress()))) != null && targetFlow.isPublic()) {
             return foundFlowConfig.getAddress();
         }
 
@@ -86,7 +81,7 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
     public String resolveAddress(String fullFlowName) {
         String[] path = toPath(fullFlowName);
         FlowConfig flowConfig = resolveFlow(path);
-        if (flowConfig == null || flowConfig.getType() == FlowConfig.Type.IMPORT) {
+        if (flowConfig == null || flowConfig.isImport()) {
             return null;
         }
         return flowConfig.getAddress();
@@ -96,7 +91,7 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
     public Map<String, String> resolveProperties(String fullFlowName) {
         String[] path = toPath(fullFlowName);
         FlowConfig flowConfig = resolveFlow(path);
-        if (flowConfig == null || flowConfig.getType() == FlowConfig.Type.IMPORT) {
+        if (flowConfig == null || flowConfig.isImport()) {
             return null;
         }
         return flowConfig.getProperties();
@@ -106,7 +101,7 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
     public List<String> resolveSubFlows(String fullFlowName) {
         String[] path = toPath(fullFlowName);
         FlowConfig flowConfig = resolveFlow(path);
-        if (flowConfig == null || flowConfig.getType() == FlowConfig.Type.IMPORT) {
+        if (flowConfig == null || flowConfig.isImport()) {
             return null;
         }
         return Optional.ofNullable(flowConfig.getMapping())
@@ -132,8 +127,7 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
     private String[] toPath(String flowFullName) {
         String[] path;
         if (flowFullName == null ||
-                (path = flowFullName.trim().split(PATH_SPLITTER)).length < 2 ||
-                path[0] == null || path[1] == null
+                (path = flowFullName.split(PATH_SPLITTER)).length < 2
         ) {
             return null;
         }

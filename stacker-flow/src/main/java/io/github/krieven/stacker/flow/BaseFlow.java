@@ -186,6 +186,7 @@ public abstract class BaseFlow<Q, A, F> {
         if (state == null) {
             throw new IllegalStateException("State \"" + name + "\" was not found");
         }
+        log.info("enter State {}", name);
         return state.onEnter(transContext);
     }
 
@@ -286,6 +287,14 @@ public abstract class BaseFlow<Q, A, F> {
                             "Misconfiguration:\n exit with name \"" +
                                     exit.name() + "\" from State \"" + key +
                                     "\" have no destination target");
+                }
+                if(states.get(target) == null){
+                    throw new IllegalStateException(
+                            "Misconfiguration:\n exit with name \"" +
+                                    exit.name() + "\" from State \"" + key +
+                                    "to target \"" + target + "\"" +
+                                    "\" is not associated with state"
+                    );
                 }
                 targets.add(target);
             }

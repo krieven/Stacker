@@ -33,7 +33,9 @@ public class AsyncServer<S extends HttpServlet> {
     }
 
     public void start() throws Exception {
+        server.setStopAtShutdown(true);
         server.start();
         server.join();
     }
+
 }

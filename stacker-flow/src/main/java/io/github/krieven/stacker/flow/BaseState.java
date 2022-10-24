@@ -24,7 +24,7 @@ public abstract class BaseState<F> {
      * @return StateCompletion
      */
     @NotNull
-    public abstract StateCompletion onEnter(FlowContext<? extends F> context);
+    protected abstract StateCompletion onEnter(FlowContext<? extends F> context);
 
     abstract void handle(byte[] answer, FlowContext<? extends F> context);
 

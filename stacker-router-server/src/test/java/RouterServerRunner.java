@@ -10,8 +10,6 @@ import java.io.InputStream;
 public class RouterServerRunner {
     public static void main(String[] args) throws Exception {
 
-        RouterServer server = new RouterServer(new HttpTransport(), new SimpleSessionStorage(), 3000);
-
         InputStream inputStream = RouterServerRunner.class.getClassLoader().getResourceAsStream("router-config-view.json");
         byte[] buf = new byte[1024];
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
@@ -22,6 +20,7 @@ public class RouterServerRunner {
 
         io.github.krieven.stacker.common.config.router.RouterConfig config = new JsonParser().parse(byteBuffer.toByteArray(), NSRouterConfig.class);
 
+        RouterServer server = new RouterServer(new HttpTransport(), new SimpleSessionStorage(), 3000);
         if (server.setConfig(config)) {
             server.start();
         }
