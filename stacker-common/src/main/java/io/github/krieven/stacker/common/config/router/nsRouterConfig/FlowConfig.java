@@ -5,12 +5,11 @@ import java.util.Map;
 public class FlowConfig {
     private String name;
     private String title;
-    private Type type;
+    private AccessType access;
     private String description;
     private String address;
     private Map<String, String> mapping;
     private Map<String, String> properties;
-    private Boolean isPublic;
 
     public String getName() {
         return name;
@@ -52,20 +51,12 @@ public class FlowConfig {
         this.properties = properties;
     }
 
-    public Type getType() {
-        return type;
+    public AccessType getAccess() {
+        return access;
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean aPublic) {
-        isPublic = aPublic;
+    public void setAccess(AccessType access) {
+        this.access = access;
     }
 
     public Map<String, String> getMapping() {
@@ -76,9 +67,18 @@ public class FlowConfig {
         this.mapping = mapping;
     }
 
-    public enum Type{
-        LOCAL,
-        IMPORT
+
+    public boolean isPublic() {
+        return this.access == AccessType.EXPORT;
+    }
+
+    public boolean isImport() {
+        return this.access == AccessType.IMPORT;
+    }
+
+    private enum AccessType {
+        IMPORT,
+        EXPORT
     }
 
 }

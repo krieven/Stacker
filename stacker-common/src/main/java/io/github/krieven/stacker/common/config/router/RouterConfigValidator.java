@@ -11,7 +11,7 @@ public class RouterConfigValidator {
     private static final Logger LOG = LoggerFactory.getLogger(RouterConfigValidator.class);
 
     public static boolean isValid(RouterConfig config) {
-        if (config == null || config.getMainFlow() == null) {
+        if (config == null || config.getMainFlow() == null || config.getMainFlow().isEmpty()) {
             LOG.error("MainFlow is not specified");
             return false;
         }
@@ -24,8 +24,8 @@ public class RouterConfigValidator {
     }
 
     private static boolean checkTree(RouterConfig config, String flowName, Set<String> path) {
-        if (flowName == null) {
-            LOG.error("Flow {} trying to access to inaccessible flow", path);
+        if (flowName == null || config.resolveAddress(flowName) == null) {
+            LOG.error("Flow {} trying to access to inaccessible flow {}", path, flowName);
             return false;
         }
         if (!path.add(flowName)) {

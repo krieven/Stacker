@@ -10,7 +10,7 @@
           }
         },
         "welcome": {
-          "type": "LOCAL"
+          "address": "http://localhost:3002"
         }
       }
     }
