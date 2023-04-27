@@ -7,6 +7,7 @@ import java.util.Map;
 public class Command implements Serializable {
 
     private Type type;
+    private String rqUid;
     private String flow;
     private String state;
     private String bodyContentType;
@@ -79,10 +80,19 @@ public class Command implements Serializable {
         this.properties = properties;
     }
 
+    public String getRqUid() {
+        return rqUid;
+    }
+
+    public void setRqUid(String rqUid) {
+        this.rqUid = rqUid;
+    }
+
     @Override
     public String toString() {
         return "Command{" +
                 "type=" + type +
+                ", rqUid='" + rqUid + '\'' +
                 ", flow='" + flow + '\'' +
                 ", state='" + state + '\'' +
                 ", bodyContentType='" + bodyContentType + '\'' +

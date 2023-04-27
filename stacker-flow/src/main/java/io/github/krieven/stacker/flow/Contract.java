@@ -12,7 +12,7 @@ import io.github.krieven.stacker.common.SerializingException;
  * @param <Q> ArgumentType
  * @param <A> ReturnType
  */
-public final class Contract<Q, A> {
+public class Contract<Q, A> {
     private final Class<Q> questionType;
     private final Class<A> answerType;
     private final IParser parser;
@@ -22,7 +22,7 @@ public final class Contract<Q, A> {
      *
      * @param questionType - the Question type class
      * @param answerType   - the Answer type class
-     * @param parser       -
+     * @param parser       - the IParser instance (format)
      */
     public Contract(Class<Q> questionType, Class<A> answerType, IParser parser) {
         this.questionType = questionType;
@@ -30,31 +30,31 @@ public final class Contract<Q, A> {
         this.parser = parser;
     }
 
-    public Class<Q> getQuestionType() {
+    public final Class<Q> getQuestionType() {
         return questionType;
     }
 
-    public Class<A> getAnswerType() {
+    public final Class<A> getAnswerType() {
         return answerType;
     }
 
-    public IParser getParser() {
+    public final IParser getParser() {
         return parser;
     }
 
-    public String getContentType() {
+    public final String getContentType() {
         return getParser().getContentType();
     }
 
-    public byte[] serialize(Q question) throws SerializingException {
+    public final byte[] serialize(Q question) throws SerializingException {
         return getParser().serialize(question);
     }
 
-    public A parse(byte[] answer) throws ParsingException {
+    public final A parse(byte[] answer) throws ParsingException {
         return getParser().parse(answer, getAnswerType());
     }
 
-    public String getSchema() {
+    public final String getSchema() {
 
         return null;
     }

@@ -1,6 +1,6 @@
 # Stacker
 
-## Cloud Native Hierarchical Flow Machine.
+## Cloud Ready Hierarchical Flow Machine.
 
 [Презентация](./conception/presentation3.pdf)
 

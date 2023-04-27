@@ -203,6 +203,7 @@ public class Router {
             }
             SessionStackEntry entry = sessionStack.peek();
             Command command = new Command();
+            command.setRqUid(UUID.randomUUID().toString());
             command.setType(type);
             command.setFlow(entry.getFlow());
             command.setState(entry.getState());
@@ -210,9 +211,13 @@ public class Router {
             command.setContentBody(body);
             command.setProperties(config.resolveProperties(entry.getFlow()));
 
+            log.info("sid:{}; rqUid:{}; flow:{}; state:{}; type:{}; send",
+                    sid, command.getRqUid(), command.getFlow(), command.getState(), command.getType());
             try {
                 transport.sendRequest(entry.getAddress(), command, new ResponseCallback(sid, sessionStack));
             } catch (Exception e) {
+                log.error("sid:{}; rqUid:{}; flow:{}; state:{}; type:{}; rejected",
+                        sid, command.getRqUid(), command.getFlow(), command.getState(), command.getType(), e);
                 reject(e);
             }
         }
@@ -220,7 +225,7 @@ public class Router {
         @Override
         public void reject(Exception exception) {
             synchronized (sid.intern()) {
-                log.error("SessionStorage rejects with exception: " + exception.getMessage(), exception);
+                log.error("SessionStorage {} rejects with exception: " + exception.getMessage(), sid, exception);
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {
                     callback.reject(exception);

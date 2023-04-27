@@ -15,9 +15,9 @@ import java.util.UUID;
 
 
 public class RouterServlet extends AsyncServlet {
-    private static Logger log = LoggerFactory.getLogger(RouterServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(RouterServlet.class);
 
-    private String cookieName = "CLOUD_BUNCH_SESSION_ID";
+    private final String cookieName = "CLOUD_BUNCH_SESSION_ID";
 
     private Router router;
 
@@ -51,7 +51,7 @@ public class RouterServlet extends AsyncServlet {
             @Override
             public void reject(Exception error) {
                 try {
-                    writeBody(ctx, (error.getMessage() + "").getBytes());
+                    writeBody(ctx, (error.getMessage() + "\n").getBytes());
                 } catch (IOException e) {
                     log.error(e.getMessage(), e);
                     ctx.complete();
@@ -94,11 +94,12 @@ public class RouterServlet extends AsyncServlet {
         @Override
         public void success(String sid, String contentType, byte[] body) {
             try {
-                ctx.getResponse().setContentLength(body.length);
                 ctx.getResponse().setContentType(contentType);
+                ctx.getResponse().setContentLength(body.length);
                 writeBody(ctx, body);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
+                ctx.complete();
             }
         }
 
@@ -108,6 +109,7 @@ public class RouterServlet extends AsyncServlet {
                 writeBody(ctx, exception.getMessage().getBytes());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
+                ctx.complete();
             }
         }
     }

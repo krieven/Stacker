@@ -75,6 +75,7 @@ public class FlowServlet extends AsyncServlet {
 
             @Override
             public void reject(Exception error) {
+                log.error("requested {} flow '{}' state '{}' rejected with {}", command.getType(), command.getFlow(), command.getState(), error.toString());
                 handleError(error, ctx);
             }
         });

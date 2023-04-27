@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
  * Base class for any plain Workflow.
  * Each Workflow implements Role part of BPMN schema,
  * can receive argument of type Q and return some value of type A.
- *
  * Workflow consists of States,
  * all data, that should be passed trough Workflow between states,
  * should be stored in the instance of your FlowData class.
@@ -246,7 +245,6 @@ public abstract class BaseFlow<Q, A, F> {
         return states.get(name.trim().toUpperCase());
     }
 
-    @SuppressWarnings("unchecked")
     private StateInteractive<?, ?, ? super F, ?> getInteractiveState(String name) throws ClassCastException {
         BaseState<? super F> state = getState(name);
         return (StateInteractive<?, ?, ? super F, ?>) state;
@@ -292,8 +290,8 @@ public abstract class BaseFlow<Q, A, F> {
                     throw new IllegalStateException(
                             "Misconfiguration:\n exit with name \"" +
                                     exit.name() + "\" from State \"" + key +
-                                    "to target \"" + target + "\"" +
-                                    "\" is not associated with state"
+                                    "\" to target \"" + target + "\"" +
+                                    " is not associated with state"
                     );
                 }
                 targets.add(target);

@@ -50,12 +50,13 @@ public class AsyncServlet extends HttpServlet {
     }
 
     protected void writeBody(AsyncContext ctx, byte[] body) throws IOException {
+        log.info("writing response body {} bytes", body.length);
         ServletOutputStream output = ctx.getResponse().getOutputStream();
-        ctx.getResponse().setContentLength(body.length);
 
         output.setWriteListener(new WriteListener() {
             @Override
             public void onWritePossible() throws IOException {
+                log.info("output isReady={}", output.isReady());
                 output.write(body);
                 ctx.complete();
             }

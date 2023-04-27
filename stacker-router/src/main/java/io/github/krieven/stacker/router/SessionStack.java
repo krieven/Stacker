@@ -12,12 +12,11 @@ public class SessionStack implements Serializable {
     private final Stack<SessionStackEntry> stack = new Stack<>();
 
     public byte[] getDaemonData(String flowName) {
-        return daemonData.get(flowName);
+        return daemonData.get(flowName.trim().toUpperCase());
     }
 
     public void setDaemonData(String flowName, byte[] daemonData) {
-        flowName = flowName.trim().toUpperCase();
-        this.daemonData.put(flowName, daemonData);
+        this.daemonData.put(flowName.trim().toUpperCase(), daemonData);
     }
 
     public SessionStackEntry pop() {
