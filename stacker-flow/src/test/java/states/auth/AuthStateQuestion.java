@@ -7,7 +7,7 @@ import io.github.krieven.stacker.flow.StateQuestion;
 import io.github.krieven.stacker.flow.Contract;
 import io.github.krieven.stacker.flow.StateCompletion;
 
-public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, AuthSupport, AuthStateQuestion.exits> {
+public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, AuthSupport, AuthStateQuestion.Exits> {
 
     public AuthStateQuestion() {
         super(
@@ -16,7 +16,7 @@ public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, A
                         AuthAnswer.class,
                         new JsonParser()
                 ),
-                exits.values()
+                Exits.values()
         );
         defineResourceController("/hello", new AuthController());
         defineResourceController("/welcome", new AuthController());
@@ -27,7 +27,7 @@ public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, A
     @Override
     protected StateCompletion handleAnswer(AuthAnswer input, FlowContext<? extends AuthSupport> context) {
         context.getFlowData().setAuthAnswer(input);
-        return exitState(exits.FORWARD, context);
+        return exitState(Exits.FORWARD, context);
     }
 
     @NotNull
@@ -38,7 +38,7 @@ public class AuthStateQuestion extends StateQuestion<AuthQuestion, AuthAnswer, A
         return sendQuestion(authQuestion, context);
     }
 
-    public enum exits {
+    public enum Exits {
         FORWARD, BACKWARD
     }
 

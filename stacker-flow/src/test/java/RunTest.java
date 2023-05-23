@@ -7,17 +7,20 @@ import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.common.JsonParser;
 import io.github.krieven.stacker.common.SerializingException;
-import io.github.krieven.stacker.flow.BaseFlow;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 
 public class RunTest {
-    private final FlowHandler flow = FlowHandler.create(new TestFlow());
+    private FlowHandler flow;
 
+    public void createFlow(){
+        flow = FlowHandler.create(new TestFlow());
+    }
     @Test
     public void testOpen() {
+        createFlow();
         flow.handleCommand(
                 new Command() {
                     {
@@ -35,6 +38,7 @@ public class RunTest {
                     public void success(Command command) {
                         assertNotNull(command);
                         assertEquals(Command.Type.QUESTION, command.getType());
+                        assertEquals("FIRST", command.getState());
                         assertEquals(
                                 "{\"argument\":\"hello\",\"authAnswer\":null}",
                                 new String(command.getFlowData())
@@ -55,6 +59,7 @@ public class RunTest {
 
     @Test
     public void testAnswer() {
+        createFlow();
         flow.handleCommand(
                 new Command() {
                     {
@@ -95,6 +100,7 @@ public class RunTest {
 
     @Test
     public void testReturn() {
+        createFlow();
         flow.handleCommand(
                 new Command() {
                     {
@@ -122,6 +128,7 @@ public class RunTest {
 
     @Test
     public void testResource() {
+        createFlow();
         flow.handleCommand(
                 new Command() {
                     {

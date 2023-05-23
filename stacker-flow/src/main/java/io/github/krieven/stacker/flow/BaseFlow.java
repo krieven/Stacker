@@ -1,9 +1,7 @@
 package io.github.krieven.stacker.flow;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.common.IParser;
@@ -24,7 +22,7 @@ import static org.junit.Assert.*;
  * Each Workflow implements Role part of BPMN schema,
  * can receive argument of type Q and return some value of type A.
  * Workflow consists of States,
- * all data, that should be passed trough Workflow between states,
+ * all data, that should be passed through Workflow between states,
  * should be stored in the instance of your FlowData class.
  *
  * @param <Q> argument type
@@ -41,8 +39,10 @@ public abstract class BaseFlow<Q, A, F> {
     private final Class<F> flowDataClass;
     private final IParser flowDataParser;
 
-    private final Map<String, BaseState<? super F>> states = new HashMap<>();
-    private final Map<Command.Type, IHandler<Command, F>> incomingHandlers = new HashMap<>();
+    private final Map<String, State<? super F, ?>> states = new HashMap<>();
+
+    private final Map<Command.Type, BiConsumer<Command, FlowContext<F>>> incomingHandlers = new HashMap<>();
+    private String enterState;
 
     {
         incomingHandlers.put(Command.Type.OPEN, (command, context) ->
@@ -78,15 +78,13 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
 
-
-
     /**
      * This method should be called by server to handle command
      *
      * @param command  - the Command that server receive
      * @param callback - the server callback
      */
-     final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
+    final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
 
         F flowData = null;
         if (command.getFlowData() != null) {
@@ -108,19 +106,20 @@ public abstract class BaseFlow<Q, A, F> {
                         command.getProperties(),
                         callback);
 
-        IHandler<Command, F> handler =
-                incomingHandlers.get(command.getType());
-
         try {
-            handler.handle(command, context);
+            incomingHandlers.get(command.getType()).accept(command, context);
         } catch (Exception e) {
             log.error("Error handling request", e);
             callback.reject(e);
         }
     }
 
-    public final Contract<?,?> getContract() {
+    public final Contract<?, ?> getContract() {
         return flowContract;
+    }
+
+    protected final void setEnterState(String enterState) {
+        this.enterState = enterState.trim().toUpperCase();
     }
 
     /**
@@ -156,17 +155,7 @@ public abstract class BaseFlow<Q, A, F> {
     protected abstract A makeReturn(FlowContext<F> context);
 
     /**
-     * When Workflow starts, you should determine - which State should be entered firstly
-     *
-     * @param context - the context of the current Workflow
-     * @return StateCompletion, it can be taked from enterState method
-     */
-    @NotNull
-    protected abstract StateCompletion onStart(FlowContext<F> context);
-
-    /**
-     *
-     * @param name - the name of the entering State in the schema
+     * @param name    - the name of the entering State in the schema
      * @param context - the context of this Workflow
      * @return StateCompletion
      */
@@ -181,7 +170,7 @@ public abstract class BaseFlow<Q, A, F> {
                         context.getProperties(),
                         context.getCallback()
                 );
-        BaseState<? super F> state = getState(name);
+        State<? super F, ?> state = getState(name);
         if (state == null) {
             throw new IllegalStateException("State \"" + name + "\" was not found");
         }
@@ -192,10 +181,10 @@ public abstract class BaseFlow<Q, A, F> {
     /**
      * Adds State to Workflow schema
      *
-     * @param name - the name of adding State
+     * @param name  - the name of adding State
      * @param state - the instance of adding State class
      */
-    protected void addState(String name, BaseState<? super F> state) {
+    protected void addState(String name, State<? super F, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -209,8 +198,12 @@ public abstract class BaseFlow<Q, A, F> {
         if (state.resourceControllers.size() > 0) {
             ResourceTree<ResourceController<? super F>> handlers = new ResourceTree<>();
             resourceControllers.put(name, handlers);
-            state.resourceControllers.forEach((key, value) ->
-                    addResourceController(handlers, key, value)
+            String finalName = name;
+            state.resourceControllers.forEach(
+                    (key, value) -> {
+                        log.info("State [{}]", finalName);
+                        addResourceController(handlers, key, value);
+                    }
             );
         }
     }
@@ -219,7 +212,7 @@ public abstract class BaseFlow<Q, A, F> {
         return flowDataParser.serialize(o);
     }
 
-    final void configureAndVerify(){
+    final void configureAndVerify() {
         this.configure();
         this.validate();
     }
@@ -233,21 +226,16 @@ public abstract class BaseFlow<Q, A, F> {
                 new FlowContext<>(
                         this,
                         context.getFlowName(),
-                        context.getStateName(),
+                        enterState,
                         flowData,
                         context.getProperties(),
                         context.getCallback()
                 );
-        onStart(newContext).doCompletion();
+        getState(enterState).onEnter(newContext).doCompletion();
     }
 
-    private BaseState<? super F> getState(String name) {
+    private State<? super F, ?> getState(String name) {
         return states.get(name.trim().toUpperCase());
-    }
-
-    private StateInteractive<?, ?, ? super F, ?> getInteractiveState(String name) throws ClassCastException {
-        BaseState<? super F> state = getState(name);
-        return (StateInteractive<?, ?, ? super F, ?>) state;
     }
 
     private Q parseRq(byte[] rq) throws ParsingException {
@@ -259,55 +247,25 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     private void validate() {
-        List<String> targets = new ArrayList<>();
         if (states.keySet().isEmpty()) {
             log.error("No states are defined");
         }
-        for (String key : states.keySet()) {
-            Enum<?>[] exits;
-            try {
-                exits = getInteractiveState(key).getExits();
-            } catch (Exception e) {
-                continue;
-            }
-            if (exits == null || exits.length == 0) {
-                throw new IllegalStateException("StateInteractive " + key + " should have exits");
-            }
-            for (Enum<?> exit : exits) {
-                String target;
-                try {
-                    target = getInteractiveState(key).getTransition(exit);
-                } catch (Exception e) {
-                    continue;
-                }
-                if (target == null) {
-                    throw new IllegalStateException(
-                            "Misconfiguration:\n exit with name \"" +
-                                    exit.name() + "\" from State \"" + key +
-                                    "\" have no destination target");
-                }
-                if(states.get(target) == null){
-                    throw new IllegalStateException(
-                            "Misconfiguration:\n exit with name \"" +
-                                    exit.name() + "\" from State \"" + key +
-                                    "\" to target \"" + target + "\"" +
-                                    " is not associated with state"
-                    );
-                }
-                targets.add(target);
-            }
+
+        if (enterState == null || !states.containsKey(enterState)) {
+            throw new IllegalStateException("Enter state is not defined");
         }
-        boolean hasTerminator = false;
-        for (String key : states.keySet()) {
-            if (!targets.contains(key))
-                log.warn("State " + key + " is unreachable");
-            if (getState(key) instanceof StateTerminator)
-                hasTerminator = true;
-        }
-        if (!hasTerminator) {
-            throw new IllegalStateException(
-                    "Misconfiguration:\n Flow have no Terminator");
-        }
+
+        SchemaValidator validator = new SchemaValidator();
+        validator.validate(getState(enterState));
+        states.keySet().stream()
+                .filter(k -> !validator.touched.contains(getState(k.trim().toUpperCase())))
+                .forEach(k -> log.warn("State [{}] is unreachable", k));
+
+        log.info(validator.schemaView.toString());
+
+        log.info("hasTerminator {}", validator.hasTerminator);
+
+        log.info("Flow schema is valid");
     }
 
     private void addResourceController(ResourceTree<ResourceController<? super F>> tree, String path, ResourceController<? super F> handler) {
@@ -327,5 +285,50 @@ public abstract class BaseFlow<Q, A, F> {
             return null;
         }
         return resourceControllers.get(stateName).find(path);
+    }
+
+    private class SchemaValidator {
+        List<State<?, ?>> touched = new ArrayList<>();
+        boolean hasTerminator = false;
+        int shift = 0;
+        StringBuilder schemaView = new StringBuilder("\n");
+
+        void validate(State<?, ?> state) {
+            schemaView.append(state.getName());
+            if (touched.contains(state)) {
+                schemaView.append(" (recursion)\n");
+                return;
+            }
+            schemaView.append("\n");
+            shift++;
+            touched.add(state);
+            Arrays.stream(state.getExits()).forEach(
+                    e -> {
+                        if (state.isTerminator(e)) {
+                            hasTerminator = true;
+                            schemaView.append(fill(shift)).append(e).append("->* (terminator)\n");
+                            return;
+                        }
+                        State<?, ?> target = getState(state.getTransition(e));
+                        assertNotNull(
+                                "exit [" + e + "] from state [" + state.getName() + "] is not specified",
+                                target
+                        );
+                        schemaView.append(fill(shift)).append(e).append("->");
+                        validate(target);
+                    }
+            );
+            shift--;
+        }
+
+        String fill(int len) {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < len; i++) {
+                result.append("    ");
+            }
+
+            return result.toString();
+        }
     }
 }

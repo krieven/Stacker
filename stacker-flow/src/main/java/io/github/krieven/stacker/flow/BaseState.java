@@ -1,24 +1,21 @@
 package io.github.krieven.stacker.flow;
 
-
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * Base State class, all States are instances of this
- *
- * @param <F> flow data type interface
- */
-public abstract class BaseState<F> {
-
-    Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
+abstract class BaseState<F> {
     private String name;
 
     /**
+     * @return String - the name of this State in the Workflow schema
+     */
+    public final String getName() {
+        return name;
+    }
+
+    /**
      * When Workflow enter the State, you should determine what to do.
-     * You can call one of exitWith or sendQuestion method
+     * You should call one of exitWith or sendQuestion method
+     * or create your own StateCompletion
      *
      * @param context - the context of current Workflow
      * @return StateCompletion
@@ -26,16 +23,11 @@ public abstract class BaseState<F> {
     @NotNull
     protected abstract StateCompletion onEnter(FlowContext<? extends F> context);
 
-    abstract void handle(byte[] answer, FlowContext<? extends F> context);
-
     void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @return String - the name of this State in the Workflow schema
-     */
-    public String getName() {
-        return name;
+    void handle(byte[] answer, FlowContext<? extends F> context) {
+        throw new IllegalStateException("this method should not be called normally");
     }
 }

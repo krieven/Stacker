@@ -20,7 +20,6 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
 
     @Override
     protected void configure() {
-        addState("exit", new StateTerminator<>());
     }
 
     @Override
@@ -38,9 +37,4 @@ public class TestFlow extends BaseFlow<String, String, TestFlowData> {
         return null;
     }
 
-    @NotNull
-    @Override
-    protected StateCompletion onStart(FlowContext<TestFlowData> context) {
-        return enterState("exit", context);
-    }
 }

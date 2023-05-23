@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.dto.ResourceRequest;
 
-public final class HandlerResource<F> implements IHandler<Command, F> {
+import java.util.function.BiConsumer;
+
+public final class HandlerResource<F> implements BiConsumer<Command, FlowContext<F>> {
     private static final Logger log = LoggerFactory.getLogger(HandlerResource.class);
 
     @Override
-    public void handle(@NotNull Command command, @NotNull FlowContext<F> context) {
+    public void accept(@NotNull Command command, @NotNull FlowContext<F> context) {
         ResourceRequest request = command.getResourceRequest();
 
         ResourceLeaf<ResourceController<? super F>> leaf =

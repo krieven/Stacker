@@ -1,7 +1,6 @@
 package flow;
 
 import io.github.krieven.stacker.flow.*;
-import org.jetbrains.annotations.NotNull;
 import states.auth.AuthStateQuestion;
 import io.github.krieven.stacker.common.JsonParser;
 import states.outer.OuterCall;
@@ -23,14 +22,14 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
     @Override
     protected void configure() {
         addState("first", new AuthStateQuestion()
-                .withExit(AuthStateQuestion.exits.FORWARD, "outerCall")
-                .withExit(AuthStateQuestion.exits.BACKWARD, "exit")
+                .withExit(AuthStateQuestion.Exits.FORWARD, "outerCall")
+                .withTerminator(AuthStateQuestion.Exits.BACKWARD)
         );
         addState("outerCall", new OuterCall()
-                .withExit(OuterCall.Exits.SUCCESS, "exit")
-                .withExit(OuterCall.Exits.ERROR, "exit")
+                .withTerminator(OuterCall.Exits.SUCCESS)
+                .withExit(OuterCall.Exits.ERROR, "first")
         );
-        addState("exit", new StateTerminator<>());
+        setEnterState("first");
     }
 
     @Override
@@ -51,9 +50,4 @@ public class TestFlow extends BaseFlow<String, String, FlowData> {
         return context.getFlowData().getAuthAnswer().getName();
     }
 
-    @NotNull
-    @Override
-    protected StateCompletion onStart(FlowContext<FlowData> context) {
-        return enterState("first", context);
-    }
 }
