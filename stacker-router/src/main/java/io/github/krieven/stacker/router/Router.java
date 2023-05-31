@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import io.github.krieven.stacker.common.config.router.RouterConfig;
 import io.github.krieven.stacker.common.config.router.RouterConfigValidator;
+import io.github.krieven.stacker.util.Probe;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class Router {
 
     //here responseHandlers are
     {
-        responseHandlers.put(Command.Type.QUESTION, new Consumer<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.QUESTION, new Consumer<>() {
 
             @Override
             public void accept(RouterResponseResult responseResult) {
@@ -45,7 +46,7 @@ public class Router {
             }
         });
 
-        responseHandlers.put(Command.Type.OPEN, new Consumer<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.OPEN, new Consumer<>() {
 
             @Override
             public void accept(RouterResponseResult responseResult) {
@@ -60,10 +61,10 @@ public class Router {
 
                 SessionStackEntry newEntry = new SessionStackEntry();
                 newEntry.setFlow(
-                       config.resolveSubFlow(
-                               currentEntry.getFlow(),
-                               command.getFlow()
-                       )
+                        config.resolveSubFlow(
+                                currentEntry.getFlow(),
+                                command.getFlow()
+                        )
                 );
                 newEntry.setAddress(config.resolveAddress(newEntry.getFlow()));
                 sessionStack.push(newEntry);
@@ -71,6 +72,7 @@ public class Router {
 
                 Command newCommand = new Command();
                 newCommand.setType(Command.Type.OPEN);
+                newCommand.setRqUid(command.getRqUid());
                 newCommand.setFlow(newEntry.getFlow());
                 newCommand.setContentBody(command.getContentBody());
                 newCommand.setFlowData(sessionStack.getDaemonData(newEntry.getFlow()));
@@ -85,7 +87,7 @@ public class Router {
             }
         });
 
-        responseHandlers.put(Command.Type.RETURN, new Consumer<RouterResponseResult>() {
+        responseHandlers.put(Command.Type.RETURN, new Consumer<>() {
 
             @Override
             public void accept(RouterResponseResult responseResult) {
@@ -102,6 +104,7 @@ public class Router {
 
                     Command newCommand = new Command();
                     newCommand.setType(Command.Type.RETURN);
+                    newCommand.setRqUid(command.getRqUid());
                     newCommand.setFlow(currentEntry.getFlow());
                     newCommand.setState(currentEntry.getState());
                     newCommand.setFlowData(currentEntry.getFlowData());
@@ -258,13 +261,14 @@ public class Router {
 
             Command command = new Command();
             command.setType(Command.Type.RESOURCE);
+            command.setRqUid(UUID.randomUUID().toString());
             command.setFlow(entry.getFlow());
             command.setState(entry.getState());
             command.setFlowData(entry.getFlowData());
             command.setResourceRequest(resourceRequest);
             command.setProperties(config.resolveProperties(entry.getFlow()));
 
-            transport.sendRequest(entry.getAddress(), command, new ICallback<Command>() {
+            transport.sendRequest(entry.getAddress(), command, new ICallback<>() {
                 @Override
                 public void success(Command result) {
                     if (result == null) {
@@ -292,10 +296,12 @@ public class Router {
     private class ResponseCallback implements ICallback<Command> {
         private final String sid;
         private final SessionStack sessionStack;
+        private final String flowName;
 
         ResponseCallback(String sid, SessionStack sessionStack) {
             this.sid = sid;
             this.sessionStack = sessionStack;
+            this.flowName = Probe.tryGet(() -> sessionStack.peek().getFlow()).orElse("[unknown]");
         }
 
         @Override
@@ -303,19 +309,21 @@ public class Router {
             synchronized (sid.intern()) {
                 IRouterCallback routerCallback = sessionLock.get(sid);
                 if (routerCallback == null) {
-                    log.error("router callback was not found for sid=" + sid);
+                    log.error("router callback was not found for sid [{}], rqUid [{}]", sid, result.getRqUid());
                     return;
                 }
                 if (result == null) {
-                    routerCallback.reject(new Exception("null response from flow"));
+                    log.error("null response from flow [{}] for sid [{}]", flowName, sid);
+                    routerCallback.reject(new Exception("null response from flow "));
                     return;
                 }
                 Consumer<RouterResponseResult> handler = responseHandlers.get(result.getType());
 
                 if (handler == null) {
-                    log.error("Unknown response type, handler not found for " + result.getType());
+                    log.error("Unknown response type, handler not found from flow [{}] for [{}]",
+                            flowName, result.getType());
                     sessionLock.remove(sid)
-                            .reject(new Exception("Unknown response type, responseHandler not found"));
+                            .reject(new Exception("Unknown response type, responseHandler not found from " + flowName));
                     return;
                 }
                 RouterResponseResult responseResult = new RouterResponseResult(sid, sessionStack, result);
@@ -325,7 +333,7 @@ public class Router {
 
         @Override
         public void reject(Exception exception) {
-            log.error("Transport rejects with exception " + exception.getMessage(), exception);
+            log.error("Transport rejects with exception [{}] from flow [{}]", exception.getMessage(), flowName, exception);
             synchronized (sid.intern()) {
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {

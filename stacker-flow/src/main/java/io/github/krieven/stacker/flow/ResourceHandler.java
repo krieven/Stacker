@@ -9,8 +9,12 @@ import io.github.krieven.stacker.common.dto.ResourceRequest;
 
 import java.util.function.BiConsumer;
 
-public final class HandlerResource<F> implements BiConsumer<Command, FlowContext<F>> {
-    private static final Logger log = LoggerFactory.getLogger(HandlerResource.class);
+/**
+ * Resource request handler
+ * @param <F> the FlowData type
+ */
+public final class ResourceHandler<F> implements BiConsumer<Command, FlowContext<F>> {
+    private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
 
     @Override
     public void accept(@NotNull Command command, @NotNull FlowContext<F> context) {
@@ -24,6 +28,7 @@ public final class HandlerResource<F> implements BiConsumer<Command, FlowContext
         }
         Command response = new Command();
         response.setType(Command.Type.RESOURCE);
+        response.setRqUid(context.getRqUid());
         response.setBodyContentType("text/html");
         response.setContentBody("404 Resource not found".getBytes());
 

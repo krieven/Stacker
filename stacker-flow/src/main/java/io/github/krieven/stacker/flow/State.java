@@ -37,13 +37,24 @@ public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
         return this;
     }
 
+    /**
+     * define terminator on exit from state
+     * @param exit Enum&lt;E&gt; the exit
+     * @return this
+     */
     public final State<F, E> withTerminator(Enum<E> exit) {
         checkExitDefined(exit);
         terminators.add(exit);
         return this;
     }
 
-    protected final StateCompletion exitState(Enum<E> exit, @NotNull FlowContext<? extends F> context) {
+    /**
+     * You should call this method to exit from state
+     * @param exit Enum&lt;E&gt; the exit
+     * @param context flow context
+     * @return StateCompletion
+     */
+    protected final StateCompletion exitState(@NotNull Enum<E> exit, @NotNull FlowContext<? extends F> context) {
         String transition = getTransition(exit);
         if (transition != null) {
             return context.enterState(transition);

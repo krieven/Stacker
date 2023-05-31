@@ -17,7 +17,7 @@ import java.util.UUID;
 public class RouterServlet extends AsyncServlet {
     private static final Logger log = LoggerFactory.getLogger(RouterServlet.class);
 
-    private final String cookieName = "CLOUD_BUNCH_SESSION_ID";
+    private final String COOKIE_NAME = "CLOUD_BUNCH_SESSION_ID";
 
     private Router router;
 
@@ -27,24 +27,26 @@ public class RouterServlet extends AsyncServlet {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final AsyncContext ctx = request.startAsync();
-        readBody(ctx, new ICallback<byte[]>() {
+        readBody(ctx, new ICallback<>() {
 
             @Override
             public void success(byte[] bytes) {
                 String sid = null;
-                //TODO may change to request.getRequestedSessionId();
+
                 if (request.getCookies() != null) {
                     for (Cookie cookie : request.getCookies()) {
-                        if (cookieName.equals(cookie.getName())) {
+                        if (COOKIE_NAME.equals(cookie.getName())) {
                             sid = cookie.getValue();
                             break;
                         }
                     }
                 }
+
                 if (sid == null) {
                     sid = UUID.randomUUID().toString();
-                    response.addCookie(new Cookie(cookieName, sid));
+                    response.addCookie(new Cookie(COOKIE_NAME, sid));
                 }
+
                 router.handleRequest(sid, bytes, new RouterCallback(ctx));
             }
 
@@ -64,18 +66,18 @@ public class RouterServlet extends AsyncServlet {
         final AsyncContext ctx = request.startAsync();
 
         if (request.getCookies() == null) {
-            writeBody(ctx, "400 bad Request".getBytes());
+            writeError(ctx, HttpServletResponse.SC_BAD_REQUEST, "400 bad Request, no Cookie found");
             return;
         }
         String sid = null;
         for (Cookie cookie : request.getCookies()) {
-            if (cookieName.equals(cookie.getName())) {
+            if (COOKIE_NAME.equals(cookie.getName())) {
                 sid = cookie.getValue();
                 break;
             }
         }
         if (sid == null) {
-            writeBody(ctx, "400 bad Request".getBytes());
+            writeError(ctx, HttpServletResponse.SC_BAD_REQUEST, "400 bad Request, no Session Cookie found");
             return;
         }
 

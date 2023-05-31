@@ -8,7 +8,10 @@ import io.github.krieven.stacker.common.dto.Command;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Resource controller for the Question State
+ * @param <F>
+ */
 public abstract class ResourceController<F> {
     private static final Logger log = LoggerFactory.getLogger(ResourceController.class);
 
@@ -22,6 +25,7 @@ public abstract class ResourceController<F> {
     protected final StateCompletion sendResponse(byte[] resp, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.RESOURCE);
+        command.setRqUid(context.getRqUid());
         command.setBodyContentType(getContentType());
         command.setContentBody(resp);
         return new StateCompletion(() -> context.getCallback().success(command));

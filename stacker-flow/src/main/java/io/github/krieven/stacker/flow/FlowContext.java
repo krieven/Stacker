@@ -18,6 +18,7 @@ public class FlowContext<F> {
 
     private final String flowName;
     private final String stateName;
+    private final String rqUid;
     private final F flowData;
 
     private final BaseFlow<?, ?, F> flow;
@@ -27,11 +28,12 @@ public class FlowContext<F> {
 
     FlowContext(BaseFlow<?, ?, F> flow,
                 String flowName, String stateName,
-                F flowData, Map<String, String> properties, ICallback<Command> callback
+                String rqUid, F flowData, Map<String, String> properties, ICallback<Command> callback
     ) {
         this.flowName = flowName;
         this.stateName = stateName;
         this.flow = flow;
+        this.rqUid = rqUid;
         this.flowData = flowData;
         this.properties = properties;
         this.callback = callback;
@@ -73,6 +75,14 @@ public class FlowContext<F> {
         return properties;
     }
 
+    /**
+     * The Uid of current interaction
+     * @return String
+     */
+    public String getRqUid() {
+        return rqUid;
+    }
+
     ICallback<Command> getCallback() {
         return callback;
     }
@@ -85,6 +95,7 @@ public class FlowContext<F> {
         Object result = getFlow().makeReturn(this);
         Command command = new Command();
         command.setType(Command.Type.RETURN);
+        command.setRqUid(getRqUid());
         command.setBodyContentType(getFlow().getContract().getContentType());
         log.info("Flow {} ends on {} with command {}", getFlowName(), getStateName(), command);
         try {
