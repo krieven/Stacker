@@ -2,6 +2,10 @@ package io.github.krieven.stacker.flow;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * base class for State
+ * @param <F> FlowData type
+ */
 abstract class BaseState<F> {
     private String name;
 

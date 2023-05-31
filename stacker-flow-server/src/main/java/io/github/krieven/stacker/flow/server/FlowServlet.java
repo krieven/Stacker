@@ -1,7 +1,7 @@
 package io.github.krieven.stacker.flow.server;
 
 import io.github.krieven.stacker.common.*;
-import io.github.krieven.stacker.flow.FlowHandler;
+import io.github.krieven.stacker.flow.FlowHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
@@ -17,21 +17,23 @@ public class FlowServlet extends AsyncServlet {
 
     private final IParser parser = new JsonParser();
 
-    private final FlowHandler flow;
+    private final FlowHolder flow;
 
     FlowServlet(BaseFlow<?, ?, ?> flow) {
         super();
-        this.flow = FlowHandler.create(flow);
+        this.flow = FlowHolder.create(flow);
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        response.getWriter().print("{\"status\":\"" + (flow != null ? "ok" : "bad") + "\"}");
+        if(request.getPathInfo().equals("/health")) {
+            response.setContentType("application/json");
+            response.getWriter().print("{\"status\":\"" + (flow != null ? "ok" : "bad") + "\"}");
+        }
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final AsyncContext ctx = request.startAsync();
-        readBody(ctx, new ICallback<byte[]>() {
+        readBody(ctx, new ICallback<>() {
 
             @Override
             public void success(byte[] bytes) {

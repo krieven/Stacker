@@ -22,6 +22,7 @@ public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateIn
     public final StateCompletion sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.OPEN);
+        command.setRqUid(context.getRqUid());
         command.setFlow(getName());
         command.setState(context.getStateName());
         try {

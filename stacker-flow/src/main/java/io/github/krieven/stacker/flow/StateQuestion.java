@@ -30,6 +30,7 @@ public abstract class StateQuestion<Q, A, F, E extends Enum<E>> extends StateInt
     public final StateCompletion sendQuestion(Q question, @NotNull FlowContext<? extends F> context) {
         Command command = new Command();
         command.setType(Command.Type.QUESTION);
+        command.setRqUid(context.getRqUid());
         command.setFlow(context.getFlowName());
         command.setState(context.getStateName());
         try {

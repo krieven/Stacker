@@ -6,8 +6,10 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @WebServlet(asyncSupported = true,
         description = "Asynchronous servlet reference implementation"
@@ -50,13 +52,11 @@ public class AsyncServlet extends HttpServlet {
     }
 
     protected void writeBody(AsyncContext ctx, byte[] body) throws IOException {
-        log.info("writing response body {} bytes", body.length);
         ServletOutputStream output = ctx.getResponse().getOutputStream();
 
         output.setWriteListener(new WriteListener() {
             @Override
             public void onWritePossible() throws IOException {
-                log.info("output isReady={}", output.isReady());
                 output.write(body);
                 ctx.complete();
             }
@@ -69,4 +69,8 @@ public class AsyncServlet extends HttpServlet {
         });
     }
 
+    protected void writeError(AsyncContext ctx, int status, String message) throws IOException {
+        ((HttpServletResponse) ctx.getResponse()).setStatus(status);
+        writeBody(ctx, message.getBytes(StandardCharsets.UTF_8));
+    }
 }

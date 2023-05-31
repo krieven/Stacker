@@ -32,16 +32,38 @@ import static org.junit.Assert.*;
 public abstract class BaseFlow<Q, A, F> {
     private static final Logger log = LoggerFactory.getLogger(BaseFlow.class);
 
+    /**
+     * The Map of Resource controllers registered by states
+     */
     private final Map<String, ResourceTree<ResourceController<? super F>>>
             resourceControllers = new HashMap<>();
 
+    /**
+     * The Contract of flow
+     */
     private final Contract<Q, A> flowContract;
+    /**
+     * The class of FlowData, collected by flow
+     */
     private final Class<F> flowDataClass;
+    /**
+     * the parser of FlowData
+     */
     private final IParser flowDataParser;
 
+    /**
+     * The registry of States in the Flow
+     */
     private final Map<String, State<? super F, ?>> states = new HashMap<>();
 
+    /**
+     * The Map of incoming Commands handlers
+     */
     private final Map<Command.Type, BiConsumer<Command, FlowContext<F>>> incomingHandlers = new HashMap<>();
+
+    /**
+     * The entering State of Flow
+     */
     private String enterState;
 
     {
@@ -56,7 +78,7 @@ public abstract class BaseFlow<Q, A, F> {
                 getState(command.getState())
                         .handle(command.getContentBody(), context));
 
-        incomingHandlers.put(Command.Type.RESOURCE, new HandlerResource<>());
+        incomingHandlers.put(Command.Type.RESOURCE, new ResourceHandler<>());
     }
 
     /**
@@ -77,47 +99,18 @@ public abstract class BaseFlow<Q, A, F> {
         this.flowDataParser = flowDataParser;
     }
 
-
     /**
-     * This method should be called by server to handle command
-     *
-     * @param command  - the Command that server receive
-     * @param callback - the server callback
+     * get contract of Flow - Question class, Answer class and serialization format
+     * @return the Contract
      */
-    final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
-
-        F flowData = null;
-        if (command.getFlowData() != null) {
-            try {
-                flowData = parseFlowData(command.getFlowData());
-            } catch (ParsingException e) {
-                log.error("Error parsing request", e);
-                callback.reject(e);
-                return;
-            }
-        }
-
-        FlowContext<F> context =
-                new FlowContext<>(
-                        this,
-                        command.getFlow(),
-                        command.getState(),
-                        flowData,
-                        command.getProperties(),
-                        callback);
-
-        try {
-            incomingHandlers.get(command.getType()).accept(command, context);
-        } catch (Exception e) {
-            log.error("Error handling request", e);
-            callback.reject(e);
-        }
-    }
-
     public final Contract<?, ?> getContract() {
         return flowContract;
     }
 
+    /**
+     * Each Flow showld define its entering State in the configure() method
+     * @param enterState the entering State
+     */
     protected final void setEnterState(String enterState) {
         this.enterState = enterState.trim().toUpperCase();
     }
@@ -160,12 +153,13 @@ public abstract class BaseFlow<Q, A, F> {
      * @return StateCompletion
      */
     @NotNull
-    protected StateCompletion enterState(String name, FlowContext<F> context) {
+    protected StateCompletion enterState(@NotNull String name, @NotNull FlowContext<F> context) {
         FlowContext<F> transContext =
                 new FlowContext<>(
                         this,
                         context.getFlowName(),
                         name,
+                        context.getRqUid(),
                         context.getFlowData(),
                         context.getProperties(),
                         context.getCallback()
@@ -184,7 +178,7 @@ public abstract class BaseFlow<Q, A, F> {
      * @param name  - the name of adding State
      * @param state - the instance of adding State class
      */
-    protected void addState(String name, State<? super F, ?> state) {
+    protected void addState(@NotNull String name, @NotNull State<? super F, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
         assertNotEquals("The NAME should not be empty string", name, "");
@@ -208,6 +202,40 @@ public abstract class BaseFlow<Q, A, F> {
         }
     }
 
+    final void handleCommand(@NotNull Command command, @NotNull ICallback<Command> callback) {
+        log.info("Handling request type [{}] rqUid [{}] flow [{}]",
+                command.getType(), command.getRqUid(), command.getFlow());
+
+        F flowData = null;
+        if (command.getFlowData() != null) {
+            try {
+                flowData = parseFlowData(command.getFlowData());
+            } catch (ParsingException e) {
+                log.error("Error parsing request flowData", e);
+                callback.reject(e);
+                return;
+            }
+        }
+
+        FlowContext<F> context =
+                new FlowContext<>(
+                        this,
+                        command.getFlow(),
+                        command.getState(),
+                        command.getRqUid(),
+                        flowData,
+                        command.getProperties(),
+                        callback);
+
+        try {
+            incomingHandlers.get(command.getType()).accept(command, context);
+        } catch (Exception e) {
+            log.error("Error handling request", e);
+            callback.reject(e);
+        }
+    }
+
+
     byte[] serializeFlowData(Object o) throws SerializingException {
         return flowDataParser.serialize(o);
     }
@@ -227,6 +255,7 @@ public abstract class BaseFlow<Q, A, F> {
                         this,
                         context.getFlowName(),
                         enterState,
+                        context.getRqUid(),
                         flowData,
                         context.getProperties(),
                         context.getCallback()
@@ -252,7 +281,7 @@ public abstract class BaseFlow<Q, A, F> {
         }
 
         if (enterState == null || !states.containsKey(enterState)) {
-            throw new IllegalStateException("Enter state is not defined");
+            throw new IllegalStateException("Enter state is not defined or not registered");
         }
 
         SchemaValidator validator = new SchemaValidator();
@@ -263,7 +292,7 @@ public abstract class BaseFlow<Q, A, F> {
 
         log.info(validator.schemaView.toString());
 
-        log.info("hasTerminator {}", validator.hasTerminator);
+        log.info("hasTerminator [{}]", validator.hasTerminator);
 
         log.info("Flow schema is valid");
     }
@@ -322,13 +351,7 @@ public abstract class BaseFlow<Q, A, F> {
         }
 
         String fill(int len) {
-            StringBuilder result = new StringBuilder();
-
-            for (int i = 0; i < len; i++) {
-                result.append("    ");
-            }
-
-            return result.toString();
+            return "    ".repeat(Math.max(0, len));
         }
     }
 }
