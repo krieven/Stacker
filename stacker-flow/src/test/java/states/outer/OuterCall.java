@@ -1,6 +1,6 @@
 package states.outer;
 
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import io.github.krieven.stacker.common.JsonParser;
 import io.github.krieven.stacker.flow.Contract;
 import io.github.krieven.stacker.flow.FlowContext;

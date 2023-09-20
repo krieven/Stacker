@@ -1,6 +1,7 @@
 package io.github.krieven.stacker.flow;
 
-import org.jetbrains.annotations.NotNull;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * base class for State

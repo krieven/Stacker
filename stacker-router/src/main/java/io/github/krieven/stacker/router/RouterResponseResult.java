@@ -1,8 +1,9 @@
 package io.github.krieven.stacker.router;
 
 
-import org.jetbrains.annotations.NotNull;
 import io.github.krieven.stacker.common.dto.Command;
+
+import javax.validation.constraints.NotNull;
 
 class RouterResponseResult {
     private final String sid;

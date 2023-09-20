@@ -1,7 +1,7 @@
 package io.github.krieven.stacker.flow;
 
 import io.github.krieven.stacker.flow.resource.ResourceLeaf;
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;

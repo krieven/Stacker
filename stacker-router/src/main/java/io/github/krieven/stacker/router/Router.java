@@ -8,12 +8,13 @@ import java.util.function.Consumer;
 import io.github.krieven.stacker.common.config.router.RouterConfig;
 import io.github.krieven.stacker.common.config.router.RouterConfigValidator;
 import io.github.krieven.stacker.util.Probe;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.common.dto.ResourceRequest;
+
+import javax.validation.constraints.NotNull;
 
 public class Router {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
@@ -82,6 +83,7 @@ public class Router {
                             new ResponseCallback(sid, sessionStack)
                     );
                 } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                     sessionLock.remove(sid).reject(e);
                 }
             }
@@ -115,6 +117,7 @@ public class Router {
                                 new ResponseCallback(sid, sessionStack)
                         );
                     } catch (Exception e) {
+                        log.error(e.getMessage(), e);
                         new ResponseCallback(sid, sessionStack).reject(e);
                     }
                     return;
@@ -231,6 +234,7 @@ public class Router {
                 log.error("SessionStorage {} rejects with exception: " + exception.getMessage(), sid, exception);
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {
+                    log.error("callback is not null");
                     callback.reject(exception);
                 }
             }
@@ -272,6 +276,7 @@ public class Router {
                 @Override
                 public void success(Command result) {
                     if (result == null) {
+                        log.error("result is null");
                         callback.reject(new Exception("Flow " + entry.getFlow() + " returns empty response"));
                         return;
                     }
@@ -337,6 +342,7 @@ public class Router {
             synchronized (sid.intern()) {
                 IRouterCallback callback = sessionLock.remove(sid);
                 if (callback != null) {
+                    log.error("callback is not null");
                     callback.reject(exception);
                 }
             }

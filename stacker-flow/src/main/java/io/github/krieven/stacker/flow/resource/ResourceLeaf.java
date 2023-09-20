@@ -1,7 +1,6 @@
 package io.github.krieven.stacker.flow.resource;
 
-import org.jetbrains.annotations.NotNull;
-
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public final class ResourceLeaf<T> {

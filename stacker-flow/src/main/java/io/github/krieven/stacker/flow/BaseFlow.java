@@ -9,11 +9,12 @@ import io.github.krieven.stacker.common.ParsingException;
 import io.github.krieven.stacker.common.SerializingException;
 import io.github.krieven.stacker.flow.resource.ResourceLeaf;
 import io.github.krieven.stacker.flow.resource.ResourceTree;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
 
+
+import javax.validation.constraints.NotNull;
 
 import static org.junit.Assert.*;
 
@@ -335,7 +336,7 @@ public abstract class BaseFlow<Q, A, F> {
                     e -> {
                         if (state.isTerminator(e)) {
                             hasTerminator = true;
-                            schemaView.append(fill(shift)).append(e).append("->* (terminator)\n");
+                            schemaView.append(fill(shift)).append("[").append(e).append("]").append("->* (terminator)\n");
                             return;
                         }
                         State<?, ?> target = getState(state.getTransition(e));
@@ -343,7 +344,7 @@ public abstract class BaseFlow<Q, A, F> {
                                 "exit [" + e + "] from state [" + state.getName() + "] is not specified",
                                 target
                         );
-                        schemaView.append(fill(shift)).append(e).append("->");
+                        schemaView.append(fill(shift)).append("[").append(e).append("]").append("->");
                         validate(target);
                     }
             );

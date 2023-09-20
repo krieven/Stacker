@@ -1,8 +1,7 @@
 package io.github.krieven.stacker.flow.resource;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 public class ResourceTree<T> {
@@ -30,7 +29,6 @@ public class ResourceTree<T> {
         throw new IllegalArgumentException("path already used");
     }
 
-    @Nullable
     private ResourceLeaf<T> find(List<String> path) {
 
         ResourceTree<T> lastFound = this;

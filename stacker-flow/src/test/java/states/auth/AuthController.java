@@ -1,6 +1,6 @@
 package states.auth;
 
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import io.github.krieven.stacker.flow.FlowContext;
 import io.github.krieven.stacker.flow.ResourceController;
 import io.github.krieven.stacker.flow.StateCompletion;

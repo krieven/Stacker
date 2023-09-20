@@ -1,15 +1,13 @@
 package io.github.krieven.stacker.flow;
 
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
+import javax.validation.constraints.NotNull;
 import java.util.concurrent.CompletableFuture;
 
 public final class StateCompletion {
 
     private Runnable runnable = null;
 
-    @ApiStatus.Experimental
     public StateCompletion(CompletableFuture<StateCompletion> future) {
         future.thenAccept(StateCompletion::doCompletion);
     }

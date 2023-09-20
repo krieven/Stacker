@@ -1,6 +1,6 @@
 package io.github.krieven.stacker.flow;
 
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.SerializingException;
 
@@ -36,6 +36,7 @@ public abstract class StateOuterCall<Q, A, F, E extends Enum<E>> extends StateIn
             );
             command.setBodyContentType(getContract().getContentType());
         } catch (SerializingException e) {
+
             return new StateCompletion(() -> context.getCallback().reject(e));
         }
 

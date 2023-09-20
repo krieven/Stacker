@@ -46,6 +46,7 @@ public class AsyncServlet extends HttpServlet {
 
             @Override
             public void onError(Throwable throwable) {
+                log.error(throwable.getMessage(), throwable);
                 callback.reject(new Exception(throwable));
             }
         });

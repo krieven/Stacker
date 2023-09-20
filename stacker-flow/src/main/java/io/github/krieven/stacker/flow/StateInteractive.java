@@ -1,6 +1,6 @@
 package io.github.krieven.stacker.flow;
 
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import org.junit.Assert;
 import io.github.krieven.stacker.common.ParsingException;
 

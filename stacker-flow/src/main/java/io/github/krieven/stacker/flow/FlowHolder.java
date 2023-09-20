@@ -2,7 +2,7 @@ package io.github.krieven.stacker.flow;
 
 import io.github.krieven.stacker.common.ICallback;
 import io.github.krieven.stacker.common.dto.Command;
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 
 /**
  * The Flow holder, should be used either by the server and for test purpose

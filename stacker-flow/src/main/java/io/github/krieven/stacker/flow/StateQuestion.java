@@ -1,6 +1,6 @@
 package io.github.krieven.stacker.flow;
 
-import org.jetbrains.annotations.NotNull;
+import javax.validation.constraints.NotNull;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.common.SerializingException;
 
