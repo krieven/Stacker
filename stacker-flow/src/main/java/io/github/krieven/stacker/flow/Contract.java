@@ -5,7 +5,8 @@ import io.github.krieven.stacker.common.ParsingException;
 import io.github.krieven.stacker.common.SerializingException;
 
 /**
- * The instance of this class represents interaction Contract between State and opening Workflow
+ * The instance of this class represents interaction Contract
+ * between State and opening Workflow
  * or between State and Client.
  * Contract is immutable
  *

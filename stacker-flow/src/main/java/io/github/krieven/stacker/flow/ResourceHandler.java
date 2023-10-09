@@ -10,10 +10,10 @@ import io.github.krieven.stacker.common.dto.ResourceRequest;
 import java.util.function.BiConsumer;
 
 /**
- * Resource request handler
+ * Resource request handler, used by BaseFlow
  * @param <F> the FlowData type
  */
-public final class ResourceHandler<F> implements BiConsumer<Command, FlowContext<F>> {
+final class ResourceHandler<F> implements BiConsumer<Command, FlowContext<F>> {
     private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
 
     @Override

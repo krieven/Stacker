@@ -9,8 +9,10 @@ import java.util.Map;
 
 /**
  * Base State class, all States are instances of this
+ * You can use it as superclass for hub States
  *
  * @param <F> flow data type interface
+ * @param <E> possible exits declaration
  */
 public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
 
@@ -20,14 +22,19 @@ public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
 
     Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
 
+    /**
+     * Constructs Stata with exits declaration
+     * @param exits the array of exits declared
+     */
     public State(Enum<E>[] exits) {
         this.exits = exits;
     }
 
     /**
      * define transition on exit from state
+     *
      * @param exit Enum&lt;E&gt; the exit
-     * @param target String the key of State
+     * @param target String the key of State to
      * @return this
      */
     public final State<F, E> withExit(Enum<E> exit, String target) {
@@ -37,7 +44,8 @@ public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
     }
 
     /**
-     * define terminator on exit from state
+     * define flow terminator on exit from state
+     *
      * @param exit Enum&lt;E&gt; the exit
      * @return this
      */
@@ -48,9 +56,10 @@ public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
     }
 
     /**
-     * You should call this method to exit from state
+     * You should call this method to exit from the state
+     *
      * @param exit Enum&lt;E&gt; the exit
-     * @param context flow context
+     * @param context State context
      * @return StateCompletion
      */
     protected final StateCompletion exitState(@NotNull Enum<E> exit, @NotNull FlowContext<? extends F> context) {

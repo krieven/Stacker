@@ -1,6 +1,8 @@
 package io.github.krieven.stacker.router;
 
-public class SessionStackEntry {
+import java.io.Serializable;
+
+public class SessionStackEntry implements Serializable {
 
     private String flow;
     private String state;

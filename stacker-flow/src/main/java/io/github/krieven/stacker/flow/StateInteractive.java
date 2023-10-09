@@ -4,8 +4,19 @@ import javax.validation.constraints.NotNull;
 import org.junit.Assert;
 import io.github.krieven.stacker.common.ParsingException;
 
+/**
+ * Base class for all interactive States, can sendQuestion and handleAnswer
+ *
+ * @param <Q> question type
+ * @param <A> answer type
+ * @param <F> FlowData interface
+ * @param <E> exits
+ */
 public abstract class StateInteractive<Q, A, F, E extends Enum<E>> extends State<F, E> {
 
+    /**
+     * the contract for interaction
+     */
     private final Contract<Q, A> contract;
 
     StateInteractive(Enum<E>[] exits, Contract<Q, A> contract) {
@@ -20,12 +31,32 @@ public abstract class StateInteractive<Q, A, F, E extends Enum<E>> extends State
         return contract;
     }
 
+    /**
+     * Sends Question for interaction and stop transition
+     *
+     * @param question the Question
+     * @param context current State context
+     * @return StateCompletion
+     */
     @NotNull
     protected abstract StateCompletion sendQuestion(Q question, FlowContext<? extends F> context);
 
+    /**
+     * Handles Answer of interaction
+     *
+     * @param answer the Answer
+     * @param context current State context
+     * @return StateCompletion
+     */
     @NotNull
     protected abstract StateCompletion handleAnswer(A answer, FlowContext<? extends F> context);
 
+    /**
+     * Determines - what to do if Answer is in the wrong format
+     *
+     * @param context current State context
+     * @return StateCompletion
+     */
     @NotNull
     protected abstract StateCompletion onErrorParsingAnswer(FlowContext<? extends F> context);
 

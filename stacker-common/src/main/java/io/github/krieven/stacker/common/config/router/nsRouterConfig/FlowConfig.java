@@ -76,7 +76,7 @@ public class FlowConfig {
         return this.access == AccessType.IMPORT;
     }
 
-    private enum AccessType {
+    public enum AccessType {
         IMPORT,
         EXPORT
     }

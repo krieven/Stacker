@@ -11,6 +11,8 @@ abstract class BaseState<F> {
     private String name;
 
     /**
+     * the name of this State in the Workflow schema
+     *
      * @return String - the name of this State in the Workflow schema
      */
     public final String getName() {
@@ -22,7 +24,7 @@ abstract class BaseState<F> {
      * You should call one of exitWith or sendQuestion method
      * or create your own StateCompletion
      *
-     * @param context - the context of current Workflow
+     * @param context - the context of current State
      * @return StateCompletion
      */
     @NotNull
