@@ -18,7 +18,7 @@ public class HttpTransport implements ITransport {
     private final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .followRedirects(HttpClient.Redirect.NORMAL)
-            .connectTimeout(Duration.ofSeconds(20))//
+            .connectTimeout(Duration.ofSeconds(2))//
             .build();
 
     @Override
@@ -26,7 +26,7 @@ public class HttpTransport implements ITransport {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(address))
-                .timeout(Duration.ofMinutes(2))//
+                .timeout(Duration.ofSeconds(30))//
                 .header("Content-Type", parser.getContentType())
                 .POST(HttpRequest.BodyPublishers.ofByteArray(parser.serialize(command)))
                 .build();

@@ -81,7 +81,7 @@ public class RouterServlet extends AsyncServlet {
             return;
         }
 
-        router.handleResourceRequest(sid, request.getPathInfo(), request.getParameterMap(), new RouterCallback(ctx));
+        router.handleResourceRequest(sid, request.getServletPath(), request.getParameterMap(), new RouterCallback(ctx));
 
     }
 

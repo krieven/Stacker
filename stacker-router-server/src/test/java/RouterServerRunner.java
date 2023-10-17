@@ -1,4 +1,5 @@
 import io.github.krieven.stacker.common.JsonParser;
+import io.github.krieven.stacker.common.config.router.RouterConfig;
 import io.github.krieven.stacker.common.config.router.nsRouterConfig.NSRouterConfig;
 import io.github.krieven.stacker.router.server.HttpTransport;
 import io.github.krieven.stacker.router.server.RouterServer;
@@ -18,7 +19,7 @@ public class RouterServerRunner {
             byteBuffer.write(buf, 0, len);
         }
 
-        io.github.krieven.stacker.common.config.router.RouterConfig config = new JsonParser().parse(byteBuffer.toByteArray(), NSRouterConfig.class);
+        RouterConfig config = new JsonParser().parse(byteBuffer.toByteArray(), NSRouterConfig.class);
 
         RouterServer server = new RouterServer(new HttpTransport(), new SimpleSessionStorage(), 3000);
         if (server.setConfig(config)) {
