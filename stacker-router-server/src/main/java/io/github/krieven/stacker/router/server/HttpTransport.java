@@ -35,11 +35,9 @@ public class HttpTransport implements ITransport {
                 .thenApplyAsync(HttpResponse::body)
                 .thenAcceptAsync(b -> {
                     try{
-                        System.out.println(b);
                         callback.success(parser.parse(b, Command.class));
                     }
                     catch(Exception e) {
-                        System.out.println(e);
                         callback.reject(e);
                     }
                 });
