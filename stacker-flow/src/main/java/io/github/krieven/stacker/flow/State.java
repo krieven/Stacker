@@ -23,7 +23,7 @@ public abstract class State<F, E extends Enum<E>> extends BaseState<F> {
     Map<String, ResourceController<F>> resourceControllers = new HashMap<>();
 
     /**
-     * Constructs Stata with exits declaration
+     * Constructs State with exits declaration
      * @param exits the array of exits declared
      */
     public State(Enum<E>[] exits) {

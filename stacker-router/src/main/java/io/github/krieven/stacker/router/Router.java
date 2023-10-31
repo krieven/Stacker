@@ -207,6 +207,7 @@ public class Router {
                 sessionStack.push(entry);
                 type = Command.Type.OPEN;
             }
+
             SessionStackEntry entry = sessionStack.peek();
             Command command = new Command();
             command.setRqUid(UUID.randomUUID().toString());

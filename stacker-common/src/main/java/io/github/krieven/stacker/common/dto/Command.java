@@ -20,6 +20,14 @@ public class Command implements Serializable {
         return type;
     }
 
+    public String getRqUid() {
+        return rqUid;
+    }
+
+    public void setRqUid(String rqUid) {
+        this.rqUid = rqUid;
+    }
+
     public void setType(Type type) {
         this.type = type;
     }
@@ -80,14 +88,6 @@ public class Command implements Serializable {
         this.properties = properties;
     }
 
-    public String getRqUid() {
-        return rqUid;
-    }
-
-    public void setRqUid(String rqUid) {
-        this.rqUid = rqUid;
-    }
-
     @Override
     public String toString() {
         return "Command{" +
@@ -111,8 +111,6 @@ public class Command implements Serializable {
 
         OPEN,
         RETURN,
-//        ABORT,
-
 
         ERROR
     }

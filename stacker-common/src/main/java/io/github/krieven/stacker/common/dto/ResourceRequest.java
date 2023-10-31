@@ -1,8 +1,9 @@
 package io.github.krieven.stacker.common.dto;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class ResourceRequest {
+public class ResourceRequest implements Serializable {
     private String path;
     private Map<String, String[]> parameters;
 

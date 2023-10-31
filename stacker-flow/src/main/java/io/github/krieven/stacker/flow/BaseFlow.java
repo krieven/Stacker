@@ -102,6 +102,7 @@ public abstract class BaseFlow<Q, A, F> {
 
     /**
      * get contract of Flow - Question class, Answer class and serialization format
+     *
      * @return the Contract
      */
     public final Contract<?, ?> getContract() {
@@ -109,7 +110,8 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     /**
-     * Each Flow showld define its entering State in the configure() method
+     * Each Flow should define its entering State in the configure() method
+     *
      * @param enterState the entering State
      */
     protected final void setEnterState(String enterState) {
@@ -190,7 +192,7 @@ public abstract class BaseFlow<Q, A, F> {
         states.put(name, state);
         state.setName(name);
 
-        if (state.resourceControllers.size() > 0) {
+        if (!state.resourceControllers.isEmpty()) {
             ResourceTree<ResourceController<? super F>> handlers = new ResourceTree<>();
             resourceControllers.put(name, handlers);
             String finalName = name;
@@ -265,7 +267,7 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     private State<? super F, ?> getState(String name) {
-        return states.get(name.trim().toUpperCase());
+        return name == null ? null : states.get(name.trim().toUpperCase());
     }
 
     private Q parseRq(byte[] rq) throws ParsingException {
