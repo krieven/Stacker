@@ -2,14 +2,15 @@ package io.github.krieven.stacker.flow.server;
 
 import io.github.krieven.stacker.common.*;
 import io.github.krieven.stacker.flow.FlowHolder;
+import io.github.krieven.stacker.serve.AsyncServlet;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.krieven.stacker.common.dto.Command;
 import io.github.krieven.stacker.flow.BaseFlow;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class FlowServlet extends AsyncServlet {
@@ -55,7 +56,7 @@ public class FlowServlet extends AsyncServlet {
             handleError(e, ctx);
             return;
         }
-        flow.handleCommand(command, new ICallback<Command>() {
+        flow.handleCommand(command, new ICallback<>() {
             @Override
             public void success(Command command) {
                 byte[] body;

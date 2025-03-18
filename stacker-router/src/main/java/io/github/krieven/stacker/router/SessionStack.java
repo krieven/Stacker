@@ -8,6 +8,7 @@ import java.util.Stack;
 public class SessionStack implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     private final Map<String, byte[]> daemonData = new HashMap<>();
     private final Stack<SessionStackEntry> stack = new Stack<>();
 

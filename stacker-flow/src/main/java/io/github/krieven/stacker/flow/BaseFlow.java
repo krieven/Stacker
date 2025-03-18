@@ -184,7 +184,7 @@ public abstract class BaseFlow<Q, A, F> {
     protected void addState(@NotNull String name, @NotNull State<? super F, ?> state) {
         assertNotNull("The NAME should not be null", name);
         name = name.trim().toUpperCase();
-        assertNotEquals("The NAME should not be empty string", name, "");
+        assertNotEquals("The NAME should not be empty string", "", name);
         assertFalse("State with name '" + name + "' already registered", states.containsKey(name));
         assertNotNull("State should not be null", state);
         assertFalse("this State already added into the Flow", states.containsValue(state));
@@ -279,7 +279,7 @@ public abstract class BaseFlow<Q, A, F> {
     }
 
     private void validate() {
-        if (states.keySet().isEmpty()) {
+        if (states.isEmpty()) {
             log.error("No states are defined");
         }
 
@@ -308,7 +308,7 @@ public abstract class BaseFlow<Q, A, F> {
 
         tree.add(path, handler);
 
-        log.info("Resource handler for \"" + path + "\" added");
+        log.info("Resource handler for \"{}\" added", path);
     }
 
     ResourceLeaf<ResourceController<? super F>> getResourceLeaf(String stateName, String path) {

@@ -17,6 +17,17 @@
             <artifactId>stacker-router</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.krieven.stacker</groupId>
+            <artifactId>stacker-serve</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <packaging>jar</packaging>
 </project>
