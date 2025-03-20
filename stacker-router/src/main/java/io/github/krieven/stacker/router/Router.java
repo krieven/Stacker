@@ -16,6 +16,9 @@ import io.github.krieven.stacker.common.dto.ResourceRequest;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * Reference implementation of application router
+ */
 public class Router {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
 
@@ -130,6 +133,7 @@ public class Router {
             String sid = result.getSid();
             IRouterCallback routerCallback = sessionLock.remove(sid);
             Command command = result.getResponse();
+            log.error(Probe.tryGet(() -> command.getType().name()).orElse("ERROR"), command);
             routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
         });
 
@@ -138,6 +142,12 @@ public class Router {
         responseHandlers.put(Command.Type.ANSWER, responseHandlers.get(Command.Type.ERROR));
     }
 
+    /**
+     * Constructor
+     *
+     * @param transport - transport between the router and flow services
+     * @param sessionStorage - session stack storage
+     */
     public Router(@NotNull ITransport transport, @NotNull ISessionStorage sessionStorage) {
         assertNotNull(transport);
         assertNotNull(sessionStorage);
@@ -145,6 +155,13 @@ public class Router {
         this.sessionStorage = sessionStorage;
     }
 
+    /**
+     * Sets the application config, the application structure can be changed on the fly,
+     * so if new config is not valid, then it cant be applied
+     *
+     * @param config new application config
+     * @return true if the config is valid and can be applied, otherwise returns false
+     */
     public boolean setConfig(RouterConfig config) {
         if (!RouterConfigValidator.isValid(config)) {
             return false;
@@ -153,28 +170,40 @@ public class Router {
         return true;
     }
 
-    private boolean putSessionLock(String sid, IRouterCallback callback) {
-        synchronized (sid.intern()) {
-            if (sessionLock.get(sid) != null) {
-                sessionLock.put(sid, callback);
-                return false;
-            }
-            sessionLock.put(sid, callback);
-            return true;
-        }
-    }
-
+    /**
+     * Handles client request (ANSWER)
+     *
+     * @param sid session (process) id
+     * @param body the body of ANSWER
+     * @param callback - callback that will be called when request complete
+     */
     public void handleRequest(String sid, byte[] body, IRouterCallback callback) {
         if (putSessionLock(sid, callback)) {
             sessionStorage.find(sid, new SessionCallback(sid, body));
         }
     }
 
+    /**
+     * Handles resource request
+     *
+     * @param sid session id
+     * @param path resource path
+     * @param parameters request parameters
+     * @param callback - callback that will be called when request complete
+     */
     public void handleResourceRequest(String sid, String path, Map<String, String[]> parameters, IRouterCallback callback) {
         ResourceRequest resourceRequest = new ResourceRequest();
         resourceRequest.setPath(path);
         resourceRequest.setParameters(parameters);
         sessionStorage.find(sid, new SessionResourceCallback(sid, resourceRequest, callback));
+    }
+
+    private boolean putSessionLock(String sid, IRouterCallback callback) {
+        synchronized (sid.intern()) {
+            boolean result = sessionLock.get(sid) == null;
+            sessionLock.put(sid, callback);
+            return result;
+        }
     }
 
     public interface IRouterCallback {

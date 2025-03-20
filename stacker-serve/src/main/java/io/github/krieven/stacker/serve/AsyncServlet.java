@@ -24,8 +24,8 @@ public class AsyncServlet extends HttpServlet {
 
         input.setReadListener(new ReadListener() {
 
-            final byte[] buf = new byte[1024];
-            final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            private final byte[] buf = new byte[1024];
+            private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
             @Override
             public void onDataAvailable() {

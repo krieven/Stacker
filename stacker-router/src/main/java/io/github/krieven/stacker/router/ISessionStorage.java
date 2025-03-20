@@ -8,7 +8,7 @@ import io.github.krieven.stacker.common.ICallback;
  */
 public interface ISessionStorage {
     /**
-     * Find SessionStat\ck by process id and call callback with result
+     * Find SessionStack by process id and call callback with result
      *
      * @param id the process id
      * @param callback callback

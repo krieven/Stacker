@@ -36,7 +36,6 @@ public class SessionStackEntry implements Serializable {
         this.flowData = flowData;
     }
 
-
     public String getAddress() {
         return address;
     }

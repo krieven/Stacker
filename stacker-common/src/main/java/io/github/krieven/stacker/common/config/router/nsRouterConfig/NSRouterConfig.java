@@ -13,6 +13,9 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
     private String mainFlow;
     private Map<String, NameSpaceConfig> nameSpaceMap;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getTitle() {
         return title;
@@ -22,6 +25,9 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
         this.title = title;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDescription() {
         return description;
@@ -31,6 +37,9 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
         this.description = description;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getMainFlow() {
         return mainFlow;
@@ -50,6 +59,25 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
 
     //MODEL LOGIC
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> resolveSubFlows(String fullFlowName) {
+        String[] path = toPath(fullFlowName);
+        FlowConfig flowConfig = resolveFlow(path);
+        if (flowConfig == null || flowConfig.isImport()) {
+            return null;
+        }
+        return Optional.ofNullable(flowConfig.getMapping())
+                .orElse(new HashMap<>()).keySet().stream()
+                .map(name -> resolveSubFlow(fullFlowName, name))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String resolveSubFlow(String callerFlow, String name) {
         String[] path = toPath(callerFlow);
@@ -77,6 +105,9 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String resolveAddress(String fullFlowName) {
         String[] path = toPath(fullFlowName);
@@ -87,6 +118,9 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
         return flowConfig.getAddress();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> resolveProperties(String fullFlowName) {
         String[] path = toPath(fullFlowName);
@@ -95,19 +129,6 @@ public class NSRouterConfig implements io.github.krieven.stacker.common.config.r
             return null;
         }
         return flowConfig.getProperties();
-    }
-
-    @Override
-    public List<String> resolveSubFlows(String fullFlowName) {
-        String[] path = toPath(fullFlowName);
-        FlowConfig flowConfig = resolveFlow(path);
-        if (flowConfig == null || flowConfig.isImport()) {
-            return null;
-        }
-        return Optional.ofNullable(flowConfig.getMapping())
-                .orElse(new HashMap<>()).keySet().stream()
-                .map(name -> resolveSubFlow(fullFlowName, name))
-                .collect(Collectors.toList());
     }
 
     private FlowConfig resolveFlow(String[] path) {
