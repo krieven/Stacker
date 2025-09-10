@@ -3,6 +3,7 @@ package routerTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.krieven.stacker.common.config.router.RouterConfig;
 import io.github.krieven.stacker.common.config.router.nsRouterConfig.NSRouterConfig;
+import io.github.krieven.stacker.router.ResponseBodyWrapper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +58,13 @@ public class RouterTest {
             public void success(String sid, String contentType, byte[] body) {
                 log.info("success1 " + new String(body));
 
-                assertEquals("Response body", new String(body));
+                assertEquals("Response body", getBodyFromBytes(body));
 
                 Command lastRequest = transport.lastRequest;
                 assertEquals("Hello world", new String(lastRequest.getContentBody()));
                 assertEquals(Command.Type.OPEN, lastRequest.getType());
 
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -71,7 +72,7 @@ public class RouterTest {
                         assertEquals(1, sessionStackEntries.size());
 
                         byte[] sessionData = sessionStackEntries.peek().getFlowData();
-                        assertEquals("session Data", new String(sessionData));
+                        assertEquals("session Data", getBodyFromBytes(sessionData));
                     }
 
                     @Override
@@ -105,14 +106,14 @@ public class RouterTest {
             @Override
             public void success(String sid, String contentType, byte[] body) {
                 log.info("success2 " + new String(body));
-                assertEquals("Second question", new String(body));
+                assertEquals("Second question", getBodyFromBytes(body));
 
                 Command lastRequest = transport.lastRequest;
                 assertEquals("Response body", new String(lastRequest.getContentBody()));
                 assertEquals("OPEN", lastRequest.getType().toString());
                 assertNull(lastRequest.getFlowData());
 
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -159,14 +160,14 @@ public class RouterTest {
             @Override
             public void success(String sid, String contentType, byte[] body) {
                 log.info("success2 " + new String(body));
-                assertEquals("MAIN question", new String(body));
+                assertEquals("MAIN question", getBodyFromBytes(body));
 
                 Command lastRequest = transport.lastRequest;
-                assertEquals("return from SECOND", new String(lastRequest.getContentBody()));
+                assertEquals("return from SECOND", getBodyFromBytes(lastRequest.getContentBody()));
                 assertEquals("RETURN", lastRequest.getType().toString());
                 assertEquals("session Data", new String(lastRequest.getFlowData()));
 
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -204,14 +205,14 @@ public class RouterTest {
             @Override
             public void success(String sid, String contentType, byte[] body) {
                 log.info("success3 " + new String(body));
-                assertEquals("bad request", new String(body));
+                assertEquals("bad request", getBodyFromBytes(body));
 
                 Command lastRequest = transport.lastRequest;
-                assertEquals("Hello again 3", new String(lastRequest.getContentBody()));
+                assertEquals("Hello again 3", getBodyFromBytes(lastRequest.getContentBody()));
                 assertEquals("ANSWER", lastRequest.getType().toString());
                 assertEquals("session Data ++", new String(lastRequest.getFlowData()));
 
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -253,7 +254,7 @@ public class RouterTest {
             @Override
             public void reject(Exception exception) {
                 assertNotNull(exception);
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -285,7 +286,7 @@ public class RouterTest {
                 assertNotNull(exception);
                 assertEquals("null response from flow", exception.getMessage());
 
-                sessionStorage.find(sid, new ICallback<SessionStack>() {
+                sessionStorage.find(sid, new ICallback<>() {
 
                     @Override
                     public void success(SessionStack sessionStackEntries) {
@@ -328,6 +329,14 @@ public class RouterTest {
 
             }
         });
+    }
+
+    private static String getBodyFromBytes(byte[] body) {
+        try {
+            return new String(PARSER.readValue(body, ResponseBodyWrapper.class).getBody());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

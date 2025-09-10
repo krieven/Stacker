@@ -46,7 +46,9 @@ public class Router {
 
                 sessionStorage.save(sid, sessionStack);
                 IRouterCallback routerCallback = sessionLock.remove(sid);
-                routerCallback.success(sid, command.getBodyContentType(), command.getContentBody());
+                routerCallback.success(sid, command.getBodyContentType(),
+                        new ResponseBodyWrapper(command.getFlow(), command.getState(), command.getContentBody()).toBytes()
+                );
             }
         });
 
