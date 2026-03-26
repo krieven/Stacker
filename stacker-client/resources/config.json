@@ -1,0 +1,31 @@
+{
+  "title": "Stacker Sample Application",
+  "description": "Stacker Sample Application",
+  "nameSpaceMap": {
+    "computers": {
+      "title": "",
+      "description": "",
+      "flowConfigMap": {
+        "basket": {
+          "description": "flow-basket",
+          "address": "http://localhost:4000",
+          "mapping": {
+            "PACK": "pack"
+          }
+        },
+        "catalog": {
+          "description": "flow-catalog",
+          "address": "http://localhost:4001"
+        },
+        "pack": {
+          "description": "flow-pack",
+          "address": "http://localhost:4002",
+          "mapping": {
+            "CALL_CATALOG": "catalog"
+          }
+        }
+      }
+    }
+  },
+  "mainFlow": "computers/basket"
+}
