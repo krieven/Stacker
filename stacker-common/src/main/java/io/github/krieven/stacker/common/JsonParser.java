@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.IOException;
 
 public class JsonParser implements IParser {
-    private static ObjectMapper PARSER = new ObjectMapper();
+    private static final ObjectMapper PARSER = new ObjectMapper();
 
     static {
         PARSER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);

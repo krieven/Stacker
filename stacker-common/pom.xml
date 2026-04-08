@@ -11,21 +11,7 @@
 
     <artifactId>stacker-common</artifactId>
     <dependencies>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>9.4.41.v20210516</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>9.4.35.v20201120</version>
-        </dependency>
-        <dependency>
-            <groupId>com.kjetland</groupId>
-            <artifactId>mbknor-jackson-jsonschema_2.13</artifactId>
-            <version>1.0.39</version>
-        </dependency>
+
     </dependencies>
 
 
